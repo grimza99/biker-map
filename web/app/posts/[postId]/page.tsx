@@ -1,3 +1,5 @@
+import { PostScreen } from "@widgets/screens";
+
 export default async function PostDetailPage({
   params
 }: {
@@ -5,10 +7,5 @@ export default async function PostDetailPage({
 }) {
   const { postId } = await params;
 
-  return (
-    <section className="page-card">
-      <h1>게시글 상세</h1>
-      <p className="muted">{postId}</p>
-    </section>
-  );
+  return <PostScreen postId={postId} />;
 }
