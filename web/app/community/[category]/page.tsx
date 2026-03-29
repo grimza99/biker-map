@@ -1,3 +1,5 @@
+import { CommunityCategoryScreen } from "@widgets/screens";
+
 export default async function CommunityCategoryPage({
   params
 }: {
@@ -5,10 +7,5 @@ export default async function CommunityCategoryPage({
 }) {
   const { category } = await params;
 
-  return (
-    <section className="page-card">
-      <h1>카테고리</h1>
-      <p className="muted">{category}</p>
-    </section>
-  );
+  return <CommunityCategoryScreen category={category} />;
 }
