@@ -1,6 +1,14 @@
-import { Tabs } from "expo-router";
+import { Redirect, Tabs } from "expo-router";
+
+import { useSession } from "../../features/session/model";
 
 export default function TabsLayout() {
+  const { status } = useSession();
+
+  if (status !== "authenticated") {
+    return <Redirect href="/(auth)/login" />;
+  }
+
   return (
     <Tabs
       screenOptions={{

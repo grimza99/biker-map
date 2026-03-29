@@ -1,24 +1,26 @@
 import { StyleSheet, Text, View } from "react-native";
 
+import { AppScreen, SessionPanel } from "../../components/shell";
+
 export default function CommunityScreen() {
   return (
-    <View style={styles.screen}>
+    <AppScreen
+      eyebrow="Community gate"
+      title="커뮤니티"
+      description="게시글, 댓글, 알림으로 확장될 자리입니다. 지금은 탭 구조와 화면 경계만 고정합니다."
+    >
+      <SessionPanel />
       <View style={styles.hero}>
         <Text style={styles.title}>커뮤니티</Text>
         <Text style={styles.description}>
-          게시글, 댓글, 알림으로 확장될 자리입니다. 지금은 탭 구조와 화면 경계만 고정합니다.
+          로그인 전과 후의 화면 차이를 붙일 기준 자리입니다.
         </Text>
       </View>
-    </View>
+    </AppScreen>
   );
 }
 
 const styles = StyleSheet.create({
-  screen: {
-    flex: 1,
-    backgroundColor: "#081120",
-    padding: 20,
-  },
   hero: {
     borderRadius: 24,
     borderWidth: 1,
