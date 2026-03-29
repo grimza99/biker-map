@@ -19,10 +19,22 @@
     "incremental": true,
     "baseUrl": ".",
     "paths": {
-      "@web/*": [
+      "@/*": [
         "./*"
       ],
       "@shared/*": [
+        "./shared/*"
+      ],
+      "@entities/*": [
+        "./entities/*"
+      ],
+      "@features/*": [
+        "./features/*"
+      ],
+      "@widgets/*": [
+        "./widgets/*"
+      ],
+      "@package-shared/*": [
         "../package-shared/src/*"
       ]
     },

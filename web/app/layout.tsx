@@ -1,8 +1,8 @@
 import type { Metadata } from "next";
 import type { ReactNode } from "react";
-import "./globals.css";
-import { AppProviders } from "@web/components/providers/app-providers";
-import { AppShell } from "@web/components/shell/app-shell";
+import "../shared/styles/globals.css";
+import { AppProviders } from "@shared/providers";
+import { AppShell } from "@widgets/app-shell";
 
 export const metadata: Metadata = {
   title: "Biker Map",
