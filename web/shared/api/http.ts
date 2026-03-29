@@ -1,5 +1,5 @@
-import { apiErrorSchema } from "@/lib/contracts";
-import type { ApiResponse } from "@/lib/api";
+import { apiErrorSchema } from "./contracts";
+import type { ApiResponse } from "./types";
 
 export class ApiClientError extends Error {
   code: string;

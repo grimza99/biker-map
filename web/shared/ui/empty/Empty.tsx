@@ -1,8 +1,8 @@
 export function EmptyState({ title, message }: { title: string; message?: string }) {
   return (
     <div className="page-card">
-      <h2 style={{ marginTop: 0 }}>{title}</h2>
-      <p className="muted">{message}</p>
+      <h1>{title}</h1>
+      {message ? <p className="muted">{message}</p> : null}
     </div>
   );
 }

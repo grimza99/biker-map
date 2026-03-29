@@ -1,4 +1,4 @@
-import { notImplemented } from "../../_lib/response";
+import { notImplemented } from "@shared/api";
 
 export function GET() {
   return notImplemented();

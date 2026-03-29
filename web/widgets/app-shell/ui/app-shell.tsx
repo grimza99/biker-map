@@ -3,8 +3,8 @@
 import Link from "next/link";
 import type { ReactNode } from "react";
 
-import { MainNav } from "@web/components/navigation/main-nav";
-import { useSession } from "@web/components/session/use-session";
+import { MainNav } from "@widgets/main-nav";
+import { useSession } from "@features/session";
 
 export function AppShell({ children }: { children: ReactNode }) {
   const { session, status, signIn, signOut } = useSession();

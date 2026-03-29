@@ -1,12 +1,7 @@
 "use client";
 
 import { createContext, useContext, useEffect, useMemo, useState, type ReactNode } from "react";
-
-export type AppSession = {
-  userId: string;
-  displayName: string;
-  email?: string;
-};
+import { SESSION_STORAGE_KEY, type AppSession } from "@entities/session";
 
 type SessionState = {
   session: AppSession | null;
@@ -16,7 +11,6 @@ type SessionState = {
 };
 
 const SessionContext = createContext<SessionState | null>(null);
-const SESSION_STORAGE_KEY = "biker-map.session";
 
 export function SessionProvider({ children }: { children: ReactNode }) {
   const [session, setSession] = useState<AppSession | null>(null);

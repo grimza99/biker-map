@@ -2,8 +2,8 @@
 
 import type { ReactNode } from "react";
 
-import { AppQueryProvider } from "@web/components/providers/query-provider";
-import { SessionProvider } from "@web/components/session/session-provider";
+import { AppQueryProvider } from "./query-provider";
+import { SessionProvider } from "@features/session";
 
 export function AppProviders({ children }: { children: ReactNode }) {
   return (
