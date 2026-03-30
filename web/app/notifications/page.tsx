@@ -64,11 +64,11 @@ const kindMeta: Record<
 
 const toneClass: Record<"accent" | "neutral" | "danger", string> = {
   accent:
-    "inline-flex items-center rounded-full bg-[rgba(41,95,84,0.12)] px-2.5 py-1 text-[12px] font-semibold text-[color:var(--accent-strong)]",
+    "inline-flex items-center rounded-full bg-[rgba(41,95,84,0.12)] px-2.5 py-1 text-[12px] font-semibold text-[color:var(--color-accent-strong)]",
   neutral:
-    "inline-flex items-center rounded-full bg-[rgba(108,102,89,0.12)] px-2.5 py-1 text-[12px] font-semibold text-[color:var(--text)]",
+    "inline-flex items-center rounded-full bg-[rgba(108,102,89,0.12)] px-2.5 py-1 text-[12px] font-semibold text-[color:var(--color-text)]",
   danger:
-    "inline-flex items-center rounded-full bg-[rgba(165,61,48,0.14)] px-2.5 py-1 text-[12px] font-semibold text-[color:var(--danger)]"
+    "inline-flex items-center rounded-full bg-[rgba(165,61,48,0.14)] px-2.5 py-1 text-[12px] font-semibold text-[color:var(--color-danger)]"
 };
 
 export default async function NotificationsPage({
@@ -82,19 +82,19 @@ export default async function NotificationsPage({
   if (view === "loading") {
     return (
       <PageWrapper className="p-6" innerClassName="gap-3">
-        <p className="m-0 text-[13px] font-semibold uppercase tracking-[0.08em] text-[color:var(--accent)]">알림 동기화</p>
-        <h1 className="mt-2 text-2xl font-semibold tracking-[-0.03em] text-[color:var(--text)]">콘텐츠를 준비하는 중입니다.</h1>
-        <p className="mt-3 text-sm leading-7 text-[color:var(--muted)]">잠시만 기다리면 다음 화면을 볼 수 있습니다.</p>
+        <p className="m-0 text-[13px] font-semibold uppercase tracking-[0.08em] text-[color:var(--color-accent)]">알림 동기화</p>
+        <h1 className="mt-2 text-2xl font-semibold tracking-[-0.03em] text-[color:var(--color-text)]">콘텐츠를 준비하는 중입니다.</h1>
+        <p className="mt-3 text-sm leading-7 text-[color:var(--color-muted)]">잠시만 기다리면 다음 화면을 볼 수 있습니다.</p>
       </PageWrapper>
     );
   }
 
   if (view === "error") {
     return (
-      <PageWrapper className="border-[rgba(165,61,48,0.18)] bg-[color:var(--panel)] p-6" innerClassName="gap-3">
-        <p className="m-0 text-[13px] font-semibold uppercase tracking-[0.08em] text-[color:var(--danger)]">오류</p>
-        <h1 className="mt-2 text-2xl font-semibold tracking-[-0.03em] text-[color:var(--text)]">알림을 불러오지 못했습니다</h1>
-        <p className="mt-3 text-sm leading-7 text-[color:var(--muted)]">
+      <PageWrapper className="border-[rgba(165,61,48,0.18)] bg-[color:var(--color-panel)] p-6" innerClassName="gap-3">
+        <p className="m-0 text-[13px] font-semibold uppercase tracking-[0.08em] text-[color:var(--color-danger)]">오류</p>
+        <h1 className="mt-2 text-2xl font-semibold tracking-[-0.03em] text-[color:var(--color-text)]">알림을 불러오지 못했습니다</h1>
+        <p className="mt-3 text-sm leading-7 text-[color:var(--color-muted)]">
           잠시 후 다시 시도하거나 네트워크 상태를 확인하세요.
         </p>
       </PageWrapper>
@@ -106,8 +106,8 @@ export default async function NotificationsPage({
   if (view === "empty" || viewItems.length === 0) {
     return (
       <PageWrapper className="p-6" innerClassName="gap-3">
-        <h1 className="m-0 text-2xl font-semibold tracking-[-0.03em] text-[color:var(--text)]">새 알림이 없습니다</h1>
-        <p className="mt-3 text-sm leading-7 text-[color:var(--muted)]">
+        <h1 className="m-0 text-2xl font-semibold tracking-[-0.03em] text-[color:var(--color-text)]">새 알림이 없습니다</h1>
+        <p className="mt-3 text-sm leading-7 text-[color:var(--color-muted)]">
           좋아요, 댓글, 즐겨찾기 업데이트가 들어오면 여기서 확인할 수 있습니다.
         </p>
       </PageWrapper>
@@ -120,9 +120,9 @@ export default async function NotificationsPage({
     <PageWrapper className="p-6" innerClassName="gap-5">
       <div className="mb-5 flex flex-wrap items-start justify-between gap-4">
         <div>
-          <p className="m-0 text-[13px] font-semibold uppercase tracking-[0.08em] text-[color:var(--accent)]">인박스</p>
-          <h1 className="mt-2 text-[clamp(28px,4vw,42px)] font-semibold tracking-[-0.04em] text-[color:var(--text)]">알림</h1>
-          <p className="mt-3 max-w-[60ch] text-sm leading-7 text-[color:var(--muted)]">
+          <p className="m-0 text-[13px] font-semibold uppercase tracking-[0.08em] text-[color:var(--color-accent)]">인박스</p>
+          <h1 className="mt-2 text-[clamp(28px,4vw,42px)] font-semibold tracking-[-0.04em] text-[color:var(--color-text)]">알림</h1>
+          <p className="mt-3 max-w-[60ch] text-sm leading-7 text-[color:var(--color-muted)]">
             댓글, 반응, 즐겨찾기, 경로 갱신을 한 곳에서 확인합니다. 현재 {unreadCount}개의 읽지 않은 알림이
             있습니다.
           </p>
@@ -130,7 +130,7 @@ export default async function NotificationsPage({
 
         <Link
           href="/notifications?view=loading"
-          className="inline-flex items-center justify-center rounded-full border border-[color:var(--border)] bg-[color:var(--panel-solid)] px-4 py-2.5 text-sm font-medium text-[color:var(--text)] transition duration-150 ease-out hover:-translate-y-0.5">
+          className="inline-flex items-center justify-center rounded-full border border-[color:var(--color-border)] bg-[color:var(--color-panel-solid)] px-4 py-2.5 text-sm font-medium text-[color:var(--color-text)] transition duration-150 ease-out hover:-translate-y-0.5">
           동기화 보기
         </Link>
       </div>
@@ -143,20 +143,20 @@ export default async function NotificationsPage({
             className={cn(
               "inline-flex items-center justify-center rounded-full px-4 py-2.5 text-sm font-medium transition duration-150 ease-out hover:-translate-y-0.5",
               view === tab.key
-                ? "bg-[color:var(--accent)] text-[color:var(--text)] shadow-[0_10px_24px_var(--shadow-accent)]"
-                : "border border-[color:var(--border)] bg-[color:var(--panel-solid)] text-[color:var(--text)]"
+                ? "bg-[color:var(--color-accent)] text-[color:var(--color-text)] shadow-[0_10px_24px_var(--shadow-accent)]"
+                : "border border-[color:var(--color-border)] bg-[color:var(--color-panel-solid)] text-[color:var(--color-text)]"
             )}>
             {tab.label}
           </Link>
         ))}
         <Link
           href="/notifications?view=empty"
-          className="inline-flex items-center justify-center rounded-full border border-[color:var(--border)] bg-[color:var(--panel-solid)] px-4 py-2.5 text-sm font-medium text-[color:var(--text)] transition duration-150 ease-out hover:-translate-y-0.5">
+          className="inline-flex items-center justify-center rounded-full border border-[color:var(--color-border)] bg-[color:var(--color-panel-solid)] px-4 py-2.5 text-sm font-medium text-[color:var(--color-text)] transition duration-150 ease-out hover:-translate-y-0.5">
           빈 상태
         </Link>
         <Link
           href="/notifications?view=error"
-          className="inline-flex items-center justify-center rounded-full border border-[color:var(--border)] bg-[color:var(--panel-solid)] px-4 py-2.5 text-sm font-medium text-[color:var(--text)] transition duration-150 ease-out hover:-translate-y-0.5">
+          className="inline-flex items-center justify-center rounded-full border border-[color:var(--color-border)] bg-[color:var(--color-panel-solid)] px-4 py-2.5 text-sm font-medium text-[color:var(--color-text)] transition duration-150 ease-out hover:-translate-y-0.5">
           오류 상태
         </Link>
       </div>
@@ -165,8 +165,8 @@ export default async function NotificationsPage({
         {groupNotifications(viewItems).map(([heading, items]) => (
           <section key={heading} className="grid gap-3">
             <div className="flex items-center justify-between gap-3">
-              <h2 className="m-0 text-base font-semibold tracking-[-0.02em] text-[color:var(--text)]">{heading}</h2>
-              <span className="rounded-full border border-[color:var(--border)] bg-[color:var(--panel-solid)] px-3 py-1.5 text-sm text-[color:var(--muted)]">
+              <h2 className="m-0 text-base font-semibold tracking-[-0.02em] text-[color:var(--color-text)]">{heading}</h2>
+              <span className="rounded-full border border-[color:var(--color-border)] bg-[color:var(--color-panel-solid)] px-3 py-1.5 text-sm text-[color:var(--color-muted)]">
                 {items.length}건
               </span>
             </div>
@@ -179,22 +179,22 @@ export default async function NotificationsPage({
               <article
                     key={item.id}
                     className={cn(
-                      "grid gap-3 rounded-[18px] border bg-[color:var(--panel)] p-4 shadow-[0_8px_24px_var(--shadow)] transition duration-150 ease-out",
+                      "grid gap-3 rounded-[18px] border bg-[color:var(--color-panel)] p-4 shadow-[0_8px_24px_var(--shadow)] transition duration-150 ease-out",
                       item.unread
                         ? "border-[rgba(41,95,84,0.35)] ring-1 ring-[rgba(41,95,84,0.08)]"
-                        : "border-[color:var(--border)]"
+                        : "border-[color:var(--color-border)]"
                     )}>
                     <div className="flex items-center justify-between gap-3">
                       <span className={toneClass[meta.tone]}>{meta.badge}</span>
-                      <span className="text-sm text-[color:var(--muted)]">{item.timeLabel}</span>
+                      <span className="text-sm text-[color:var(--color-muted)]">{item.timeLabel}</span>
                     </div>
 
-                    <h3 className="m-0 text-lg font-semibold tracking-[-0.03em] text-[color:var(--text)]">{item.title}</h3>
-                    <p className="m-0 text-sm leading-7 text-[color:var(--muted)]">{item.message}</p>
+                    <h3 className="m-0 text-lg font-semibold tracking-[-0.03em] text-[color:var(--color-text)]">{item.title}</h3>
+                    <p className="m-0 text-sm leading-7 text-[color:var(--color-muted)]">{item.message}</p>
 
                     <div className="flex items-center justify-between gap-3">
-                      <span className="text-sm text-[color:var(--muted)]">{item.area}</span>
-                      {item.unread ? <span className="h-2.5 w-2.5 rounded-full bg-[color:var(--accent)]" aria-label="읽지 않음" /> : null}
+                      <span className="text-sm text-[color:var(--color-muted)]">{item.area}</span>
+                      {item.unread ? <span className="h-2.5 w-2.5 rounded-full bg-[color:var(--color-accent)]" aria-label="읽지 않음" /> : null}
                     </div>
                   </article>
                 );
