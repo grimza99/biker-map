@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { cn } from "@shared/lib";
 
 const navItems = [
   { href: "/map", label: "지도" },
@@ -15,7 +16,7 @@ export function MainNav() {
   const pathname = usePathname();
 
   return (
-    <nav className="main-nav" aria-label="주요 탐색">
+    <nav className="flex gap-2 overflow-x-auto pb-3" aria-label="주요 탐색">
       {navItems.map((item) => {
         const active = pathname === item.href || pathname.startsWith(`${item.href}/`);
 
@@ -24,7 +25,12 @@ export function MainNav() {
             key={item.href}
             href={item.href}
             aria-current={active ? "page" : undefined}
-            className={active ? "nav-link nav-link-active" : "nav-link"}>
+            className={cn(
+              "inline-flex flex-none items-center rounded-full border px-3.5 py-2 text-sm font-medium transition duration-150 ease-out hover:-translate-y-0.5",
+              active
+                ? "border-[color:var(--accent)] bg-[color:var(--accent)] text-white shadow-[0_10px_24px_rgba(41,95,84,0.18)]"
+                : "border-[color:var(--border)] bg-white/75 text-[color:var(--text)] hover:border-[color:var(--accent)] hover:text-[color:var(--accent-strong)]"
+            )}>
             {item.label}
           </Link>
         );
