@@ -1,24 +1,16 @@
+import type { CommunityCategorySlug, CommunityPost } from "@package-shared/types/community";
+
 export const communityCategories = [
   { slug: "notice", label: "공지", hint: "운영 / 안내" },
   { slug: "question", label: "질문", hint: "정보 요청" },
   { slug: "review", label: "후기", hint: "경험 공유" },
   { slug: "info", label: "정보", hint: "팁 / 정리" },
   { slug: "free", label: "자유 게시판", hint: "자유 / 잡담" }
-] as const;
-
-export type CommunityCategorySlug = (typeof communityCategories)[number]["slug"];
-
-export type CommunityPost = {
-  id: string;
-  category: CommunityCategorySlug;
-  title: string;
-  excerpt: string;
-  author: string;
-  timeLabel: string;
-  commentCount: number;
-  likeCount: number;
-  pinned?: boolean;
-};
+] as const satisfies ReadonlyArray<{
+  slug: CommunityCategorySlug;
+  label: string;
+  hint: string;
+}>;
 
 export const communityPosts: CommunityPost[] = [
   {

@@ -3,12 +3,12 @@ import { notFound } from "next/navigation";
 
 import { cn } from "@shared/lib";
 import { PageWrapper } from "@shared/ui";
+import type { CommunityCategorySlug } from "@package-shared/types/community";
 
 import {
   communityCategories,
   getCommunityCategory,
   getCommunityPostsByCategory,
-  type CommunityCategorySlug
 } from "../community-content";
 
 export default async function CommunityCategoryPage({

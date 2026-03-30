@@ -1,7 +1,8 @@
 "use client";
 
 import { createContext, useContext, useEffect, useMemo, useState, type ReactNode } from "react";
-import { SESSION_STORAGE_KEY, type AppSession } from "@entities/session";
+import { SESSION_STORAGE_KEY } from "@package-shared/constants/app";
+import type { AppSession } from "@package-shared/types/session";
 
 type SessionState = {
   session: AppSession | null;

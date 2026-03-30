@@ -2,7 +2,7 @@ import Link from "next/link";
 
 import { cn } from "@shared/lib";
 import { PageWrapper } from "@shared/ui";
-import type { InboxNotification } from "@entities/notification";
+import type { InboxNotification } from "@package-shared/types/notification";
 
 type NotificationsView = "all" | "unread" | "mentions" | "empty" | "error" | "loading";
 
