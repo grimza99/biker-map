@@ -3,7 +3,7 @@ export const communityCategories = [
   { slug: "question", label: "질문", hint: "정보 요청" },
   { slug: "review", label: "후기", hint: "경험 공유" },
   { slug: "info", label: "정보", hint: "팁 / 정리" },
-  { slug: "ride", label: "동행", hint: "모임 / 동행" }
+  { slug: "free", label: "자유 게시판", hint: "자유 / 잡담" }
 ] as const;
 
 export type CommunityCategorySlug = (typeof communityCategories)[number]["slug"];
@@ -64,7 +64,7 @@ export const communityPosts: CommunityPost[] = [
   },
   {
     id: "post-005",
-    category: "ride",
+    category: "free",
     title: "토요일 저녁 인천-김포 동행 모집",
     excerpt: "초보도 무리 없는 속도로 함께 달릴 분을 찾습니다.",
     author: "수아",

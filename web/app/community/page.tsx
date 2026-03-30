@@ -22,7 +22,7 @@ export default function CommunityPage() {
             카테고리 목록에서 바로 글 목록으로 진입합니다.
           </h1>
           <p className="max-w-[62ch] text-sm leading-7 text-muted">
-            공지, 질문, 후기, 정보, 동행 기준의 최소 흐름을 먼저 열고, 웹 MVP에서 카테고리 &gt; 목록 &gt; 상세로
+            공지, 질문, 후기, 정보, 자유 게시판 기준의 최소 흐름을 먼저 열고, 웹 MVP에서 카테고리 &gt; 목록 &gt; 상세로
             이어지는 구조를 잡습니다.
           </p>
         </div>
