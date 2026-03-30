@@ -1,3 +1,5 @@
+import { PageWrapper } from "@shared/ui";
+
 export default async function RouteDetailPage({
   params
 }: {
@@ -6,9 +8,9 @@ export default async function RouteDetailPage({
   const { routeId } = await params;
 
   return (
-    <section className="page-card">
-      <h1>루트 상세</h1>
-      <p className="muted">{routeId}</p>
-    </section>
+    <PageWrapper className="p-6" innerClassName="gap-0">
+      <h1 className="text-2xl font-semibold tracking-[-0.03em] text-[color:var(--text)]">루트 상세</h1>
+      <p className="mt-3 text-sm leading-7 text-[color:var(--muted)]">{routeId}</p>
+    </PageWrapper>
   );
 }
