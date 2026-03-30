@@ -4,6 +4,22 @@
   color-scheme: dark;
 }
 
+@theme inline {
+  --color-bg: var(--app-color-bg);
+  --color-panel: var(--app-color-panel);
+  --color-panel-solid: var(--app-color-panel-solid);
+  --color-panel-soft: var(--app-color-panel-soft);
+  --color-text: var(--app-color-text);
+  --color-muted: var(--app-color-muted);
+  --color-border: var(--app-color-border);
+  --color-accent: var(--app-color-accent);
+  --color-accent-strong: var(--app-color-accent-strong);
+  --color-active: var(--app-color-active);
+  --color-warning: var(--app-color-warning);
+  --color-info: var(--app-color-info);
+  --color-danger: var(--app-color-danger);
+}
+
 @layer base {
   * {
     box-sizing: border-box;

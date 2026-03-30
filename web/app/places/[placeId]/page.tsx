@@ -9,8 +9,8 @@ export default async function PlaceDetailPage({
 
   return (
     <PageWrapper className="p-6" innerClassName="gap-0">
-      <h1 className="text-2xl font-semibold tracking-[-0.03em] text-[color:var(--color-text)]">장소 상세</h1>
-      <p className="mt-3 text-sm leading-7 text-[color:var(--color-muted)]">{placeId}</p>
+      <h1 className="text-2xl font-semibold tracking-[-0.03em] text-text">장소 상세</h1>
+      <p className="mt-3 text-sm leading-7 text-muted">{placeId}</p>
     </PageWrapper>
   );
 }
