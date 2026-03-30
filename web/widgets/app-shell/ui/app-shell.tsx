@@ -12,7 +12,7 @@ export function AppShell({ children }: { children: ReactNode }) {
 
   return (
     <>
-      <header className="sticky top-0 z-20 border-b border-[rgba(223,213,194,0.85)] bg-[rgba(245,241,232,0.84)] backdrop-blur-md">
+      <header className="sticky top-0 z-20 border-b border-[color:var(--border)] bg-[color:var(--panel)] backdrop-blur-md">
         <div className="mx-auto flex w-[min(1120px,calc(100%-32px))] flex-wrap items-center justify-between gap-4 py-4">
           <div className="grid gap-1">
             <Link href="/" className="text-lg font-extrabold tracking-[-0.02em]">
@@ -35,8 +35,8 @@ export function AppShell({ children }: { children: ReactNode }) {
             ) : (
               <button
                 className={cn(
-                  "inline-flex items-center justify-center rounded-full px-3.5 py-2 text-sm font-medium text-white transition duration-150 ease-out hover:-translate-y-0.5",
-                  "bg-[color:var(--accent)] shadow-[0_10px_24px_rgba(41,95,84,0.18)]"
+                  "inline-flex items-center justify-center rounded-full px-3.5 py-2 text-sm font-medium text-[color:var(--text)] transition duration-150 ease-out hover:-translate-y-0.5",
+                  "bg-[color:var(--accent)] shadow-[0_10px_24px_var(--shadow-accent)]"
                 )}
                 type="button"
                 onClick={() =>

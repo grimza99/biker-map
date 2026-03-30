@@ -11,7 +11,7 @@ export default function NotFound() {
       <div className="mt-6 flex flex-wrap gap-3">
         <Link
           href="/"
-          className="inline-flex items-center justify-center rounded-full bg-[color:var(--accent)] px-4 py-2.5 text-sm font-medium text-white shadow-[0_10px_24px_rgba(41,95,84,0.18)] transition duration-150 ease-out hover:-translate-y-0.5">
+          className="inline-flex items-center justify-center rounded-full bg-[color:var(--accent)] px-4 py-2.5 text-sm font-medium text-[color:var(--text)] shadow-[0_10px_24px_var(--shadow-accent)] transition duration-150 ease-out hover:-translate-y-0.5">
           홈으로
         </Link>
         <Link

@@ -91,7 +91,7 @@ export default async function NotificationsPage({
 
   if (view === "error") {
     return (
-      <PageWrapper className="border-[rgba(165,61,48,0.18)] bg-white/85 p-6" innerClassName="gap-3">
+      <PageWrapper className="border-[rgba(165,61,48,0.18)] bg-[color:var(--panel)] p-6" innerClassName="gap-3">
         <p className="m-0 text-[13px] font-semibold uppercase tracking-[0.08em] text-[color:var(--danger)]">오류</p>
         <h1 className="mt-2 text-2xl font-semibold tracking-[-0.03em] text-[color:var(--text)]">알림을 불러오지 못했습니다</h1>
         <p className="mt-3 text-sm leading-7 text-[color:var(--muted)]">
@@ -143,7 +143,7 @@ export default async function NotificationsPage({
             className={cn(
               "inline-flex items-center justify-center rounded-full px-4 py-2.5 text-sm font-medium transition duration-150 ease-out hover:-translate-y-0.5",
               view === tab.key
-                ? "bg-[color:var(--accent)] text-white shadow-[0_10px_24px_rgba(41,95,84,0.18)]"
+                ? "bg-[color:var(--accent)] text-[color:var(--text)] shadow-[0_10px_24px_var(--shadow-accent)]"
                 : "border border-[color:var(--border)] bg-[color:var(--panel-solid)] text-[color:var(--text)]"
             )}>
             {tab.label}
@@ -176,10 +176,10 @@ export default async function NotificationsPage({
                 const meta = kindMeta[item.kind];
 
                 return (
-                  <article
+              <article
                     key={item.id}
                     className={cn(
-                      "grid gap-3 rounded-[18px] border bg-white/90 p-4 shadow-[0_8px_24px_rgba(23,22,19,0.06)] transition duration-150 ease-out",
+                      "grid gap-3 rounded-[18px] border bg-[color:var(--panel)] p-4 shadow-[0_8px_24px_var(--shadow)] transition duration-150 ease-out",
                       item.unread
                         ? "border-[rgba(41,95,84,0.35)] ring-1 ring-[rgba(41,95,84,0.08)]"
                         : "border-[color:var(--border)]"
