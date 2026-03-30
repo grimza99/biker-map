@@ -1,8 +1,10 @@
 import Link from "next/link";
 
+import { PageWrapper } from "@shared/ui";
+
 export default function NotFound() {
   return (
-    <section className="rounded-[20px] border border-[color:var(--border)] bg-[color:var(--panel)] p-7 shadow-[var(--shadow)] backdrop-blur-xl">
+    <PageWrapper className="p-7" innerClassName="gap-0">
       <p className="m-0 text-[13px] font-semibold uppercase tracking-[0.08em] text-[color:var(--accent)]">404</p>
       <h1 className="mt-2 text-2xl font-semibold tracking-[-0.03em] text-[color:var(--text)]">페이지를 찾을 수 없습니다.</h1>
       <p className="mt-3 text-sm leading-7 text-[color:var(--muted)]">경로를 확인하고 홈 또는 지도 화면으로 돌아가세요.</p>
@@ -18,6 +20,6 @@ export default function NotFound() {
           지도 열기
         </Link>
       </div>
-    </section>
+    </PageWrapper>
   );
 }

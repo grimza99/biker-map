@@ -1,8 +1,10 @@
 import Link from "next/link";
 
+import { PageWrapper } from "@shared/ui";
+
 export default function HomePage() {
   return (
-    <section className="rounded-[20px] border border-[color:var(--border)] bg-[color:var(--panel)] p-7 shadow-[var(--shadow)] backdrop-blur-xl">
+    <PageWrapper className="p-7" innerClassName="gap-0">
       <p className="m-0 text-[13px] font-semibold uppercase tracking-[0.08em] text-[color:var(--accent)]">앱 착수</p>
       <h1 className="mt-2 max-w-[16ch] text-[clamp(30px,5vw,54px)] font-semibold leading-[1.02] tracking-[-0.04em] text-[color:var(--text)]">
         바이커맵 웹 Shell과 공통 인프라를 먼저 고정한다.
@@ -23,6 +25,6 @@ export default function HomePage() {
           커뮤니티 보기
         </Link>
       </div>
-    </section>
+    </PageWrapper>
   );
 }

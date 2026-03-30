@@ -1,6 +1,7 @@
 import Link from "next/link";
 
 import { cn } from "@shared/lib";
+import { PageWrapper } from "@shared/ui";
 import type { InboxNotification } from "@entities/notification";
 
 type NotificationsView = "all" | "unread" | "mentions" | "empty" | "error" | "loading";
@@ -80,23 +81,23 @@ export default async function NotificationsPage({
 
   if (view === "loading") {
     return (
-      <section className="rounded-[20px] border border-[color:var(--border)] bg-[color:var(--panel)] p-6 shadow-[var(--shadow)] backdrop-blur-xl">
+      <PageWrapper className="p-6" innerClassName="gap-3">
         <p className="m-0 text-[13px] font-semibold uppercase tracking-[0.08em] text-[color:var(--accent)]">알림 동기화</p>
         <h1 className="mt-2 text-2xl font-semibold tracking-[-0.03em] text-[color:var(--text)]">콘텐츠를 준비하는 중입니다.</h1>
         <p className="mt-3 text-sm leading-7 text-[color:var(--muted)]">잠시만 기다리면 다음 화면을 볼 수 있습니다.</p>
-      </section>
+      </PageWrapper>
     );
   }
 
   if (view === "error") {
     return (
-      <section className="rounded-[20px] border border-[rgba(165,61,48,0.18)] bg-white/85 p-6 shadow-[var(--shadow)] backdrop-blur-xl">
+      <PageWrapper className="border-[rgba(165,61,48,0.18)] bg-white/85 p-6" innerClassName="gap-3">
         <p className="m-0 text-[13px] font-semibold uppercase tracking-[0.08em] text-[color:var(--danger)]">오류</p>
         <h1 className="mt-2 text-2xl font-semibold tracking-[-0.03em] text-[color:var(--text)]">알림을 불러오지 못했습니다</h1>
         <p className="mt-3 text-sm leading-7 text-[color:var(--muted)]">
           잠시 후 다시 시도하거나 네트워크 상태를 확인하세요.
         </p>
-      </section>
+      </PageWrapper>
     );
   }
 
@@ -104,19 +105,19 @@ export default async function NotificationsPage({
 
   if (view === "empty" || viewItems.length === 0) {
     return (
-      <section className="rounded-[20px] border border-[color:var(--border)] bg-[color:var(--panel)] p-6 shadow-[var(--shadow)] backdrop-blur-xl">
+      <PageWrapper className="p-6" innerClassName="gap-3">
         <h1 className="m-0 text-2xl font-semibold tracking-[-0.03em] text-[color:var(--text)]">새 알림이 없습니다</h1>
         <p className="mt-3 text-sm leading-7 text-[color:var(--muted)]">
           좋아요, 댓글, 즐겨찾기 업데이트가 들어오면 여기서 확인할 수 있습니다.
         </p>
-      </section>
+      </PageWrapper>
     );
   }
 
   const unreadCount = notifications.filter((item) => item.unread).length;
 
   return (
-    <section className="rounded-[20px] border border-[color:var(--border)] bg-[color:var(--panel)] p-6 shadow-[var(--shadow)] backdrop-blur-xl">
+    <PageWrapper className="p-6" innerClassName="gap-5">
       <div className="mb-5 flex flex-wrap items-start justify-between gap-4">
         <div>
           <p className="m-0 text-[13px] font-semibold uppercase tracking-[0.08em] text-[color:var(--accent)]">인박스</p>
@@ -202,7 +203,7 @@ export default async function NotificationsPage({
           </section>
         ))}
       </div>
-    </section>
+    </PageWrapper>
   );
 }
 
