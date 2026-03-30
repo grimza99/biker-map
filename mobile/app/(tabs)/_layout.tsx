@@ -1,5 +1,6 @@
 import { Redirect, Tabs } from "expo-router";
 
+import { bikerMapTheme } from "@package-shared/constants/theme";
 import { useSession } from "../../features/session/model";
 
 export default function TabsLayout() {
@@ -13,11 +14,11 @@ export default function TabsLayout() {
     <Tabs
       screenOptions={{
         headerShown: false,
-        tabBarActiveTintColor: "#d7f4ff",
-        tabBarInactiveTintColor: "#8aa0b8",
+        tabBarActiveTintColor: bikerMapTheme.colors.text,
+        tabBarInactiveTintColor: bikerMapTheme.colors.muted,
         tabBarStyle: {
-          backgroundColor: "#09111d",
-          borderTopColor: "#1b2a3a",
+          backgroundColor: bikerMapTheme.colors.panel,
+          borderTopColor: bikerMapTheme.colors.border,
         },
       }}
     >

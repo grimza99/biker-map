@@ -1,5 +1,6 @@
 import { Pressable, StyleSheet, Text, View } from "react-native";
 
+import { bikerMapTheme } from "@package-shared/constants/theme";
 import { useSession } from "../../features/session/model";
 
 export function SessionPanel() {
@@ -29,35 +30,35 @@ const styles = StyleSheet.create({
     gap: 12,
     borderRadius: 20,
     borderWidth: 1,
-    borderColor: "#23405a",
-    backgroundColor: "#0f1f35",
+    borderColor: bikerMapTheme.colors.border,
+    backgroundColor: bikerMapTheme.colors.panelSolid,
     padding: 18,
   },
   label: {
-    color: "#8fb7d7",
+    color: bikerMapTheme.colors.active,
     fontSize: 12,
     letterSpacing: 1.1,
     textTransform: "uppercase",
   },
   title: {
-    color: "#f8fcff",
+    color: bikerMapTheme.colors.text,
     fontSize: 18,
     fontWeight: "700",
   },
   description: {
-    color: "#b5c6d8",
+    color: bikerMapTheme.colors.muted,
     fontSize: 14,
     lineHeight: 21,
   },
   button: {
     alignSelf: "flex-start",
     borderRadius: 999,
-    backgroundColor: "#d7f4ff",
+    backgroundColor: bikerMapTheme.colors.text,
     paddingHorizontal: 16,
     paddingVertical: 12,
   },
   buttonText: {
-    color: "#07111e",
+    color: bikerMapTheme.colors.bg,
     fontSize: 14,
     fontWeight: "700",
   },

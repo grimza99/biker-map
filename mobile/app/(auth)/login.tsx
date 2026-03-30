@@ -1,6 +1,7 @@
 import { useRouter } from "expo-router";
 import { Pressable, StyleSheet, Text, View } from "react-native";
 
+import { bikerMapTheme } from "@package-shared/constants/theme";
 import { AppScreen } from "../../components/shell";
 import { useSession } from "../../features/session/model";
 
@@ -38,29 +39,29 @@ const styles = StyleSheet.create({
     gap: 14,
     borderRadius: 20,
     borderWidth: 1,
-    borderColor: "#23405a",
-    backgroundColor: "#0f1f35",
+    borderColor: bikerMapTheme.colors.border,
+    backgroundColor: bikerMapTheme.colors.panelSolid,
     padding: 18,
   },
   panelTitle: {
-    color: "#f8fcff",
+    color: bikerMapTheme.colors.text,
     fontSize: 18,
     fontWeight: "700",
   },
   panelDescription: {
-    color: "#b5c6d8",
+    color: bikerMapTheme.colors.muted,
     fontSize: 14,
     lineHeight: 21,
   },
   button: {
     alignSelf: "flex-start",
     borderRadius: 999,
-    backgroundColor: "#d7f4ff",
+    backgroundColor: bikerMapTheme.colors.text,
     paddingHorizontal: 16,
     paddingVertical: 12,
   },
   buttonText: {
-    color: "#07111e",
+    color: bikerMapTheme.colors.bg,
     fontSize: 14,
     fontWeight: "700",
   },
