@@ -1,32 +1,70 @@
+import { Ionicons } from "@expo/vector-icons";
 import { useMemo, useState } from "react";
 import { Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
-import { Ionicons } from "@expo/vector-icons";
 
 import { bikerMapTheme } from "@package-shared/constants/theme";
-import { NotificationSheet, type NotificationItem } from "../../components/shell";
+import {
+  NotificationSheet,
+  type NotificationItem,
+} from "../../components/shell";
 import { useSession } from "../../features/session/model";
 
 const quickFilters = ["주유소", "정비소", "카페", "맛집", "휴게/쉼터"] as const;
 
 const nearbyPlaces = [
-  { name: "남산 라이더 카페", type: "카페", distance: "0.8km", status: "운영중" },
-  { name: "한강 정비 스팟", type: "정비소", distance: "1.4km", status: "후기 많음" },
+  {
+    name: "남산 라이더 카페",
+    type: "카페",
+    distance: "0.8km",
+    status: "운영중",
+  },
+  {
+    name: "한강 정비 스팟",
+    type: "정비소",
+    distance: "1.4km",
+    status: "후기 많음",
+  },
   { name: "성수 주유소", type: "주유소", distance: "2.1km", status: "가까움" },
-  { name: "응봉 휴게 쉼터", type: "휴게/쉼터", distance: "2.7km", status: "잠시 쉬기" },
+  {
+    name: "응봉 휴게 쉼터",
+    type: "휴게/쉼터",
+    distance: "2.7km",
+    status: "잠시 쉬기",
+  },
 ];
 
 const initialNotifications: NotificationItem[] = [
-  { id: "n1", title: "새 댓글이 달렸어요", summary: "지도 저장한 장소에 대화가 이어졌습니다.", time: "2분 전", unread: true },
-  { id: "n2", title: "즐겨찾기한 카페가 열렸어요", summary: "오전 영업 상태로 바뀌었습니다.", time: "18분 전", unread: true },
-  { id: "n3", title: "후기 반응 +4", summary: "한강 정비 스팟에 새로운 반응이 쌓였습니다.", time: "1시간 전", unread: false },
+  {
+    id: "n1",
+    title: "새 댓글이 달렸어요",
+    summary: "지도 저장한 장소에 대화가 이어졌습니다.",
+    time: "2분 전",
+    unread: true,
+  },
+  {
+    id: "n2",
+    title: "즐겨찾기한 카페가 열렸어요",
+    summary: "오전 영업 상태로 바뀌었습니다.",
+    time: "18분 전",
+    unread: true,
+  },
+  {
+    id: "n3",
+    title: "후기 반응 +4",
+    summary: "한강 정비 스팟에 새로운 반응이 쌓였습니다.",
+    time: "1시간 전",
+    unread: false,
+  },
 ];
 
 export default function MapScreen() {
   const { status } = useSession();
-  const [activeFilter, setActiveFilter] = useState<(typeof quickFilters)[number]>("정비소");
+  const [activeFilter, setActiveFilter] =
+    useState<(typeof quickFilters)[number]>("정비소");
   const [notifications, setNotifications] = useState(initialNotifications);
-  const [isNotificationSheetVisible, setIsNotificationSheetVisible] = useState(false);
+  const [isNotificationSheetVisible, setIsNotificationSheetVisible] =
+    useState(false);
 
   const unreadCount = notifications.filter((item) => item.unread).length;
 
@@ -45,7 +83,9 @@ export default function MapScreen() {
   }, [activeFilter]);
 
   const markAllAsRead = () => {
-    setNotifications((current) => current.map((item) => ({ ...item, unread: false })));
+    setNotifications((current) =>
+      current.map((item) => ({ ...item, unread: false }))
+    );
   };
 
   return (
@@ -58,7 +98,10 @@ export default function MapScreen() {
         <View style={styles.titleBlock}>
           <Text style={styles.eyebrow}>Map shell</Text>
           <Text style={styles.title}>지도</Text>
-          <Text style={styles.subtitle}>지도 {" > "} 검색 {" > "} 빠른 필터 우선순위를 반영한 full-bleed shell</Text>
+          <Text style={styles.subtitle}>
+            지도 {" > "} 검색 {" > "} 빠른 필터 우선순위를 반영한 full-bleed
+            shell
+          </Text>
         </View>
 
         {status === "authenticated" ? (
@@ -68,7 +111,11 @@ export default function MapScreen() {
             accessibilityRole="button"
             accessibilityLabel="알림 열기"
           >
-            <Ionicons name="notifications-outline" size={20} color={bikerMapTheme.colors.text} />
+            <Ionicons
+              name="notifications-outline"
+              size={20}
+              color={bikerMapTheme.colors.text}
+            />
             {unreadCount > 0 ? <View style={styles.bellDot} /> : null}
           </Pressable>
         ) : null}
@@ -85,7 +132,11 @@ export default function MapScreen() {
           </Pressable>
         </View>
 
-        <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.filterRow}>
+        <ScrollView
+          horizontal
+          showsHorizontalScrollIndicator={false}
+          contentContainerStyle={styles.filterRow}
+        >
           {quickFilters.map((filter) => {
             const isActive = activeFilter === filter;
 
@@ -95,13 +146,22 @@ export default function MapScreen() {
                 style={[styles.filterChip, isActive && styles.filterChipActive]}
                 onPress={() => setActiveFilter(filter)}
               >
-                <Text style={[styles.filterChipText, isActive && styles.filterChipTextActive]}>{filter}</Text>
+                <Text
+                  style={[
+                    styles.filterChipText,
+                    isActive && styles.filterChipTextActive,
+                  ]}
+                >
+                  {filter}
+                </Text>
               </Pressable>
             );
           })}
         </ScrollView>
 
-        <Text style={styles.searchHint}>상세 필터는 다음 단계에서 sheet로 확장할 수 있습니다.</Text>
+        <Text style={styles.searchHint}>
+          상세 필터는 다음 단계에서 sheet로 확장할 수 있습니다.
+        </Text>
       </View>
 
       <View style={styles.mapCanvas}>
@@ -125,7 +185,10 @@ export default function MapScreen() {
           </View>
         </View>
 
-        <ScrollView contentContainerStyle={styles.placeList} showsVerticalScrollIndicator={false}>
+        <ScrollView
+          contentContainerStyle={styles.placeList}
+          showsVerticalScrollIndicator={false}
+        >
           {highlightedPlaces.map((place) => (
             <View key={place.name} style={styles.placeCard}>
               <View style={styles.placeMeta}>

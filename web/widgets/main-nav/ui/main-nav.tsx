@@ -28,8 +28,8 @@ export function MainNav() {
             className={cn(
               "inline-flex flex-none items-center rounded-full border px-3.5 py-2 text-sm font-medium transition duration-150 ease-out hover:-translate-y-0.5",
               active
-                ? "border-[color:var(--accent)] bg-[color:var(--accent)] text-white shadow-[0_10px_24px_rgba(41,95,84,0.18)]"
-                : "border-[color:var(--border)] bg-white/75 text-[color:var(--text)] hover:border-[color:var(--accent)] hover:text-[color:var(--accent-strong)]"
+                ? "border-accent bg-accent text-text shadow-[0_10px_24px_var(--shadow-accent)]"
+                : "border-border bg-panel-solid text-text hover:border-accent hover:text-accent-strong"
             )}>
             {item.label}
           </Link>

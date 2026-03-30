@@ -1,8 +1,11 @@
 import type { Metadata } from "next";
-import type { ReactNode } from "react";
+import type { CSSProperties, ReactNode } from "react";
 import "../shared/styles/globals.css";
 import { AppProviders } from "@shared/providers";
 import { AppShell } from "@widgets/app-shell";
+import { webThemeVars } from "@shared/theme/web-theme";
+
+const bodyThemeVars = webThemeVars as CSSProperties;
 
 export const metadata: Metadata = {
   title: "Biker Map",
@@ -16,7 +19,7 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="ko">
-      <body>
+      <body style={bodyThemeVars}>
         <AppProviders>
           <AppShell>{children}</AppShell>
         </AppProviders>
