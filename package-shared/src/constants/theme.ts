@@ -11,15 +11,15 @@ export const colorTokens = {
   active: "#00C2A8",
   warning: "#FFC857",
   danger: "#D85B4E",
-  info: "#4DA3FF"
+  info: "#4DA3FF",
 } as const;
 
 export const shadowTokens = {
   panel: "0 18px 50px rgba(5, 6, 7, 0.34)",
-  accent: "0 10px 24px rgba(229, 87, 47, 0.28)"
+  accent: "0 10px 24px rgba(229, 87, 47, 0.28)",
 } as const;
 
 export const bikerMapTheme = {
   colors: colorTokens,
-  shadows: shadowTokens
+  shadows: shadowTokens,
 } as const;

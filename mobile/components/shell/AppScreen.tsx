@@ -1,6 +1,8 @@
 import { type PropsWithChildren } from "react";
 import { ScrollView, StyleSheet, Text, View } from "react-native";
 
+import { bikerMapTheme } from "@package-shared/constants/theme";
+
 type AppScreenProps = PropsWithChildren<{
   eyebrow: string;
   title: string;
@@ -23,7 +25,7 @@ export function AppScreen({ eyebrow, title, description, children }: AppScreenPr
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: "#081120",
+    backgroundColor: bikerMapTheme.colors.bg,
   },
   content: {
     gap: 18,
@@ -34,24 +36,24 @@ const styles = StyleSheet.create({
     gap: 10,
     borderRadius: 24,
     borderWidth: 1,
-    borderColor: "#1c334d",
-    backgroundColor: "#0e1d31",
+    borderColor: bikerMapTheme.colors.border,
+    backgroundColor: bikerMapTheme.colors.panel,
     padding: 20,
   },
   eyebrow: {
-    color: "#8fb7d7",
+    color: bikerMapTheme.colors.active,
     fontSize: 12,
     letterSpacing: 1.2,
     textTransform: "uppercase",
   },
   title: {
-    color: "#f3fbff",
+    color: bikerMapTheme.colors.text,
     fontSize: 34,
     fontWeight: "800",
     lineHeight: 40,
   },
   description: {
-    color: "#b5c6d8",
+    color: bikerMapTheme.colors.muted,
     fontSize: 15,
     lineHeight: 22,
   },

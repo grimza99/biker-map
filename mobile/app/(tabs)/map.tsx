@@ -1,94 +1,305 @@
+import { Ionicons } from "@expo/vector-icons";
 import { useMemo, useState } from "react";
 import { Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
 
-import { AppScreen, SessionPanel } from "../../components/shell";
+import { bikerMapTheme } from "@package-shared/constants/theme";
+import {
+  NotificationSheet,
+  type NotificationItem,
+} from "../../components/shell";
+import { useSession } from "../../features/session/model";
 
 const quickFilters = ["주유소", "정비소", "카페", "맛집", "휴게/쉼터"] as const;
 
 const nearbyPlaces = [
-  { name: "남산 라이더 카페", type: "카페", distance: "0.8km", status: "운영중" },
-  { name: "한강 정비 스팟", type: "정비소", distance: "1.4km", status: "후기 많음" },
+  {
+    name: "남산 라이더 카페",
+    type: "카페",
+    distance: "0.8km",
+    status: "운영중",
+  },
+  {
+    name: "한강 정비 스팟",
+    type: "정비소",
+    distance: "1.4km",
+    status: "후기 많음",
+  },
   { name: "성수 주유소", type: "주유소", distance: "2.1km", status: "가까움" },
+  {
+    name: "응봉 휴게 쉼터",
+    type: "휴게/쉼터",
+    distance: "2.7km",
+    status: "잠시 쉬기",
+  },
+];
+
+const initialNotifications: NotificationItem[] = [
+  {
+    id: "n1",
+    title: "새 댓글이 달렸어요",
+    summary: "지도 저장한 장소에 대화가 이어졌습니다.",
+    time: "2분 전",
+    unread: true,
+  },
+  {
+    id: "n2",
+    title: "즐겨찾기한 카페가 열렸어요",
+    summary: "오전 영업 상태로 바뀌었습니다.",
+    time: "18분 전",
+    unread: true,
+  },
+  {
+    id: "n3",
+    title: "후기 반응 +4",
+    summary: "한강 정비 스팟에 새로운 반응이 쌓였습니다.",
+    time: "1시간 전",
+    unread: false,
+  },
 ];
 
 export default function MapScreen() {
-  const [activeFilter, setActiveFilter] = useState<(typeof quickFilters)[number]>("정비소");
+  const { status } = useSession();
+  const [activeFilter, setActiveFilter] =
+    useState<(typeof quickFilters)[number]>("정비소");
+  const [notifications, setNotifications] = useState(initialNotifications);
+  const [isNotificationSheetVisible, setIsNotificationSheetVisible] =
+    useState(false);
+
+  const unreadCount = notifications.filter((item) => item.unread).length;
 
   const highlightedPlaces = useMemo(() => {
-    return nearbyPlaces.filter((place) => activeFilter === "휴게/쉼터" || place.type === activeFilter || activeFilter === "카페");
+    return nearbyPlaces.filter((place) => {
+      if (activeFilter === "휴게/쉼터") {
+        return true;
+      }
+
+      if (activeFilter === "카페") {
+        return place.type === "카페";
+      }
+
+      return place.type === activeFilter;
+    });
   }, [activeFilter]);
 
+  const markAllAsRead = () => {
+    setNotifications((current) =>
+      current.map((item) => ({ ...item, unread: false }))
+    );
+  };
+
   return (
-    <AppScreen
-      eyebrow="Map shell"
-      title="지도"
-      description="지도 > 검색 > 빠른 필터 우선순위를 반영한 모바일 첫 화면입니다."
-    >
-      <SessionPanel />
+    <SafeAreaView style={styles.screen} edges={["top"]}>
+      <View style={styles.mapBackdrop} />
+      <View style={styles.mapGlowTop} />
+      <View style={styles.mapGlowBottom} />
 
-      <View style={styles.searchRow}>
-        <View style={styles.searchBox}>
-          <Text style={styles.searchLabel}>검색</Text>
-          <Text style={styles.searchPlaceholder}>장소, 경로, 카테고리</Text>
+      <View style={styles.topBar}>
+        <View style={styles.titleBlock}>
+          <Text style={styles.eyebrow}>Map shell</Text>
+          <Text style={styles.title}>지도</Text>
+          <Text style={styles.subtitle}>
+            지도 {" > "} 검색 {" > "} 빠른 필터 우선순위를 반영한 full-bleed
+            shell
+          </Text>
         </View>
-        <Pressable style={styles.ctaButton}>
-          <Text style={styles.ctaButtonText}>내 위치</Text>
-        </Pressable>
+
+        {status === "authenticated" ? (
+          <Pressable
+            style={styles.bellButton}
+            onPress={() => setIsNotificationSheetVisible(true)}
+            accessibilityRole="button"
+            accessibilityLabel="알림 열기"
+          >
+            <Ionicons
+              name="notifications-outline"
+              size={20}
+              color={bikerMapTheme.colors.text}
+            />
+            {unreadCount > 0 ? <View style={styles.bellDot} /> : null}
+          </Pressable>
+        ) : null}
       </View>
 
-      <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.filterRow}>
-        {quickFilters.map((filter) => {
-          const isActive = activeFilter === filter;
-
-          return (
-            <Pressable
-              key={filter}
-              style={[styles.filterChip, isActive && styles.filterChipActive]}
-              onPress={() => setActiveFilter(filter)}
-            >
-              <Text style={[styles.filterChipText, isActive && styles.filterChipTextActive]}>{filter}</Text>
-            </Pressable>
-          );
-        })}
-      </ScrollView>
-
-      <View style={styles.mapShell}>
-        <View style={styles.mapHeader}>
-          <Text style={styles.mapEyebrow}>실제 지도는 다음 라운드에서 연결</Text>
-          <Text style={styles.mapTitle}>현재는 위치 탐색 shell만 먼저 고정합니다</Text>
+      <View style={styles.overlayPanel}>
+        <View style={styles.searchRow}>
+          <View style={styles.searchBox}>
+            <Text style={styles.searchLabel}>검색</Text>
+            <Text style={styles.searchPlaceholder}>장소, 경로, 카테고리</Text>
+          </View>
+          <Pressable style={styles.ctaButton}>
+            <Text style={styles.ctaButtonText}>내 위치</Text>
+          </Pressable>
         </View>
 
-        <View style={styles.mapCanvas}>
-          <View style={[styles.routeLine, styles.routeLineA]} />
-          <View style={[styles.routeLine, styles.routeLineB]} />
-          <View style={[styles.routeLine, styles.routeLineC]} />
-          <View style={[styles.pin, styles.pinPrimary]} />
-          <View style={[styles.pin, styles.pinSecondary]} />
-          <View style={[styles.pin, styles.pinWarning]} />
-          <View style={styles.mapGlow} />
-        </View>
+        <ScrollView
+          horizontal
+          showsHorizontalScrollIndicator={false}
+          contentContainerStyle={styles.filterRow}
+        >
+          {quickFilters.map((filter) => {
+            const isActive = activeFilter === filter;
+
+            return (
+              <Pressable
+                key={filter}
+                style={[styles.filterChip, isActive && styles.filterChipActive]}
+                onPress={() => setActiveFilter(filter)}
+              >
+                <Text
+                  style={[
+                    styles.filterChipText,
+                    isActive && styles.filterChipTextActive,
+                  ]}
+                >
+                  {filter}
+                </Text>
+              </Pressable>
+            );
+          })}
+        </ScrollView>
+
+        <Text style={styles.searchHint}>
+          상세 필터는 다음 단계에서 sheet로 확장할 수 있습니다.
+        </Text>
       </View>
 
-      <View style={styles.infoPanel}>
-        <Text style={styles.infoLabel}>빠른 탐색</Text>
-        <Text style={styles.infoTitle}>{activeFilter} 중심 주변 결과</Text>
-        <View style={styles.placeList}>
+      <View style={styles.mapCanvas}>
+        <View style={[styles.routeLine, styles.routeLineA]} />
+        <View style={[styles.routeLine, styles.routeLineB]} />
+        <View style={[styles.routeLine, styles.routeLineC]} />
+        <View style={[styles.pin, styles.pinPrimary]} />
+        <View style={[styles.pin, styles.pinSecondary]} />
+        <View style={[styles.pin, styles.pinWarning]} />
+        <View style={styles.mapGrid} />
+      </View>
+
+      <View style={styles.bottomDock}>
+        <View style={styles.dockHeader}>
+          <View>
+            <Text style={styles.dockLabel}>빠른 탐색</Text>
+            <Text style={styles.dockTitle}>{activeFilter} 중심 주변 결과</Text>
+          </View>
+          <View style={styles.dockBadge}>
+            <Text style={styles.dockBadgeText}>PM priority</Text>
+          </View>
+        </View>
+
+        <ScrollView
+          contentContainerStyle={styles.placeList}
+          showsVerticalScrollIndicator={false}
+        >
           {highlightedPlaces.map((place) => (
             <View key={place.name} style={styles.placeCard}>
               <View style={styles.placeMeta}>
                 <Text style={styles.placeName}>{place.name}</Text>
-                <Text style={styles.placeSub}>{place.type} · {place.distance}</Text>
+                <Text style={styles.placeSub}>
+                  {place.type} · {place.distance}
+                </Text>
               </View>
               <Text style={styles.placeStatus}>{place.status}</Text>
             </View>
           ))}
-        </View>
+        </ScrollView>
       </View>
-    </AppScreen>
+
+      <NotificationSheet
+        visible={isNotificationSheetVisible}
+        notifications={notifications}
+        onClose={() => setIsNotificationSheetVisible(false)}
+        onMarkAllRead={markAllAsRead}
+      />
+    </SafeAreaView>
   );
 }
 
 const styles = StyleSheet.create({
+  screen: {
+    flex: 1,
+    backgroundColor: bikerMapTheme.colors.bg,
+  },
+  mapBackdrop: {
+    ...StyleSheet.absoluteFillObject,
+    backgroundColor: bikerMapTheme.colors.bg,
+  },
+  mapGlowTop: {
+    position: "absolute",
+    top: -120,
+    right: -90,
+    width: 280,
+    height: 280,
+    borderRadius: 999,
+    backgroundColor: "rgba(69, 93, 115, 0.16)",
+  },
+  mapGlowBottom: {
+    position: "absolute",
+    bottom: 120,
+    left: -100,
+    width: 240,
+    height: 240,
+    borderRadius: 999,
+    backgroundColor: "rgba(229, 87, 47, 0.10)",
+  },
+  topBar: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    gap: 16,
+    paddingHorizontal: 18,
+    paddingTop: 8,
+    paddingBottom: 12,
+  },
+  titleBlock: {
+    flex: 1,
+    gap: 4,
+  },
+  eyebrow: {
+    color: bikerMapTheme.colors.active,
+    fontSize: 11,
+    letterSpacing: 1.1,
+    textTransform: "uppercase",
+  },
+  title: {
+    color: bikerMapTheme.colors.text,
+    fontSize: 30,
+    fontWeight: "800",
+    lineHeight: 34,
+  },
+  subtitle: {
+    color: bikerMapTheme.colors.muted,
+    fontSize: 13,
+    lineHeight: 18,
+    maxWidth: 320,
+  },
+  bellButton: {
+    position: "relative",
+    alignSelf: "flex-start",
+    alignItems: "center",
+    justifyContent: "center",
+    width: 48,
+    height: 48,
+    borderRadius: 16,
+    borderWidth: 1,
+    borderColor: bikerMapTheme.colors.border,
+    backgroundColor: bikerMapTheme.colors.panel,
+  },
+  bellDot: {
+    position: "absolute",
+    top: 10,
+    right: 10,
+    width: 8,
+    height: 8,
+    borderRadius: 999,
+    backgroundColor: bikerMapTheme.colors.accent,
+  },
+  overlayPanel: {
+    gap: 10,
+    marginHorizontal: 18,
+    borderRadius: 24,
+    borderWidth: 1,
+    borderColor: bikerMapTheme.colors.border,
+    backgroundColor: "rgba(23, 26, 30, 0.92)",
+    padding: 16,
+  },
   searchRow: {
     flexDirection: "row",
     gap: 12,
@@ -98,120 +309,98 @@ const styles = StyleSheet.create({
     flex: 1,
     borderRadius: 20,
     borderWidth: 1,
-    borderColor: "#273342",
-    backgroundColor: "#111823",
+    borderColor: bikerMapTheme.colors.border,
+    backgroundColor: bikerMapTheme.colors.panelSolid,
     paddingHorizontal: 16,
     paddingVertical: 14,
     gap: 8,
   },
   searchLabel: {
-    color: "#8fb7d7",
+    color: bikerMapTheme.colors.active,
     fontSize: 11,
     letterSpacing: 1.1,
     textTransform: "uppercase",
   },
   searchPlaceholder: {
-    color: "#f3fbff",
+    color: bikerMapTheme.colors.text,
     fontSize: 15,
     fontWeight: "700",
   },
   ctaButton: {
     justifyContent: "center",
     borderRadius: 18,
-    backgroundColor: "#d7f4ff",
+    backgroundColor: bikerMapTheme.colors.text,
     paddingHorizontal: 16,
   },
   ctaButtonText: {
-    color: "#07111e",
+    color: bikerMapTheme.colors.bg,
     fontSize: 14,
     fontWeight: "800",
   },
   filterRow: {
     gap: 10,
-    paddingTop: 2,
-    paddingBottom: 2,
+    paddingVertical: 2,
   },
   filterChip: {
     borderRadius: 999,
     borderWidth: 1,
-    borderColor: "#253447",
-    backgroundColor: "#101826",
+    borderColor: bikerMapTheme.colors.border,
+    backgroundColor: bikerMapTheme.colors.panelSoft,
     paddingHorizontal: 14,
     paddingVertical: 10,
   },
   filterChipActive: {
-    borderColor: "#e5572f",
-    backgroundColor: "#e5572f",
+    borderColor: bikerMapTheme.colors.accent,
+    backgroundColor: bikerMapTheme.colors.accent,
   },
   filterChipText: {
-    color: "#b5c6d8",
+    color: bikerMapTheme.colors.muted,
     fontSize: 13,
     fontWeight: "700",
   },
   filterChipTextActive: {
-    color: "#0f1012",
+    color: bikerMapTheme.colors.bg,
   },
-  mapShell: {
-    gap: 12,
-    borderRadius: 24,
-    borderWidth: 1,
-    borderColor: "#243548",
-    backgroundColor: "#0e1724",
-    padding: 16,
-  },
-  mapHeader: {
-    gap: 6,
-  },
-  mapEyebrow: {
-    color: "#8fb7d7",
-    fontSize: 11,
-    letterSpacing: 1,
-    textTransform: "uppercase",
-  },
-  mapTitle: {
-    color: "#f8fcff",
-    fontSize: 18,
-    fontWeight: "800",
+  searchHint: {
+    color: bikerMapTheme.colors.muted,
+    fontSize: 12,
+    lineHeight: 18,
   },
   mapCanvas: {
-    height: 240,
-    borderRadius: 22,
-    borderWidth: 1,
-    borderColor: "#314153",
-    backgroundColor: "#1a2026",
+    position: "absolute",
+    left: 0,
+    right: 0,
+    top: 0,
+    bottom: 0,
+    zIndex: -1,
     overflow: "hidden",
   },
-  mapGlow: {
-    position: "absolute",
-    top: -20,
-    right: -30,
-    width: 140,
-    height: 140,
-    borderRadius: 999,
-    backgroundColor: "rgba(229, 87, 47, 0.18)",
+  mapGrid: {
+    ...StyleSheet.absoluteFillObject,
+    backgroundColor: "transparent",
   },
   routeLine: {
     position: "absolute",
-    backgroundColor: "#3a4652",
+    backgroundColor: bikerMapTheme.colors.border,
     borderRadius: 999,
   },
   routeLineA: {
     left: -20,
-    top: 60,
+    top: 220,
     width: 320,
     height: 10,
     transform: [{ rotate: "24deg" }],
   },
   routeLineB: {
     left: 20,
-    top: 150,
+    top: 360,
     width: 300,
     height: 10,
     transform: [{ rotate: "-22deg" }],
   },
   routeLineC: {
     left: 80,
-    top: 112,
+    top: 292,
     width: 180,
     height: 10,
     transform: [{ rotate: "90deg" }],
@@ -222,44 +411,68 @@ const styles = StyleSheet.create({
     height: 18,
     borderRadius: 999,
     borderWidth: 2,
-    borderColor: "#f8fcff",
+    borderColor: bikerMapTheme.colors.text,
   },
   pinPrimary: {
     left: 88,
-    top: 92,
-    backgroundColor: "#e5572f",
+    top: 240,
+    backgroundColor: bikerMapTheme.colors.accent,
   },
   pinSecondary: {
-    left: 172,
-    top: 152,
-    backgroundColor: "#00c2a8",
+    left: 192,
+    top: 322,
+    backgroundColor: bikerMapTheme.colors.active,
   },
   pinWarning: {
-    left: 240,
-    top: 68,
-    backgroundColor: "#ffc857",
+    left: 270,
+    top: 188,
+    backgroundColor: bikerMapTheme.colors.warning,
   },
-  infoPanel: {
+  bottomDock: {
+    position: "absolute",
+    left: 14,
+    right: 14,
+    bottom: 14,
     gap: 12,
-    borderRadius: 24,
+    maxHeight: 260,
+    borderRadius: 28,
     borderWidth: 1,
-    borderColor: "#243548",
-    backgroundColor: "#101722",
-    padding: 18,
+    borderColor: bikerMapTheme.colors.border,
+    backgroundColor: "rgba(17, 19, 21, 0.94)",
+    padding: 16,
   },
-  infoLabel: {
-    color: "#8fb7d7",
+  dockHeader: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+    gap: 12,
+  },
+  dockLabel: {
+    color: bikerMapTheme.colors.active,
     fontSize: 11,
     letterSpacing: 1.1,
     textTransform: "uppercase",
   },
-  infoTitle: {
-    color: "#f8fcff",
+  dockTitle: {
+    color: bikerMapTheme.colors.text,
     fontSize: 18,
+    fontWeight: "800",
+    marginTop: 4,
+  },
+  dockBadge: {
+    borderRadius: 999,
+    backgroundColor: bikerMapTheme.colors.panelSoft,
+    paddingHorizontal: 10,
+    paddingVertical: 8,
+  },
+  dockBadgeText: {
+    color: bikerMapTheme.colors.text,
+    fontSize: 11,
     fontWeight: "800",
   },
   placeList: {
     gap: 10,
+    paddingBottom: 4,
   },
   placeCard: {
     flexDirection: "row",
@@ -268,8 +481,8 @@ const styles = StyleSheet.create({
     gap: 12,
     borderRadius: 18,
     borderWidth: 1,
-    borderColor: "#243548",
-    backgroundColor: "#0e1724",
+    borderColor: bikerMapTheme.colors.border,
+    backgroundColor: bikerMapTheme.colors.panelSolid,
     padding: 14,
   },
   placeMeta: {
@@ -277,16 +490,16 @@ const styles = StyleSheet.create({
     gap: 4,
   },
   placeName: {
-    color: "#f8fcff",
+    color: bikerMapTheme.colors.text,
     fontSize: 15,
     fontWeight: "700",
   },
   placeSub: {
-    color: "#a9bdd1",
+    color: bikerMapTheme.colors.muted,
     fontSize: 12,
   },
   placeStatus: {
-    color: "#d7f4ff",
+    color: bikerMapTheme.colors.text,
     fontSize: 12,
     fontWeight: "800",
   },
