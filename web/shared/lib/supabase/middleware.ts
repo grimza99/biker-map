@@ -12,3 +12,13 @@ export type SupabaseMiddlewareCookies = CookieMethodsServer;
 export function createSupabaseMiddlewareClient(cookies: SupabaseMiddlewareCookies) {
   return createSupabaseServerClient(cookies);
 }
+
+export async function updateSupabaseSession(cookies: SupabaseMiddlewareCookies) {
+  const supabase = createSupabaseMiddlewareClient(cookies);
+
+  // Refresh the auth cookie boundary so Server Components and Route Handlers
+  // observe the latest authenticated user on the same request chain.
+  await supabase.auth.getUser();
+
+  return supabase;
+}

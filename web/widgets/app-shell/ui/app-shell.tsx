@@ -8,7 +8,7 @@ import { MainNav } from "@widgets/main-nav";
 import { useSession } from "@features/session";
 
 export function AppShell({ children }: { children: ReactNode }) {
-  const { session, status, signIn, signOut } = useSession();
+  const { session, status, signOut } = useSession();
 
   return (
     <>
@@ -29,25 +29,20 @@ export function AppShell({ children }: { children: ReactNode }) {
               <button
                 className="inline-flex items-center justify-center rounded-full border border-border bg-panel-solid px-3.5 py-2 text-sm font-medium transition duration-150 ease-out hover:-translate-y-0.5"
                 type="button"
-                onClick={signOut}>
+                onClick={() => {
+                  void signOut();
+                }}>
                 로그아웃
               </button>
             ) : (
-              <button
+              <Link
+                href="/auth/login"
                 className={cn(
                   "inline-flex items-center justify-center rounded-full px-3.5 py-2 text-sm font-medium text-text transition duration-150 ease-out hover:-translate-y-0.5",
                   "bg-accent shadow-[0_10px_24px_var(--shadow-accent)]"
-                )}
-                type="button"
-                onClick={() =>
-                  signIn({
-                    userId: "mock-user-001",
-                    displayName: "서연",
-                    email: "seoyeon@biker-map.local"
-                  })
-                }>
-                로그인 시뮬레이션
-              </button>
+                )}>
+                로그인
+              </Link>
             )}
           </div>
         </div>
