@@ -1,1 +1,1 @@
-export type { InboxNotification, NotificationKind } from "./model";
+export type { InboxNotification, NotificationKind } from "@package-shared/types/notification";

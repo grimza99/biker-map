@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import type { ApiError, ApiResponse } from "./types";
+import type { ApiError, ApiResponse } from "@package-shared/types/api";
 
 export function ok<T>(data: T, init?: ResponseInit) {
   return NextResponse.json({ data } satisfies ApiResponse<T>, init);

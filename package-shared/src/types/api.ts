@@ -4,10 +4,12 @@ export type ApiError = {
   details?: Record<string, unknown>;
 };
 
+export type ApiResponseMeta = {
+  nextCursor?: string | null;
+  total?: number;
+};
+
 export type ApiResponse<T> = {
   data: T;
-  meta?: {
-    nextCursor?: string | null;
-    total?: number;
-  };
+  meta?: ApiResponseMeta;
 };

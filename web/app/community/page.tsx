@@ -2,11 +2,11 @@ import Link from "next/link";
 
 import { cn } from "@shared/lib";
 import { PageWrapper } from "@shared/ui";
+import type { CommunityCategorySlug } from "@package-shared/types/community";
 
 import {
   communityCategories,
   communityPosts,
-  type CommunityCategorySlug
 } from "./community-content";
 
 const spotlightPosts = communityPosts.slice(0, 4);
