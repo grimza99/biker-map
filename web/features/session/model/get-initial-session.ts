@@ -1,8 +1,7 @@
 import { cookies } from "next/headers";
 import type { AppSession } from "@package-shared/types/session";
 
-import { createSupabaseServerClient } from "@shared/lib";
-import { mapSupabaseSession } from "./map-supabase-session";
+import { createSupabaseServerClient, mapSupabaseSession } from "@shared/lib";
 
 export async function getInitialSession(): Promise<AppSession | null> {
   const cookieStore = await cookies();

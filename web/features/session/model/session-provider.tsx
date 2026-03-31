@@ -3,8 +3,7 @@
 import { createContext, useContext, useEffect, useMemo, useState, type ReactNode } from "react";
 import type { AppSession } from "@package-shared/types/session";
 
-import { createSupabaseBrowserClient } from "@shared/lib";
-import { mapSupabaseSession } from "./map-supabase-session";
+import { createSupabaseBrowserClient, mapSupabaseSession } from "@shared/lib";
 
 type SessionState = {
   session: AppSession | null;
