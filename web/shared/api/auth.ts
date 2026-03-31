@@ -1,4 +1,7 @@
-import type { RefreshResponseData } from "@package-shared/types/auth";
+import type {
+  MeResponseData,
+  RefreshResponseData,
+} from "@package-shared/types/auth";
 import type { AppSession } from "@package-shared/types/session";
 import type { Session } from "@supabase/supabase-js";
 import { cookies } from "next/headers";
@@ -22,6 +25,10 @@ export async function getSupabaseAuthSession(
 ): Promise<Session | null> {
   const accessToken = getBearerToken(request);
   if (!accessToken) {
+    return null;
+  }
+  const session = await requireApiSession(request);
+  if (session instanceof Response) {
     return null;
   }
 
@@ -58,6 +65,13 @@ export async function requireApiSession(request: Request) {
   }
 
   return session;
+}
+
+export function toMeResponseData(session: Session | null): MeResponseData {
+  return {
+    authenticated: Boolean(session?.user),
+    session: mapSupabaseSession(session),
+  };
 }
 
 export function toRefreshResponseData(
