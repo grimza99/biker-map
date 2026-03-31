@@ -24,3 +24,8 @@ export type RefreshResponseData = {
   refreshed: boolean;
   accessToken: string | null;
 };
+
+export type MeResponseData = {
+  authenticated: boolean;
+  session: AppSession | null;
+};
