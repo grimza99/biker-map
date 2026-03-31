@@ -1,5 +1,6 @@
 export type AppSession = {
   userId: string;
-  displayName: string;
-  email?: string;
+  name: string;
+  email: string;
+  avatarUrl: string | null;
 };

@@ -16,6 +16,15 @@ export const supabaseCookieOptions = {
   name: "biker-map-auth"
 } as const;
 
+export const refreshTokenCookieOptions = {
+  name: "biker-map-refresh-token",
+  httpOnly: true,
+  sameSite: "lax" as const,
+  secure: process.env.NODE_ENV === "production",
+  path: "/",
+  maxAge: 60 * 60 * 24 * 30
+} as const;
+
 export function getSupabasePublicEnv(env: NodeJS.ProcessEnv = process.env): SupabasePublicEnv {
   return supabasePublicEnvSchema.parse(env);
 }

@@ -1,0 +1,15 @@
+import { createClient } from "@supabase/supabase-js";
+
+import { getSupabasePublicEnv } from "@shared/config";
+
+export function createSupabaseAuthClient() {
+  const env = getSupabasePublicEnv();
+
+  return createClient(env.NEXT_PUBLIC_SUPABASE_URL, env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY, {
+    auth: {
+      autoRefreshToken: false,
+      detectSessionInUrl: false,
+      persistSession: false
+    }
+  });
+}
