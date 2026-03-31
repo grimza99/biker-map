@@ -1,55 +1,57 @@
 "use client";
 
 import { createContext, useContext, useEffect, useMemo, useState, type ReactNode } from "react";
-import { SESSION_STORAGE_KEY } from "@package-shared/constants/app";
 import type { AppSession } from "@package-shared/types/session";
+
+import { createSupabaseBrowserClient } from "@shared/lib";
+import { mapSupabaseSession } from "./map-supabase-session";
 
 type SessionState = {
   session: AppSession | null;
   status: "loading" | "anonymous" | "authenticated";
-  signIn: (session: AppSession) => void;
-  signOut: () => void;
+  signOut: () => Promise<void>;
 };
 
 const SessionContext = createContext<SessionState | null>(null);
 
-export function SessionProvider({ children }: { children: ReactNode }) {
-  const [session, setSession] = useState<AppSession | null>(null);
-  const [status, setStatus] = useState<SessionState["status"]>("loading");
+export function SessionProvider({
+  children,
+  initialSession
+}: {
+  children: ReactNode;
+  initialSession: AppSession | null;
+}) {
+  const [supabase] = useState(() => createSupabaseBrowserClient());
+  const [session, setSession] = useState<AppSession | null>(initialSession);
+  const [status, setStatus] = useState<SessionState["status"]>(
+    initialSession ? "authenticated" : "anonymous"
+  );
 
   useEffect(() => {
-    try {
-      const raw = window.localStorage.getItem(SESSION_STORAGE_KEY);
-      if (!raw) {
-        setStatus("anonymous");
-        return;
-      }
+    const {
+      data: { subscription }
+    } = supabase.auth.onAuthStateChange((_event, nextSession) => {
+      const mappedSession = mapSupabaseSession(nextSession);
+      setSession(mappedSession);
+      setStatus(mappedSession ? "authenticated" : "anonymous");
+    });
 
-      setSession(JSON.parse(raw) as AppSession);
-      setStatus("authenticated");
-    } catch {
-      window.localStorage.removeItem(SESSION_STORAGE_KEY);
-      setSession(null);
-      setStatus("anonymous");
-    }
-  }, []);
+    return () => {
+      subscription.unsubscribe();
+    };
+  }, [supabase]);
 
   const value = useMemo<SessionState>(
     () => ({
       session,
       status,
-      signIn(nextSession) {
-        window.localStorage.setItem(SESSION_STORAGE_KEY, JSON.stringify(nextSession));
-        setSession(nextSession);
-        setStatus("authenticated");
-      },
-      signOut() {
-        window.localStorage.removeItem(SESSION_STORAGE_KEY);
+      async signOut() {
+        await supabase.auth.signOut();
         setSession(null);
         setStatus("anonymous");
       }
     }),
-    [session, status]
+    [session, status, supabase]
   );
 
   return <SessionContext.Provider value={value}>{children}</SessionContext.Provider>;
