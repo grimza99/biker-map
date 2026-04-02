@@ -1,6 +1,13 @@
-import type { PlaceCategory, PlacesQuery } from "@package-shared/types/place";
+import type {
+  CreatePlaceBody,
+  PlaceCategory,
+  PlacesQuery,
+} from "@package-shared/types/place";
 import {
+  badRequest,
   createSupabaseApiClient,
+  created,
+  forbidden,
   getNumberParam,
   getStringParam,
   getViewportParam,
@@ -9,8 +16,10 @@ import {
   ok,
   paginateByCursor,
   placeCategories,
+  requireApiSession,
 } from "@shared/api";
 import type { NextRequest } from "next/server";
+import { z } from "zod";
 
 /**-----------------------------get place list-------------------------------- */
 export async function GET(request: NextRequest) {
@@ -77,4 +86,72 @@ export async function GET(request: NextRequest) {
   );
 
   return ok({ items: pagedItems }, undefined, meta);
+}
+
+/**-----------------------------create place-------------------------------- */
+
+const createPlaceSchema = z.object({
+  name: z.string().min(1),
+  category: z.enum(["gas", "repair", "cafe", "shop", "rest"]),
+  address: z.string().min(1),
+  phone: z.string().optional(),
+  description: z.string().optional(),
+  lat: z.number(),
+  lng: z.number(),
+  images: z.array(z.string()).optional(),
+  naverPlaceUrl: z.string().url(),
+});
+export async function POST(request: Request) {
+  const session = await requireApiSession(request);
+  if (session instanceof Response) {
+    return session;
+  }
+
+  let payload: CreatePlaceBody;
+  try {
+    payload = await request.json();
+    payload = createPlaceSchema.parse(payload);
+  } catch {
+    return badRequest("장소 생성 payload가 올바르지 않습니다.");
+  }
+
+  const supabase = createSupabaseApiClient(request);
+  const { data: profile, error: profileError } = await supabase
+    .from("profiles")
+    .select("role")
+    .eq("id", session.userId)
+    .maybeSingle();
+
+  if (profileError) {
+    return internalServerError(profileError.message);
+  }
+
+  if (profile?.role !== "admin") {
+    return forbidden("장소 생성은 운영자만 가능합니다.");
+  }
+
+  const { data, error } = await supabase
+    .from("places")
+    .insert({
+      name: payload.name.trim(),
+      category: payload.category,
+      address: payload.address.trim(),
+      phone: payload.phone?.trim() || null,
+      description: payload.description?.trim() || null,
+      lat: payload.lat,
+      lng: payload.lng,
+      images: payload.images ?? [],
+      naver_place_url: payload.naverPlaceUrl,
+    })
+    .select("id, created_at")
+    .single();
+
+  if (error) {
+    return internalServerError(error.message);
+  }
+
+  return created({
+    id: String(data.id),
+    createdAt: String(data.created_at),
+  });
 }
