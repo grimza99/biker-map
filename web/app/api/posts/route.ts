@@ -5,6 +5,7 @@ import type {
 } from "@package-shared/types/community";
 import {
   badRequest,
+  communityCategories,
   createSupabaseApiClient,
   created,
   getNumberParam,
@@ -20,13 +21,6 @@ import {
 import type { NextRequest } from "next/server";
 import { z } from "zod";
 
-const postCategories = new Set<CommunityCategorySlug>([
-  "notice",
-  "question",
-  "info",
-  "free",
-]);
-
 const createPostSchema = z.object({
   category: z.enum(["question", "info", "free"]),
   title: z.string().min(1),
@@ -41,7 +35,8 @@ export async function GET(request: NextRequest) {
   const query: CommunityPostsQuery = {
     category: (() => {
       const category = getStringParam(searchParams, "category");
-      return category && postCategories.has(category as CommunityCategorySlug)
+      return category &&
+        communityCategories.has(category as CommunityCategorySlug)
         ? (category as CommunityCategorySlug)
         : undefined;
     })(),
