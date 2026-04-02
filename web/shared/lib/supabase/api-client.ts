@@ -1,7 +1,8 @@
+import { getBearerToken } from "@/shared/api/auth";
 import { getSupabasePublicEnv } from "@shared/config";
 import { createClient, type SupabaseClient } from "@supabase/supabase-js";
 
-export function createSupabaseApiClient(request?: Request) {
+export function createSupabaseApiClient(request: Request) {
   const env = getSupabasePublicEnv();
   const accessToken = getBearerToken(request);
 
@@ -26,17 +27,3 @@ export function createSupabaseApiClient(request?: Request) {
 }
 
 export type SupabaseApiClient = SupabaseClient;
-
-function getBearerToken(request?: Request) {
-  if (!request) {
-    return null;
-  }
-
-  const authorization = request.headers.get("authorization");
-  if (!authorization?.startsWith("Bearer ")) {
-    return null;
-  }
-
-  const token = authorization.slice("Bearer ".length).trim();
-  return token || null;
-}
