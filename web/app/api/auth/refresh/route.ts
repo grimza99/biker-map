@@ -1,7 +1,14 @@
-import { NextResponse } from "next/server";
-import { badRequest, ok } from "@shared/api";
-import { clearRefreshTokenCookie, getRefreshTokenFromCookie, setRefreshTokenCookie, toRefreshResponseData } from "@shared/api/auth";
+import {
+  badRequest,
+  clearRefreshTokenCookie,
+  getRefreshTokenFromCookie,
+  mapRefreshData,
+  ok,
+  setRefreshTokenCookie,
+} from "@shared/api";
+
 import { createSupabaseAuthClient } from "@shared/lib";
+import { NextResponse } from "next/server";
 
 export async function POST() {
   const refreshToken = await getRefreshTokenFromCookie();
@@ -11,10 +18,10 @@ export async function POST() {
 
   const supabase = createSupabaseAuthClient();
   const { data, error } = await supabase.auth.refreshSession({
-    refresh_token: refreshToken
+    refresh_token: refreshToken,
   });
 
-  const response = ok(toRefreshResponseData(data.session, !error)) as NextResponse;
+  const response = ok(mapRefreshData(data.session, !error)) as NextResponse;
 
   if (data.session?.refresh_token) {
     setRefreshTokenCookie(response, data.session.refresh_token);

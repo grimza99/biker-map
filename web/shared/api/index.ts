@@ -1,5 +1,4 @@
 export type { ApiError, ApiResponse } from "@package-shared/types/api";
-export { getApiSession, requireApiSession } from "./auth";
 export {
   apiErrorSchema,
   listResponseSchema,
@@ -35,6 +34,6 @@ export {
 } from "./supabase-record";
 export { parseBody, parseRequestBody } from "./validation";
 
+export * from "./auth";
 export * from "./supabase";
-/**------------------------------mappers------------------------ */
 export * from "./supabase-mappers";
