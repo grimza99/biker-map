@@ -1,9 +1,153 @@
-import { notImplemented } from "@shared/api";
+import type {
+  CommunityCategorySlug,
+  CommunityPostsQuery,
+  CreatePostBody,
+} from "@package-shared/types/community";
+import {
+  badRequest,
+  createSupabaseApiClient,
+  created,
+  getNumberParam,
+  getStringParam,
+  internalServerError,
+  loadProfileNameMap,
+  mapCommunityPostItem,
+  ok,
+  paginateByCursor,
+  parseRequestBody,
+  requireApiSession,
+} from "@shared/api";
+import type { NextRequest } from "next/server";
+import { z } from "zod";
 
-export function GET() {
-  return notImplemented();
+const postCategories = new Set<CommunityCategorySlug>([
+  "notice",
+  "question",
+  "info",
+  "free",
+]);
+
+const createPostSchema = z.object({
+  category: z.enum(["question", "info", "free"]),
+  title: z.string().min(1),
+  content: z.string().min(1),
+  tags: z.array(z.string()).optional(),
+  images: z.array(z.string()).optional(),
+});
+
+/**-----------------------------post list-------------------------------- */
+export async function GET(request: NextRequest) {
+  const searchParams = request.nextUrl.searchParams;
+  const query: CommunityPostsQuery = {
+    category: (() => {
+      const category = getStringParam(searchParams, "category");
+      return category && postCategories.has(category as CommunityCategorySlug)
+        ? (category as CommunityCategorySlug)
+        : undefined;
+    })(),
+    search: getStringParam(searchParams, "search"),
+    cursor: getStringParam(searchParams, "cursor"),
+    limit: getNumberParam(searchParams, "limit"),
+  };
+
+  const supabase = createSupabaseApiClient(request);
+  const { data, error } = await supabase
+    .from("posts")
+    .select(
+      "id, author_id, category, title, content, excerpt, images, view_count, comment_count, pinned, created_at"
+    )
+    .order("created_at", { ascending: false });
+
+  if (error) {
+    return internalServerError(error.message);
+  }
+
+  let authorMap: Map<string, string>;
+  try {
+    authorMap = await loadProfileNameMap(
+      supabase,
+      (data ?? []).map((row) => String(row.author_id ?? ""))
+    );
+  } catch (profileError) {
+    return internalServerError(
+      profileError instanceof Error
+        ? profileError.message
+        : "게시글 작성자 정보를 불러오지 못했습니다."
+    );
+  }
+
+  const items = (data ?? [])
+    .map((row) =>
+      mapCommunityPostItem({
+        ...row,
+        author_name: authorMap.get(String(row.author_id ?? "")) ?? "익명",
+      })
+    )
+    .filter((item): item is NonNullable<typeof item> => Boolean(item))
+    .filter((item) => {
+      if (query.category && item.category !== query.category) {
+        return false;
+      }
+
+      if (query.search) {
+        const keyword = query.search.toLowerCase();
+        if (
+          ![item.title, item.excerpt, item.author]
+            .join(" ")
+            .toLowerCase()
+            .includes(keyword)
+        ) {
+          return false;
+        }
+      }
+
+      return true;
+    });
+
+  const { items: pagedItems, meta } = paginateByCursor(
+    items,
+    query.cursor,
+    query.limit
+  );
+
+  return ok({ items: pagedItems }, undefined, meta);
 }
 
-export function POST() {
-  return notImplemented();
+/**-----------------------------create post-------------------------------- */
+
+export async function POST(request: Request) {
+  const session = await requireApiSession(request);
+  if (session instanceof Response) {
+    return session;
+  }
+
+  let payload: CreatePostBody;
+  try {
+    payload = await parseRequestBody(request, createPostSchema);
+  } catch {
+    return badRequest("게시글 payload가 올바르지 않습니다.");
+  }
+
+  const supabase = createSupabaseApiClient(request);
+  const { data, error } = await supabase
+    .from("posts")
+    .insert({
+      author_id: session.userId,
+      category: payload.category,
+      title: payload.title,
+      content: payload.content,
+      excerpt: payload.content.slice(0, 120),
+      images: payload.images ?? [],
+    })
+    .select("id, created_at")
+    .single();
+
+  if (error) {
+    return internalServerError(error.message);
+  }
+
+  return created({
+    id: String(data.id),
+    createdAt: String(data.created_at),
+  });
 }
