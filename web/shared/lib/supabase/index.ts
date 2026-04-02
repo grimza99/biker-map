@@ -1,6 +1,6 @@
+export { createSupabaseApiClient } from "./api-client";
+export type { SupabaseApiClient } from "./api-client";
 export { createSupabaseAuthClient } from "./auth-client";
-export { createSupabaseBrowserClient } from "./client";
-export type { SupabaseBrowserClient } from "./client";
 export {
   createSupabaseMiddlewareClient,
   updateSupabaseSession,
