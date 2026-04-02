@@ -1,11 +1,11 @@
 export {
-  createSupabaseBrowserClient,
+  createSupabaseApiClient,
   createSupabaseMiddlewareClient,
-  createSupabaseServerClient
+  createSupabaseServerClient,
 } from "@shared/lib/supabase";
 export type {
-  SupabaseBrowserClient,
+  SupabaseApiClient,
   SupabaseCookieMethods,
   SupabaseMiddlewareCookies,
-  SupabaseServerClient
+  SupabaseServerClient,
 } from "@shared/lib/supabase";

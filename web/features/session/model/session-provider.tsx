@@ -1,13 +1,13 @@
 "use client";
 
-import { createContext, useContext, useEffect, useMemo, useState, type ReactNode } from "react";
+import { createContext, useContext, useMemo, useState, type ReactNode } from "react";
 import type { AppSession } from "@package-shared/types/session";
-
-import { createSupabaseBrowserClient, mapSupabaseSession } from "@shared/lib";
 
 type SessionState = {
   session: AppSession | null;
   status: "loading" | "anonymous" | "authenticated";
+  setSession: (session: AppSession | null) => void;
+  refreshSession: () => Promise<AppSession | null>;
   signOut: () => Promise<void>;
 };
 
@@ -20,37 +20,60 @@ export function SessionProvider({
   children: ReactNode;
   initialSession: AppSession | null;
 }) {
-  const [supabase] = useState(() => createSupabaseBrowserClient());
   const [session, setSession] = useState<AppSession | null>(initialSession);
   const [status, setStatus] = useState<SessionState["status"]>(
     initialSession ? "authenticated" : "anonymous"
   );
 
-  useEffect(() => {
-    const {
-      data: { subscription }
-    } = supabase.auth.onAuthStateChange((_event, nextSession) => {
-      const mappedSession = mapSupabaseSession(nextSession);
-      setSession(mappedSession);
-      setStatus(mappedSession ? "authenticated" : "anonymous");
-    });
-
-    return () => {
-      subscription.unsubscribe();
-    };
-  }, [supabase]);
+  function updateSession(nextSession: AppSession | null) {
+    setSession(nextSession);
+    setStatus(nextSession ? "authenticated" : "anonymous");
+  }
 
   const value = useMemo<SessionState>(
     () => ({
       session,
       status,
+      setSession(nextSession) {
+        updateSession(nextSession);
+      },
+      async refreshSession() {
+        const refreshResponse = await fetch("/api/auth/refresh", {
+          method: "POST",
+          credentials: "include",
+        });
+
+        if (!refreshResponse.ok) {
+          updateSession(null);
+          return null;
+        }
+
+        const meResponse = await fetch("/api/me", {
+          credentials: "include",
+        });
+
+        if (!meResponse.ok) {
+          updateSession(null);
+          return null;
+        }
+
+        const payload = (await meResponse.json()) as {
+          data?: { session?: AppSession | null };
+        };
+
+        const nextSession = payload.data?.session ?? null;
+        updateSession(nextSession);
+        return nextSession;
+      },
       async signOut() {
-        await supabase.auth.signOut();
-        setSession(null);
-        setStatus("anonymous");
+        await fetch("/api/auth/logout", {
+          method: "POST",
+          credentials: "include",
+        });
+        updateSession(null);
       }
     }),
-    [session, status, supabase]
+    [session, status]
   );
 
   return <SessionContext.Provider value={value}>{children}</SessionContext.Provider>;

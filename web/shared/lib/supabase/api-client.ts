@@ -1,9 +1,10 @@
-import { createClient } from "@supabase/supabase-js";
-
+import { getBearerToken } from "@/shared/api/auth";
 import { getSupabasePublicEnv } from "@shared/config";
+import { createClient, type SupabaseClient } from "@supabase/supabase-js";
 
-export function createSupabaseAuthClient(accessToken?: string | null) {
+export function createSupabaseApiClient(request: Request) {
   const env = getSupabasePublicEnv();
+  const accessToken = getBearerToken(request);
 
   return createClient(
     env.NEXT_PUBLIC_SUPABASE_URL,
@@ -24,3 +25,5 @@ export function createSupabaseAuthClient(accessToken?: string | null) {
     }
   );
 }
+
+export type SupabaseApiClient = SupabaseClient;

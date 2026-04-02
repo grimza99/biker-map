@@ -1,11 +1,7 @@
 {
   "compilerOptions": {
     "target": "ES2022",
-    "lib": [
-      "DOM",
-      "DOM.Iterable",
-      "ES2022"
-    ],
+    "lib": ["DOM", "DOM.Iterable", "ES2022"],
     "allowJs": false,
     "skipLibCheck": true,
     "strict": true,
@@ -19,24 +15,12 @@
     "incremental": true,
     "baseUrl": ".",
     "paths": {
-      "@/*": [
-        "./*"
-      ],
-      "@shared/*": [
-        "./shared/*"
-      ],
-      "@entities/*": [
-        "./entities/*"
-      ],
-      "@features/*": [
-        "./features/*"
-      ],
-      "@widgets/*": [
-        "./widgets/*"
-      ],
-      "@package-shared/*": [
-        "../package-shared/src/*"
-      ]
+      "@/*": ["./*"],
+      "@shared/*": ["./shared/*"],
+      "@entities/*": ["./entities/*"],
+      "@features/*": ["./features/*"],
+      "@widgets/*": ["./widgets/*"],
+      "@package-shared/*": ["../package-shared/src/*"]
     },
     "plugins": [
       {
@@ -49,9 +33,8 @@
     "**/*.tsx",
     "next-env.d.ts",
     ".next/types/**/*.ts",
-    ".next/dev/types/**/*.ts"
+    ".next/dev/types/**/*.ts",
+    "shared/lib/supabase/api-client.ts"
   ],
-  "exclude": [
-    "node_modules"
-  ]
+  "exclude": ["node_modules"]
 }

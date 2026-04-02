@@ -41,3 +41,20 @@ export function getViewportParam(searchParams: URLSearchParams, key = "viewport"
 
   return { minLng, minLat, maxLng, maxLat };
 }
+
+export function getCursorOffset(cursor?: string) {
+  if (!cursor) {
+    return 0;
+  }
+
+  const match = cursor.match(/^(?:cursor:)?(\d+)$/);
+  if (!match) {
+    return 0;
+  }
+
+  return Number(match[1]);
+}
+
+export function buildCursor(offset: number) {
+  return `cursor:${offset}`;
+}

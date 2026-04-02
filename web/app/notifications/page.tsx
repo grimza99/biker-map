@@ -27,7 +27,7 @@ const notifications: InboxNotification[] = [
   },
   {
     id: "n-003",
-    kind: "favorite",
+    kind: "system",
     title: "즐겨찾기한 장소가 업데이트되었습니다",
     message: "북악 스카이웨이 주변 카페 정보가 새로 반영되었습니다.",
     timeLabel: "1시간 전",
@@ -36,7 +36,7 @@ const notifications: InboxNotification[] = [
   },
   {
     id: "n-004",
-    kind: "route",
+    kind: "system",
     title: "추천 경로가 갱신되었습니다",
     message: "비오는 날 우회 경로가 오늘의 추천으로 등록되었습니다.",
     timeLabel: "오늘",
@@ -56,9 +56,8 @@ const kindMeta: Record<
   { badge: string; tone: "accent" | "neutral" | "danger" }
 > = {
   comment: { badge: "댓글", tone: "accent" },
+  reply: { badge: "답글", tone: "accent" },
   reaction: { badge: "반응", tone: "neutral" },
-  favorite: { badge: "즐겨찾기", tone: "neutral" },
-  route: { badge: "경로", tone: "accent" },
   system: { badge: "시스템", tone: "danger" }
 };
 
@@ -228,7 +227,7 @@ function getFilteredNotifications(view: NotificationsView, items: InboxNotificat
   }
 
   if (view === "mentions") {
-    return items.filter((item) => item.kind === "comment" || item.kind === "reaction");
+    return items.filter((item) => item.kind === "comment" || item.kind === "reply" || item.kind === "reaction");
   }
 
   return items;

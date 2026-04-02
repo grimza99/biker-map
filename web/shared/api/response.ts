@@ -36,6 +36,10 @@ export function forbidden(message = "권한이 없습니다.") {
   return errorResponse(403, "FORBIDDEN", message);
 }
 
+export function internalServerError(message = "서버 오류가 발생했습니다.") {
+  return errorResponse(500, "INTERNAL_SERVER_ERROR", message);
+}
+
 export function notFound(message = "리소스를 찾을 수 없습니다.") {
   return errorResponse(404, "NOT_FOUND", message);
 }
