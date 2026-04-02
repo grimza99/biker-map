@@ -1,7 +1,7 @@
 import type { CookieMethodsServer } from "@supabase/ssr";
 import { NextResponse, type NextRequest } from "next/server";
 
-import { updateSupabaseSession } from "@shared/lib";
+import { updateSupabaseSession } from "@shared/lib/supabase";
 
 export async function proxy(request: NextRequest) {
   const response = NextResponse.next({

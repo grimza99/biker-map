@@ -3,7 +3,7 @@ import type { Session, User } from "@supabase/supabase-js";
 import { cookies } from "next/headers";
 
 import { refreshTokenCookieOptions } from "@shared/config";
-import { createSupabaseAuthClient, mapSupabaseSession } from "@shared/lib";
+import { createSupabaseAuthClient, mapSupabaseSession } from "@shared/lib/supabase";
 import { unauthorized } from "./response";
 
 /**

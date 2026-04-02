@@ -1,4 +1,4 @@
-import { mapSupabaseSession } from "@/shared/lib";
+import { mapSupabaseSession } from "@shared/lib/supabase";
 import { MeResponseData } from "@package-shared/types/auth";
 import { Session } from "@supabase/supabase-js";
 

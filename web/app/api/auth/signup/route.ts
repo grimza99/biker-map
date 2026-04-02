@@ -1,7 +1,7 @@
 import type { AuthResponseData, SignUpBody } from "@package-shared/types/auth";
 import { badRequest, created, parseRequestBody } from "@shared/api";
 import { setRefreshTokenCookie } from "@shared/api/auth";
-import { createSupabaseAuthClient, mapSupabaseSession } from "@shared/lib";
+import { createSupabaseAuthClient, mapSupabaseSession } from "@shared/lib/supabase";
 import { NextResponse } from "next/server";
 import { z } from "zod";
 

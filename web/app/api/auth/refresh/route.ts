@@ -7,7 +7,7 @@ import {
   setRefreshTokenCookie,
 } from "@shared/api";
 
-import { createSupabaseAuthClient } from "@shared/lib";
+import { createSupabaseAuthClient } from "@shared/lib/supabase";
 import { NextResponse } from "next/server";
 
 export async function POST() {
