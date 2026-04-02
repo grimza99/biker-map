@@ -12,3 +12,7 @@ export {
   mapPlaceListItem,
   placeCategories,
 } from "./place-mepper";
+
+/**---------------------------------------------------------------- */
+//route
+export { mapRouteDetail, mapRouteListItem } from "./route-mapper";
