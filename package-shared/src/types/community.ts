@@ -93,3 +93,13 @@ export type DeleteCommentResponseData = {
   id: string;
   deleted: true;
 };
+
+export type CommentReplyBody = {
+  content: string;
+};
+
+export type CommentReplyResponseData = {
+  id: string;
+  parentCommentId: string;
+  createdAt: string;
+};
