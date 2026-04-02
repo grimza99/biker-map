@@ -83,7 +83,7 @@ export default async function CommunityCategoryPage({
 
               <div className="flex items-center justify-between gap-3 text-sm text-muted">
                 <span>댓글 {post.commentCount}</span>
-                <span>반응 {post.likeCount}</span>
+                <span>조회 {post.viewCount}</span>
               </div>
             </article>
           ))}
