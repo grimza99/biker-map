@@ -16,3 +16,7 @@ export {
 /**---------------------------------------------------------------- */
 //route
 export { mapRouteDetail, mapRouteListItem } from "./route-mapper";
+
+/**---------------------------------------------------------------- */
+//notification
+export { mapNotificationItem } from "./notification-mapper";

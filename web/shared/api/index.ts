@@ -24,8 +24,6 @@ export {
   ok,
   unauthorized,
 } from "./response";
-export * from "./supabase";
-export { mapNotificationItem } from "./supabase-mappers";
 export { loadProfileNameMap } from "./supabase-profiles";
 export {
   getRecordBoolean,
@@ -37,19 +35,6 @@ export {
 } from "./supabase-record";
 export { parseBody, parseRequestBody } from "./validation";
 
+export * from "./supabase";
 /**------------------------------mappers------------------------ */
-export {
-  mapPlaceDetail,
-  mapPlaceListItem,
-  placeCategories,
-} from "./supabase-mappers/place-mepper";
-export {
-  communityCategories,
-  mapCommunityPostDetail,
-  mapCommunityPostItem,
-} from "./supabase-mappers/post-mapper";
-
-export {
-  mapRouteDetail,
-  mapRouteListItem,
-} from "./supabase-mappers/route-mapper";
+export * from "./supabase-mappers";

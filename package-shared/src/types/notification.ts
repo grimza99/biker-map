@@ -1,4 +1,4 @@
-export type NotificationKind = "comment" | "reaction" | "favorite" | "route" | "system";
+export type NotificationKind = "comment" | "reply" | "reaction" | "system";
 
 export type InboxNotification = {
   id: string;
@@ -8,4 +8,27 @@ export type InboxNotification = {
   timeLabel: string;
   unread: boolean;
   area: string;
+};
+
+export type NotificationsView = "all" | "unread" | "mentions";
+
+export type NotificationsQuery = {
+  view?: NotificationsView;
+  cursor?: string;
+  limit?: number;
+};
+
+export type NotificationsResponseData = {
+  items: InboxNotification[];
+  unreadCount: number;
+};
+
+export type ReadAllNotificationsResponseData = {
+  updatedCount: number;
+  unreadCount: number;
+};
+
+export type ReadNotificationResponseData = {
+  id: string;
+  unread: boolean;
 };
