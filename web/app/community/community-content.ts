@@ -1,11 +1,13 @@
-import type { CommunityCategorySlug, CommunityPost } from "@package-shared/types/community";
+import type {
+  CommunityCategorySlug,
+  CommunityPost,
+} from "@package-shared/types/community";
 
 export const communityCategories = [
   { slug: "notice", label: "공지", hint: "운영 / 안내" },
   { slug: "question", label: "질문", hint: "정보 요청" },
-  { slug: "review", label: "후기", hint: "경험 공유" },
   { slug: "info", label: "정보", hint: "팁 / 정리" },
-  { slug: "free", label: "자유 게시판", hint: "자유 / 잡담" }
+  { slug: "free", label: "자유 게시판", hint: "자유 / 잡담" },
 ] as const satisfies ReadonlyArray<{
   slug: CommunityCategorySlug;
   label: string;
@@ -21,8 +23,8 @@ export const communityPosts: CommunityPost[] = [
     author: "운영진",
     timeLabel: "5분 전",
     commentCount: 4,
-    likeCount: 12,
-    pinned: true
+    viewCount: 12,
+    pinned: true,
   },
   {
     id: "post-002",
@@ -32,38 +34,28 @@ export const communityPosts: CommunityPost[] = [
     author: "민준",
     timeLabel: "18분 전",
     commentCount: 8,
-    likeCount: 9
+    viewCount: 9,
   },
   {
     id: "post-003",
-    category: "review",
-    title: "북악 스카이웨이 주말 오전 후기",
-    excerpt: "초입 도로 상태와 카페 대기 시간을 함께 적어두었습니다.",
-    author: "서연",
-    timeLabel: "1시간 전",
-    commentCount: 6,
-    likeCount: 21
-  },
-  {
-    id: "post-004",
     category: "info",
     title: "비 오는 날 체인 관리 체크리스트",
     excerpt: "작업 순서, 필요한 공구, 주행 전 확인 포인트를 정리했습니다.",
     author: "지훈",
     timeLabel: "2시간 전",
     commentCount: 2,
-    likeCount: 17
+    viewCount: 17,
   },
   {
-    id: "post-005",
+    id: "post-004",
     category: "free",
     title: "토요일 저녁 인천-김포 동행 모집",
     excerpt: "초보도 무리 없는 속도로 함께 달릴 분을 찾습니다.",
     author: "수아",
     timeLabel: "오늘",
     commentCount: 11,
-    likeCount: 15
-  }
+    viewCount: 15,
+  },
 ];
 
 export function getCommunityCategory(slug: string) {
