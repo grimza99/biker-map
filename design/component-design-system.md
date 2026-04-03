@@ -67,6 +67,13 @@
 - form label은 본문보다 더 굵게 보여야 하지만, heading처럼 과도하게 두껍지 않아야 한다.
 - 입력 필드 내부 텍스트와 외부 label의 위계를 분명히 분리한다.
 
+### PageWrapper / Surface
+
+- `PageWrapper`는 페이지 전체 레이아웃 래퍼 역할로 유지한다.
+- `Surface`는 공통 panel container 역할로 유지한다.
+- 둘 다 공통 radius, border, shadow 토큰을 공유해야 한다.
+- 앞으로 카드, 패널, 인라인 섹션도 이 규칙을 따른다.
+
 ## Button System
 
 ### Variants
