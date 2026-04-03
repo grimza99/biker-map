@@ -121,3 +121,15 @@
 - `segmented control`은 2~3개 상태 전환에만 사용한다.
 - 활성 상태는 배경색과 border를 동시에 변화시켜 인지도를 높인다.
 - 비활성 상태는 panel 계열 배경과 border만 유지한다.
+
+### MainNav
+
+- 현재 pill navigation은 공통 `tab / segmented control`보다 상위 내비게이션으로 유지한다.
+- active 상태, hover 상태, focus 상태를 공통 버튼 규칙으로 흡수한다.
+- 앞으로는 pill nav도 `segmented control`과 동일한 토큰 스케일을 공유할 수 있다.
+
+### NotificationBell
+
+- bell 버튼은 `icon button + badge` 패턴으로 고정한다.
+- unread dot은 accent 계열로 통일한다.
+- 알림 패널은 `dropdown` 또는 `sheet` 패턴으로 분리한다.

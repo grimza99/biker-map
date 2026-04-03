@@ -1,3 +1,3 @@
 export * from "./app-shell";
-export * from "./main-nav";
+export * from "./navs";
 export * from "./notification-bell";

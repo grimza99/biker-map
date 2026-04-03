@@ -2,6 +2,7 @@
 
 import { Bell } from "lucide-react";
 
+import { MainNav } from "@/widgets";
 import { Button, PageWrapper, Tabs, TabsContent, TabsList } from "@shared/ui";
 
 export default function CommonPage() {
@@ -91,6 +92,15 @@ export default function CommonPage() {
               커뮤니티 탭
             </TabsContent>
           </Tabs>
+        </section>
+
+        <section className="grid gap-4">
+          <h2 className="m-0 text-2xl font-semibold tracking-[-0.02em] text-text">
+            Main Nav
+          </h2>
+          <div className="rounded-3xl border border-border bg-bg/48 p-4">
+            <MainNav />
+          </div>
         </section>
       </div>
     </PageWrapper>
