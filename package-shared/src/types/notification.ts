@@ -1,5 +1,12 @@
 export type NotificationKind = "comment" | "reply" | "reaction" | "system";
 
+export interface NotificationItem {
+  id: string;
+  title: string;
+  message: string;
+  unread: boolean;
+  timeLabel: string;
+}
 export type InboxNotification = {
   id: string;
   kind: NotificationKind;

@@ -1,8 +1,39 @@
 "use client";
 
-import { Bell } from "lucide-react";
+import { Bell, MoreHorizontal, Search, Settings } from "lucide-react";
 
-import { Button, PageWrapper, Tabs, TabsContent, TabsList } from "@shared/ui";
+import { DropdownMenuItemList } from "@/shared/ui/dropdown-menu/DropdownMenu";
+import { MainNav } from "@/widgets";
+import {
+  Button,
+  ComingSoonCard,
+  Dialog,
+  DialogBody,
+  DialogClose,
+  DialogContent,
+  DialogFooter,
+  DialogHeader,
+  DialogTrigger,
+  Divider,
+  DropdownMenu,
+  DropdownMenuTrigger,
+  Input,
+  PageWrapper,
+  Profile,
+  ProfileImgChip,
+  SelectInput,
+  SidePanel,
+  SidePanelBody,
+  SidePanelClose,
+  SidePanelContent,
+  SidePanelFooter,
+  SidePanelTrigger,
+  Tabs,
+  TabsContent,
+  TabsList,
+  Textarea,
+  Toast,
+} from "@shared/ui";
 
 export default function CommonPage() {
   return (
@@ -16,6 +47,7 @@ export default function CommonPage() {
             공통 컴포넌트 미리보기
           </h1>
         </section>
+        <Divider />
 
         <section className="grid gap-4">
           <h2 className="m-0 text-2xl font-semibold tracking-[-0.02em] text-text">
@@ -64,6 +96,7 @@ export default function CommonPage() {
             </Button>
           </div>
         </section>
+        <Divider />
         <section className="grid gap-4">
           <h2 className="m-0 text-2xl font-semibold tracking-[-0.02em] text-text">
             Tabs
@@ -92,6 +125,223 @@ export default function CommonPage() {
             </TabsContent>
           </Tabs>
         </section>
+        <Divider />
+
+        <section className="grid gap-4">
+          <h2 className="m-0 text-2xl font-semibold tracking-[-0.02em] text-text">
+            Main Nav
+          </h2>
+          <div className="rounded-3xl border border-border bg-bg/48 p-4">
+            <MainNav />
+          </div>
+        </section>
+        <Divider />
+
+        <section className="grid gap-4">
+          <h2 className="m-0 text-2xl font-semibold tracking-[-0.02em] text-text">
+            Profile Chip
+          </h2>
+          <div className="flex flex-wrap gap-3">
+            <Profile name="민준" avatarUrl={null} />
+            <Profile
+              name="서연 라이더"
+              avatarUrl="https://images.unsplash.com/photo-1494790108377-be9c29b29330?auto=format&fit=crop&w=120&q=80"
+            />
+            <ProfileImgChip name="민준" avatarUrl={null} />
+          </div>
+        </section>
+        <Divider />
+
+        <section className="grid gap-4">
+          <h2 className="m-0 text-2xl font-semibold tracking-[-0.02em] text-text">
+            Dropdown Menu
+          </h2>
+          <div className="relative flex justify-start">
+            <DropdownMenu>
+              <DropdownMenuTrigger
+                label={<MoreHorizontal className="h-4 w-4" />}
+              />
+              <DropdownMenuItemList
+                align="start"
+                items={[
+                  { label: "편집", value: "edit" },
+                  { label: "공유", value: "share" },
+                  { label: "삭제", value: "delete", tone: "danger" },
+                ]}
+              />
+            </DropdownMenu>
+          </div>
+        </section>
+        <Divider />
+        <section className="grid gap-4">
+          <h2 className="m-0 text-2xl font-semibold tracking-[-0.02em] text-text">
+            Divider
+          </h2>
+          <p>수평, 또는 수직 구분선</p>
+          <div className="grid gap-4 rounded-[20px] border border-border bg-bg/38 p-4">
+            <Divider subtle />
+            <div className="flex items-center gap-4">
+              <span className="text-sm text-muted">왼쪽</span>
+              <Divider orientation="vertical" />
+              <span className="text-sm text-muted">오른쪽</span>
+            </div>
+          </div>
+        </section>
+        <Divider />
+
+        <section className="grid gap-4">
+          <h2 className="m-0 text-2xl font-semibold tracking-[-0.02em] text-text">
+            Dialog
+          </h2>
+          <div className="flex flex-wrap gap-3">
+            <Dialog>
+              <DialogTrigger asChild>
+                <Button variant="secondary">
+                  <Settings className="h-4 w-4" />
+                  설정 모달 열기
+                </Button>
+              </DialogTrigger>
+              <DialogContent size="md">
+                <DialogHeader title="title props" />
+                <DialogBody>
+                  <p className="m-0 text-sm leading-7 text-muted">
+                    모달 내부 컨텐츠는 헤더, 본문, 푸터로 나누고 주요 액션은
+                    우측 하단에 배치합니다.
+                  </p>
+                </DialogBody>
+                <DialogFooter>
+                  <DialogClose label={<span>닫기</span>} />
+                  <Button variant="primary">적용</Button>
+                </DialogFooter>
+              </DialogContent>
+            </Dialog>
+          </div>
+        </section>
+        <Divider />
+        <section className="grid gap-4">
+          <h2 className="m-0 text-2xl font-semibold tracking-[-0.02em] text-text">
+            Side Panel
+          </h2>
+          <div className="flex flex-wrap gap-3">
+            <SidePanel>
+              <SidePanelTrigger asChild>
+                <Button variant="secondary">오른쪽 패널 열기</Button>
+              </SidePanelTrigger>
+              <SidePanelContent title={<h2>title props</h2>}>
+                <SidePanelBody className="grid gap-4">
+                  <p>패널 예시</p>
+                </SidePanelBody>
+                <SidePanelFooter>
+                  <SidePanelClose label="닫기" />
+                  <Button variant="primary">적용</Button>
+                </SidePanelFooter>
+              </SidePanelContent>
+            </SidePanel>
+          </div>
+        </section>
+        <Divider />
+        <section className="grid gap-4">
+          <h2 className="m-0 text-2xl font-semibold tracking-[-0.02em] text-text">
+            Inputs
+          </h2>
+          <div className="grid gap-4 md:grid-cols-2">
+            <Input
+              label="input"
+              placeholder="라이더 이름을 입력하세요"
+              helperText="프로필과 커뮤니티에서 노출됩니다."
+            />
+            <Input
+              label="input with search type, leftIcon"
+              type="search"
+              leftIcon={<Search className="h-4 w-4" aria-hidden="true" />}
+              placeholder="라이더 이름을 입력하세요"
+              helperText="프로필과 커뮤니티에서 노출됩니다."
+            />
+
+            <SelectInput
+              label="select-like input"
+              defaultValue="seoul-gyeonggi"
+              helperText="옵션을 선택하면 드롭다운이 닫힙니다."
+              options={[
+                { value: "seoul-gyeonggi", label: "서울 / 경기" },
+                { value: "gangwon", label: "강원" },
+                { value: "chungcheong", label: "충청" },
+                { value: "busan-gyeongnam", label: "부산 / 경남" },
+              ]}
+            />
+            <Input
+              label="오류 상태"
+              defaultValue="잘못된 값"
+              errorText="입력 형식을 다시 확인해주세요."
+            />
+          </div>
+          <Textarea
+            label="textarea"
+            placeholder="자주 타는 코스나 라이딩 스타일을 적어주세요"
+            helperText="최대 300자"
+          />
+        </section>
+        <Divider />
+        <section className="grid gap-4">
+          <h2 className="m-0 text-2xl font-semibold tracking-[-0.02em] text-text">
+            Cards
+          </h2>
+          <ComingSoonCard
+            title="즐겨찾기 기능"
+            description="설명"
+            footer={<Button variant="secondary">footer button</Button>}
+          />
+        </section>
+        <Divider />
+        <section className="grid gap-4">
+          <h2 className="m-0 text-2xl font-semibold tracking-[-0.02em] text-text">
+            Toast
+          </h2>
+          <div className="grid gap-4 md:grid-cols-2">
+            <Toast
+              tone="success"
+              title="success"
+              description="description"
+              action={
+                <Button variant="underline" className="text-text">
+                  확인
+                </Button>
+              }
+            />
+            <Toast
+              tone="info"
+              title="info"
+              description="description"
+              action={
+                <Button variant="underline" className="text-text">
+                  확인
+                </Button>
+              }
+            />
+            <Toast
+              tone="warning"
+              title="warning"
+              description="description"
+              action={
+                <Button variant="underline" className="text-text">
+                  확인
+                </Button>
+              }
+            />
+            <Toast
+              tone="danger"
+              title="danger"
+              description="description"
+              action={
+                <Button variant="underline" className="text-text">
+                  확인
+                </Button>
+              }
+            />
+          </div>
+          )
+        </section>
+        <Divider />
       </div>
     </PageWrapper>
   );
