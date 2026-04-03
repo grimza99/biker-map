@@ -15,7 +15,7 @@ export async function loadProfileNameMap(
     .in("id", ids);
 
   if (error) {
-    throw error;
+    throw new Error(error.message);
   }
 
   return new Map(
