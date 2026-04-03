@@ -257,3 +257,44 @@
 - `search input`은 text input 위에 얇은 semantic layer만 얹고, 별도 스타일 분기를 크게 만들지 않는다.
 - `textarea`는 같은 토큰과 같은 상태 규칙을 공유해야 한다.
 - `select-like input`은 실제 `<select>` 또는 button-trigger menu 중 하나로 구현하되, 시각 규칙은 동일하게 유지한다.
+
+## Hover / Focus / Pressed / Disabled
+
+### Hover
+
+- 웹에서만 적극적으로 사용한다.
+- `border`가 `accent` 쪽으로 이동하거나, shadow가 약간 강화되는 정도로 충분하다.
+- hover는 레이아웃 이동을 만들지 않는다.
+
+### Focus
+
+- 키보드 접근성 기준으로 반드시 있어야 한다.
+- outline 대신 얇은 ring과 offset으로 표현한다.
+- focus는 `accent` 또는 `active` 둘 중 하나로 통일한다.
+
+### Pressed
+
+- 눌림은 `translate-y-[1px]` 정도의 미세한 변화만 허용한다.
+- 색상은 hover보다 더 강해지되, 본문 가독성을 해치면 안 된다.
+
+### Disabled
+
+- 불가 상태는 opacity와 pointer-events로 표현한다.
+- disabled가 되었을 때 hover/focus 스타일이 남아 있으면 안 된다.
+
+## Icon Rules
+
+- 웹: `lucide-react`
+- 앱: 플랫폼에 맞는 네이티브 아이콘 라이브러리 사용
+- 아이콘은 장식이 아니라 상태와 행동을 구분하는 요소다.
+- 임의 SVG 파일을 만들지 않는다.
+- 동일한 의미의 아이콘은 웹과 앱에서 같은 semantic role을 가져야 한다.
+
+## Shared Token Rules
+
+- 색상은 `package-shared`의 토큰만 사용한다.
+- 웹은 `web/shared/theme/web-theme.ts` 를 통해 CSS 변수로 연결한다.
+- 앱도 동일한 토큰 이름 체계를 유지한다.
+- 컴포넌트 레벨에서는 색상 이름이 아니라 역할 이름을 먼저 생각한다.
+
+## Current Repo Mapping
