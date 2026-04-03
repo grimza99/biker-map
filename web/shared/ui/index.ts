@@ -1,4 +1,4 @@
-export { Button } from "./button";
+export * from "./button";
 export { ComingSoonCard } from "./coming-soon-card";
 export {
   Dialog,
@@ -11,7 +11,8 @@ export {
   DialogTitle,
   DialogTrigger,
 } from "./dialog";
-export { Divider } from "./divider";
+
+export * from "./divider";
 export {
   DropdownMenu,
   DropdownMenuContent,
@@ -22,8 +23,7 @@ export { EmptyState } from "./empty";
 export { ErrorState } from "./error";
 export { Input, SearchInput, SelectLikeInput, Textarea } from "./input";
 export { LoadingState } from "./loading";
-export { PageWrapper } from "./page-wrapper";
-
+export * from "./page-wrapper";
 export * from "./profile";
 export {
   SidePanel,
@@ -36,6 +36,6 @@ export {
   SidePanelTitle,
   SidePanelTrigger,
 } from "./side-panel";
-export { Surface } from "./surface";
-export { FilterChip, Tabs, TabsContent, TabsList, TabsTrigger } from "./tabs";
+export * from "./surface";
+export * from "./tabs";
 export { Toast } from "./toast";

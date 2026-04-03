@@ -5,6 +5,7 @@ import { Bell } from "lucide-react";
 import { MainNav } from "@/widgets";
 import {
   Button,
+  Divider,
   PageWrapper,
   Profile,
   ProfileImgChip,
@@ -28,6 +29,7 @@ export default function CommonPage() {
             공통 컴포넌트 미리보기
           </h1>
         </section>
+        <Divider />
 
         <section className="grid gap-4">
           <h2 className="m-0 text-2xl font-semibold tracking-[-0.02em] text-text">
@@ -104,6 +106,7 @@ export default function CommonPage() {
             </TabsContent>
           </Tabs>
         </section>
+        <Divider />
 
         <section className="grid gap-4">
           <h2 className="m-0 text-2xl font-semibold tracking-[-0.02em] text-text">
@@ -113,6 +116,7 @@ export default function CommonPage() {
             <MainNav />
           </div>
         </section>
+        <Divider />
 
         <section className="grid gap-4">
           <h2 className="m-0 text-2xl font-semibold tracking-[-0.02em] text-text">
@@ -125,6 +129,22 @@ export default function CommonPage() {
               avatarUrl="https://images.unsplash.com/photo-1494790108377-be9c29b29330?auto=format&fit=crop&w=120&q=80"
             />
             <ProfileImgChip name="민준" avatarUrl={null} />
+          </div>
+        </section>
+        <Divider />
+
+        <section className="grid gap-4">
+          <h2 className="m-0 text-2xl font-semibold tracking-[-0.02em] text-text">
+            Divider
+          </h2>
+          <p>수평, 또는 수직 구분선</p>
+          <div className="grid gap-4 rounded-[20px] border border-border bg-bg/38 p-4">
+            <Divider subtle />
+            <div className="flex items-center gap-4">
+              <span className="text-sm text-muted">왼쪽</span>
+              <Divider orientation="vertical" />
+              <span className="text-sm text-muted">오른쪽</span>
+            </div>
           </div>
         </section>
       </div>
