@@ -2,7 +2,7 @@
 
 import { Bell } from "lucide-react";
 
-import { Button, PageWrapper } from "@shared/ui";
+import { Button, PageWrapper, Tabs, TabsContent, TabsList } from "@shared/ui";
 
 export default function CommonPage() {
   return (
@@ -63,6 +63,34 @@ export default function CommonPage() {
               <Bell className="h-4 w-4 hover:text-accent" />
             </Button>
           </div>
+        </section>
+        <section className="grid gap-4">
+          <h2 className="m-0 text-2xl font-semibold tracking-[-0.02em] text-text">
+            Tabs
+          </h2>
+          <p className="m-0 text-sm leading-7 text-muted">
+            tabs의 defualtValue는 내부 상태로 관리되는 선택된 탭을 결정합니다.
+            value는 외부에서 제어되는 탭을 만들 때 사용합니다(사용자가 tab 값
+            변경 불가).
+          </p>
+          <Tabs defaultValue="map" className="gap-5">
+            <TabsList
+              items={[
+                { value: "map", label: "지도" },
+                { value: "community", label: "커뮤니티" },
+              ]}
+            />
+            <TabsContent value="map" className="grid gap-4">
+              <p className="m-0 text-sm leading-7 text-muted">지도 탭</p>
+            </TabsContent>
+
+            <TabsContent
+              value="community"
+              className="text-sm leading-7 text-muted"
+            >
+              커뮤니티 탭
+            </TabsContent>
+          </Tabs>
         </section>
       </div>
     </PageWrapper>

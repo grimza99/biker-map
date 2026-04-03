@@ -107,3 +107,17 @@
 - 포커스 링은 `accent` 또는 `active` 기반의 얇은 링.
 - pressed는 약한 translate-down 또는 shadow 감소로 표현한다.
 - disabled는 opacity 감소와 pointer-events 차단으로 표현한다.
+
+## Tab System
+
+### Types
+
+- `default tab`
+- `segmented control`
+
+### Rules
+
+- `default tab`은 페이지 상단 섹션 전환용이다.
+- `segmented control`은 2~3개 상태 전환에만 사용한다.
+- 활성 상태는 배경색과 border를 동시에 변화시켜 인지도를 높인다.
+- 비활성 상태는 panel 계열 배경과 border만 유지한다.
