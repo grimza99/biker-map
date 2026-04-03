@@ -8,6 +8,7 @@ export const colorTokens = {
   border: "#303841",
   accent: "#E5572F",
   accentStrong: "#C94A24",
+  accentLight: "#fa6840",
   active: "#00C2A8",
   warning: "#FFC857",
   danger: "#D85B4E",
