@@ -3,9 +3,20 @@
 import { Bell } from "lucide-react";
 
 import { MainNav } from "@/widgets";
-import { Button, PageWrapper, Tabs, TabsContent, TabsList } from "@shared/ui";
+import {
+  Button,
+  PageWrapper,
+  Profile,
+  ProfileImgChip,
+  Tabs,
+  TabsContent,
+  TabsList,
+} from "@shared/ui";
+import { useState } from "react";
 
 export default function CommonPage() {
+  const [showToast, setShowToast] = useState(true);
+
   return (
     <PageWrapper className="p-0 text-text" innerClassName="gap-0">
       <div className="grid gap-8 rounded-[28px] border border-border bg-panel/86 p-6 shadow-[0_18px_50px_rgba(5,6,7,0.24)] backdrop-blur-xl md:p-8">
@@ -100,6 +111,20 @@ export default function CommonPage() {
           </h2>
           <div className="rounded-3xl border border-border bg-bg/48 p-4">
             <MainNav />
+          </div>
+        </section>
+
+        <section className="grid gap-4">
+          <h2 className="m-0 text-2xl font-semibold tracking-[-0.02em] text-text">
+            Profile Chip
+          </h2>
+          <div className="flex flex-wrap gap-3">
+            <Profile name="민준" avatarUrl={null} />
+            <Profile
+              name="서연 라이더"
+              avatarUrl="https://images.unsplash.com/photo-1494790108377-be9c29b29330?auto=format&fit=crop&w=120&q=80"
+            />
+            <ProfileImgChip name="민준" avatarUrl={null} />
           </div>
         </section>
       </div>
