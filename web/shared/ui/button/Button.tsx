@@ -8,7 +8,12 @@ import { cloneElement, isValidElement } from "react";
 
 import { cn } from "@shared/lib";
 
-type ButtonVariant = "primary" | "secondary" | "ghost" | "danger" | "underline";
+export type ButtonVariant =
+  | "primary"
+  | "secondary"
+  | "ghost"
+  | "danger"
+  | "underline";
 
 type ButtonSize = "sm" | "md" | "lg" | "icon";
 

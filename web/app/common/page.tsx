@@ -1,11 +1,18 @@
 "use client";
 
-import { Bell, MoreHorizontal } from "lucide-react";
+import { Bell, MoreHorizontal, Settings } from "lucide-react";
 
 import { DropdownMenuItemList } from "@/shared/ui/dropdown-menu/DropdownMenu";
 import { MainNav } from "@/widgets";
 import {
   Button,
+  Dialog,
+  DialogBody,
+  DialogClose,
+  DialogContent,
+  DialogFooter,
+  DialogHeader,
+  DialogTrigger,
   Divider,
   DropdownMenu,
   DropdownMenuTrigger,
@@ -14,7 +21,7 @@ import {
   ProfileImgChip,
   Tabs,
   TabsContent,
-  TabsList,
+  TabsList
 } from "@shared/ui";
 import { useState } from "react";
 
@@ -158,7 +165,52 @@ export default function CommonPage() {
           </div>
         </section>
         <Divider />
-      </div>
+        <section className="grid gap-4">
+          <h2 className="m-0 text-2xl font-semibold tracking-[-0.02em] text-text">
+            Divider
+          </h2>
+          <p>수평, 또는 수직 구분선</p>
+          <div className="grid gap-4 rounded-[20px] border border-border bg-bg/38 p-4">
+            <Divider subtle />
+            <div className="flex items-center gap-4">
+              <span className="text-sm text-muted">왼쪽</span>
+              <Divider orientation="vertical" />
+              <span className="text-sm text-muted">오른쪽</span>
+            </div>
+          </div>
+        </section>
+        <Divider />
+
+        <section className="grid gap-4">
+          <h2 className="m-0 text-2xl font-semibold tracking-[-0.02em] text-text">
+            Dialog
+          </h2>
+          <div className="flex flex-wrap gap-3">
+            <Dialog>
+              <DialogTrigger asChild>
+                <Button variant="secondary">
+                  <Settings className="h-4 w-4" />
+                  설정 모달 열기
+                </Button>
+              </DialogTrigger>
+              <DialogContent size="md">
+                <DialogHeader title="title props" />
+                <DialogBody>
+                  <p className="m-0 text-sm leading-7 text-muted">
+                    모달 내부 컨텐츠는 헤더, 본문, 푸터로 나누고 주요 액션은
+                    우측 하단에 배치합니다.
+                  </p>
+                </DialogBody>
+                <DialogFooter>
+                  <DialogClose label={<span>닫기</span>} />
+                  <Button variant="primary">적용</Button>
+                </DialogFooter>
+              </DialogContent>
+            </Dialog>
+          </div>
+        </section>
+        <Divider />
+        
     </PageWrapper>
   );
 }
