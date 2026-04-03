@@ -140,3 +140,20 @@
 - bell 버튼은 `icon button + badge` 패턴으로 고정한다.
 - unread dot은 accent 계열로 통일한다.
 - 알림 패널은 `dropdown` 또는 `sheet` 패턴으로 분리한다.
+
+## Modal / Dropdown / Sheet
+
+### Usage Rules
+
+- `modal`은 확인/취소가 필요한 강한 중단 지점에 사용한다.
+- `dropdown`은 짧은 선택지와 빠른 action에 사용한다.
+- `sheet`는 모바일에서 알림, 필터, quick actions에 우선 사용한다.
+- 웹은 dropdown과 modal을 우선한다.
+- 앱은 sheet를 우선하고, 정보 밀도가 높을 때만 modal을 쓴다.
+
+### Shared Visual Rules
+
+- 배경은 `panel` 또는 `panelSolid`.
+- 가장자리는 둥글고 단단해야 하며, 과한 blur는 피한다.
+- 상단 title, body, action 영역이 명확히 나뉘어야 한다.
+- 닫기 버튼은 항상 같은 위치와 같은 아이콘 규칙을 가져야 한다.

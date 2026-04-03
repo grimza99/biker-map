@@ -1,11 +1,14 @@
 "use client";
 
-import { Bell } from "lucide-react";
+import { Bell, MoreHorizontal } from "lucide-react";
 
+import { DropdownMenuItemList } from "@/shared/ui/dropdown-menu/DropdownMenu";
 import { MainNav } from "@/widgets";
 import {
   Button,
   Divider,
+  DropdownMenu,
+  DropdownMenuTrigger,
   PageWrapper,
   Profile,
   ProfileImgChip,
@@ -78,6 +81,7 @@ export default function CommonPage() {
             </Button>
           </div>
         </section>
+        <Divider />
         <section className="grid gap-4">
           <h2 className="m-0 text-2xl font-semibold tracking-[-0.02em] text-text">
             Tabs
@@ -135,18 +139,25 @@ export default function CommonPage() {
 
         <section className="grid gap-4">
           <h2 className="m-0 text-2xl font-semibold tracking-[-0.02em] text-text">
-            Divider
+            Dropdown Menu
           </h2>
-          <p>수평, 또는 수직 구분선</p>
-          <div className="grid gap-4 rounded-[20px] border border-border bg-bg/38 p-4">
-            <Divider subtle />
-            <div className="flex items-center gap-4">
-              <span className="text-sm text-muted">왼쪽</span>
-              <Divider orientation="vertical" />
-              <span className="text-sm text-muted">오른쪽</span>
-            </div>
+          <div className="relative flex justify-start">
+            <DropdownMenu>
+              <DropdownMenuTrigger
+                label={<MoreHorizontal className="h-4 w-4" />}
+              />
+              <DropdownMenuItemList
+                align="start"
+                items={[
+                  { label: "편집", value: "edit" },
+                  { label: "공유", value: "share" },
+                  { label: "삭제", value: "delete", tone: "danger" },
+                ]}
+              />
+            </DropdownMenu>
           </div>
         </section>
+        <Divider />
       </div>
     </PageWrapper>
   );
