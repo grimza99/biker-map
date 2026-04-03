@@ -19,9 +19,15 @@ import {
   PageWrapper,
   Profile,
   ProfileImgChip,
+  SidePanel,
+  SidePanelBody,
+  SidePanelClose,
+  SidePanelContent,
+  SidePanelFooter,
+  SidePanelTrigger,
   Tabs,
   TabsContent,
-  TabsList
+  TabsList,
 } from "@shared/ui";
 import { useState } from "react";
 
@@ -210,7 +216,29 @@ export default function CommonPage() {
           </div>
         </section>
         <Divider />
-        
+        <section className="grid gap-4">
+          <h2 className="m-0 text-2xl font-semibold tracking-[-0.02em] text-text">
+            Side Panel
+          </h2>
+          <div className="flex flex-wrap gap-3">
+            <SidePanel>
+              <SidePanelTrigger asChild>
+                <Button variant="secondary">오른쪽 패널 열기</Button>
+              </SidePanelTrigger>
+              <SidePanelContent title={<h2>title props</h2>}>
+                <SidePanelBody className="grid gap-4">
+                  <p>패널 예시</p>
+                </SidePanelBody>
+                <SidePanelFooter>
+                  <SidePanelClose>닫기</SidePanelClose>
+                  <Button variant="primary">적용</Button>
+                </SidePanelFooter>
+              </SidePanelContent>
+            </SidePanel>
+          </div>
+        </section>
+        <Divider />
+      </div>
     </PageWrapper>
   );
 }
