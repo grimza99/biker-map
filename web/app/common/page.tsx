@@ -34,11 +34,8 @@ import {
   Textarea,
   Toast,
 } from "@shared/ui";
-import { useState } from "react";
 
 export default function CommonPage() {
-  const [showToast, setShowToast] = useState(true);
-
   return (
     <PageWrapper className="p-0 text-text" innerClassName="gap-0">
       <div className="grid gap-8 rounded-[28px] border border-border bg-panel/86 p-6 shadow-[0_18px_50px_rgba(5,6,7,0.24)] backdrop-blur-xl md:p-8">
@@ -300,19 +297,49 @@ export default function CommonPage() {
           <h2 className="m-0 text-2xl font-semibold tracking-[-0.02em] text-text">
             Toast
           </h2>
-          {showToast ? (
+          <div className="grid gap-4 md:grid-cols-2">
             <Toast
               tone="success"
-              title="저장이 완료되었습니다"
-              description="경로 큐레이션 문구가 정상적으로 반영되었습니다."
-              action={<Button variant="underline">확인</Button>}
-              onClose={() => setShowToast(false)}
+              title="success"
+              description="description"
+              action={
+                <Button variant="underline" className="text-text">
+                  확인
+                </Button>
+              }
             />
-          ) : (
-            <Button variant="secondary" onClick={() => setShowToast(true)}>
-              토스트 다시 보기
-            </Button>
-          )}
+            <Toast
+              tone="info"
+              title="info"
+              description="description"
+              action={
+                <Button variant="underline" className="text-text">
+                  확인
+                </Button>
+              }
+            />
+            <Toast
+              tone="warning"
+              title="warning"
+              description="description"
+              action={
+                <Button variant="underline" className="text-text">
+                  확인
+                </Button>
+              }
+            />
+            <Toast
+              tone="danger"
+              title="danger"
+              description="description"
+              action={
+                <Button variant="underline" className="text-text">
+                  확인
+                </Button>
+              }
+            />
+          </div>
+          )
         </section>
         <Divider />
       </div>
