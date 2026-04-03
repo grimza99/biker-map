@@ -6,6 +6,7 @@ import { DropdownMenuItemList } from "@/shared/ui/dropdown-menu/DropdownMenu";
 import { MainNav } from "@/widgets";
 import {
   Button,
+  ComingSoonCard,
   Dialog,
   DialogBody,
   DialogClose,
@@ -230,12 +231,23 @@ export default function CommonPage() {
                   <p>패널 예시</p>
                 </SidePanelBody>
                 <SidePanelFooter>
-                  <SidePanelClose>닫기</SidePanelClose>
+                  <SidePanelClose label="닫기" />
                   <Button variant="primary">적용</Button>
                 </SidePanelFooter>
               </SidePanelContent>
             </SidePanel>
           </div>
+        </section>
+        <Divider />
+        <section className="grid gap-4">
+          <h2 className="m-0 text-2xl font-semibold tracking-[-0.02em] text-text">
+            Cards
+          </h2>
+          <ComingSoonCard
+            title="즐겨찾기 기능"
+            description="설명"
+            footer={<Button variant="secondary">footer button</Button>}
+          />
         </section>
         <Divider />
       </div>
