@@ -1,6 +1,6 @@
 "use client";
 
-import { Bell, MoreHorizontal, Settings } from "lucide-react";
+import { Bell, MoreHorizontal, Search, Settings } from "lucide-react";
 
 import { DropdownMenuItemList } from "@/shared/ui/dropdown-menu/DropdownMenu";
 import { MainNav } from "@/widgets";
@@ -17,9 +17,11 @@ import {
   Divider,
   DropdownMenu,
   DropdownMenuTrigger,
+  Input,
   PageWrapper,
   Profile,
   ProfileImgChip,
+  SelectInput,
   SidePanel,
   SidePanelBody,
   SidePanelClose,
@@ -29,6 +31,8 @@ import {
   Tabs,
   TabsContent,
   TabsList,
+  Textarea,
+  Toast,
 } from "@shared/ui";
 import { useState } from "react";
 
@@ -241,6 +245,48 @@ export default function CommonPage() {
         <Divider />
         <section className="grid gap-4">
           <h2 className="m-0 text-2xl font-semibold tracking-[-0.02em] text-text">
+            Inputs
+          </h2>
+          <div className="grid gap-4 md:grid-cols-2">
+            <Input
+              label="input"
+              placeholder="라이더 이름을 입력하세요"
+              helperText="프로필과 커뮤니티에서 노출됩니다."
+            />
+            <Input
+              label="input with search type, leftIcon"
+              type="search"
+              leftIcon={<Search className="h-4 w-4" aria-hidden="true" />}
+              placeholder="라이더 이름을 입력하세요"
+              helperText="프로필과 커뮤니티에서 노출됩니다."
+            />
+
+            <SelectInput
+              label="select-like input"
+              defaultValue="seoul-gyeonggi"
+              helperText="옵션을 선택하면 드롭다운이 닫힙니다."
+              options={[
+                { value: "seoul-gyeonggi", label: "서울 / 경기" },
+                { value: "gangwon", label: "강원" },
+                { value: "chungcheong", label: "충청" },
+                { value: "busan-gyeongnam", label: "부산 / 경남" },
+              ]}
+            />
+            <Input
+              label="오류 상태"
+              defaultValue="잘못된 값"
+              errorText="입력 형식을 다시 확인해주세요."
+            />
+          </div>
+          <Textarea
+            label="textarea"
+            placeholder="자주 타는 코스나 라이딩 스타일을 적어주세요"
+            helperText="최대 300자"
+          />
+        </section>
+        <Divider />
+        <section className="grid gap-4">
+          <h2 className="m-0 text-2xl font-semibold tracking-[-0.02em] text-text">
             Cards
           </h2>
           <ComingSoonCard
@@ -248,6 +294,25 @@ export default function CommonPage() {
             description="설명"
             footer={<Button variant="secondary">footer button</Button>}
           />
+        </section>
+        <Divider />
+        <section className="grid gap-4">
+          <h2 className="m-0 text-2xl font-semibold tracking-[-0.02em] text-text">
+            Toast
+          </h2>
+          {showToast ? (
+            <Toast
+              tone="success"
+              title="저장이 완료되었습니다"
+              description="경로 큐레이션 문구가 정상적으로 반영되었습니다."
+              action={<Button variant="underline">확인</Button>}
+              onClose={() => setShowToast(false)}
+            />
+          ) : (
+            <Button variant="secondary" onClick={() => setShowToast(true)}>
+              토스트 다시 보기
+            </Button>
+          )}
         </section>
         <Divider />
       </div>

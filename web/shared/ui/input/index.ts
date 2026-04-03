@@ -1,8 +1,4 @@
 export { FieldShell } from "./FieldShell";
-export { Input, SearchInput, SelectLikeInput } from "./Input";
-export type {
-  InputProps,
-  SearchInputProps,
-  SelectLikeInputProps,
-} from "./Input";
+export { Input, type InputProps } from "./Input";
+export { SelectInput, type SelectInputProps } from "./SelectInput";
 export { Textarea } from "./TextArea";

@@ -1,3 +1,5 @@
+"use client";
+
 import { cn } from "@/shared/lib";
 import { forwardRef, TextareaHTMLAttributes, useId } from "react";
 import { FieldBaseProps, FieldShell } from "./FieldShell";
