@@ -8,8 +8,8 @@ export function mapSupabaseSession(session: Session | null): AppSession | null {
   }
 
   const metadataName =
-    typeof user.user_metadata?.name === "string"
-      ? user.user_metadata.name
+    typeof user.user_metadata?.display_name === "string"
+      ? user.user_metadata.display_name
       : null;
 
   const avatarUrl =

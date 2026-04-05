@@ -34,7 +34,7 @@ export function AppShell({ children }: { children: ReactNode }) {
               </>
             ) : (
               <Link
-                href="/auth/login"
+                href="/auth"
                 className={cn(
                   "inline-flex items-center justify-center rounded-full px-3.5 py-2 text-sm font-medium text-text transition duration-150 ease-out hover:-translate-y-0.5",
                   "bg-accent shadow-[0_10px_24px_var(--shadow-accent)]"
