@@ -14,7 +14,6 @@ import {
   loadProfileNameMap,
   mapCommunityPostItem,
   ok,
-  paginateByCursor,
   parseRequestBody,
   requireApiSession,
 } from "@shared/api";
@@ -29,9 +28,17 @@ const createPostSchema = z.object({
   images: z.array(z.string()).optional(),
 });
 
-/**-----------------------------post list-------------------------------- */
+/**----------------------------------------------post list------------------------------------------------- */
 export async function GET(request: NextRequest) {
   const searchParams = request.nextUrl.searchParams;
+
+  const page = Math.max(getNumberParam(searchParams, "page") ?? 1, 1);
+  const pageSize = Math.min(
+    Math.max(getNumberParam(searchParams, "pageSize") ?? 12, 1),
+    50
+  );
+  const sort = getStringParam(searchParams, "sort");
+
   const query: CommunityPostsQuery = {
     category: (() => {
       const category = getStringParam(searchParams, "category");
@@ -41,17 +48,41 @@ export async function GET(request: NextRequest) {
         : undefined;
     })(),
     search: getStringParam(searchParams, "search"),
-    cursor: getStringParam(searchParams, "cursor"),
-    limit: getNumberParam(searchParams, "limit"),
+    page,
+    pageSize,
+    sort: sort === "views" ? "views" : "latest",
   };
 
   const supabase = createSupabaseApiClient(request);
-  const { data, error } = await supabase
+  let postsQuery = supabase
     .from("posts")
     .select(
-      "id, author_id, category, title, content, excerpt, images, view_count, comment_count, pinned, created_at"
-    )
-    .order("created_at", { ascending: false });
+      "id, author_id, category, title, content, excerpt, images, view_count, comment_count, pinned, created_at",
+      { count: "exact" }
+    );
+
+  if (query.category) {
+    postsQuery = postsQuery.eq("category", query.category);
+  }
+
+  if (query.search) {
+    const escapedKeyword = query.search.replace(/[%_,]/g, "");
+    postsQuery = postsQuery.or(
+      `title.ilike.%${escapedKeyword}%,excerpt.ilike.%${escapedKeyword}%,content.ilike.%${escapedKeyword}%`
+    );
+  }
+
+  postsQuery =
+    query.sort === "views"
+      ? postsQuery
+          .order("view_count", { ascending: false })
+          .order("created_at", { ascending: false })
+      : postsQuery.order("created_at", { ascending: false });
+
+  const from = (page - 1) * pageSize;
+  const to = from + pageSize - 1;
+
+  const { data, count, error } = await postsQuery.range(from, to);
 
   if (error) {
     return internalServerError(error.message);
@@ -78,34 +109,11 @@ export async function GET(request: NextRequest) {
         author_name: authorMap.get(String(row.author_id ?? "")) ?? "익명",
       })
     )
-    .filter((item): item is NonNullable<typeof item> => Boolean(item))
-    .filter((item) => {
-      if (query.category && item.category !== query.category) {
-        return false;
-      }
+    .filter((item): item is NonNullable<typeof item> => Boolean(item));
 
-      if (query.search) {
-        const keyword = query.search.toLowerCase();
-        if (
-          ![item.title, item.excerpt, item.author]
-            .join(" ")
-            .toLowerCase()
-            .includes(keyword)
-        ) {
-          return false;
-        }
-      }
-
-      return true;
-    });
-
-  const { items: pagedItems, meta } = paginateByCursor(
-    items,
-    query.cursor,
-    query.limit
-  );
-
-  return ok({ items: pagedItems }, undefined, meta);
+  return ok({ items }, undefined, {
+    total: count ?? items.length,
+  });
 }
 
 /**-----------------------------create post-------------------------------- */
