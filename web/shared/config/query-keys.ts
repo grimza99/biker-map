@@ -6,7 +6,8 @@ export const queryKeys = {
   routes: ["routes"] as const,
   route: (routeId: string) => ["routes", routeId] as const,
   favorites: ["favorites"] as const,
-  posts: ["posts"] as const,
+  posts: (params?: Record<string, string | number | undefined>) =>
+    ["posts", params ?? {}] as const,
   post: (postId: string) => ["posts", postId] as const,
   comments: ["comments"] as const,
   reactions: ["reactions"] as const,
