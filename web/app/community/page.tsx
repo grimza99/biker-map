@@ -67,7 +67,7 @@ export default function CommunityPage() {
   return (
     <PageWrapper innerClassName="gap-4 md:gap-6">
       <div className="flex flex-col">
-        <h1 className="m-0 text-[clamp(30px,5vw,44px)] font-semibold tracking-[var(--tracking-heading-xl)] text-text">
+        <h1 className="m-0 text-[clamp(30px,5vw,44px)] font-semibold tracking-(--tracking-heading-xl) text-text">
           게시글
         </h1>
         <div className="flex justify-end">
