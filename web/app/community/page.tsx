@@ -1,84 +1,147 @@
-import Link from "next/link";
+"use client";
 
-import { cn } from "@shared/lib";
-import { PageWrapper } from "@shared/ui";
+import { useCommunityPosts } from "@features/community/model/use-community-posts";
 import type { CommunityCategorySlug } from "@package-shared/types/community";
+import { Search } from "lucide-react";
+import { startTransition, useDeferredValue, useState } from "react";
 
 import {
-  communityCategories,
-  communityPosts,
-} from "./community-content";
+  Button,
+  EmptyState,
+  ErrorState,
+  Input,
+  LoadingState,
+  PageWrapper,
+  Pagination,
+  SelectInput,
+  Tabs,
+  TabsList,
+} from "@shared/ui";
 
-const spotlightPosts = communityPosts.slice(0, 4);
-const categoryOrder: Array<CommunityCategorySlug | "all"> = ["all", ...communityCategories.map((item) => item.slug)];
+import { PostList } from "@/entities/community";
+import { communityCategories } from "@/entities/community/community-categories";
+import { communityPosts } from "./community-content";
+
+const categoryTabs = [
+  { value: "all", label: "전체" },
+  ...communityCategories.map((category) => ({
+    value: category.slug,
+    label: category.label,
+  })),
+];
+
+const sortOptions = [
+  { value: "latest", label: "최신순" },
+  { value: "views", label: "조회수순" },
+];
+
+const pageSize = 12;
 
 export default function CommunityPage() {
+  const [category, setCategory] = useState<CommunityCategorySlug | undefined>();
+  const [sort, setSort] = useState<"latest" | "views">("latest");
+  const [searchInput, setSearchInput] = useState("");
+  const [page, setPage] = useState(1);
+
+  const deferredSearch = useDeferredValue(searchInput);
+
+  const {
+    data: postData,
+    isLoading,
+    isError,
+    error,
+    isFetching,
+  } = useCommunityPosts({
+    category,
+    page,
+    pageSize,
+    search: deferredSearch,
+    sort,
+  });
+
+  // const posts = postData?.data.items ?? [];
+  const posts = communityPosts;
+  const total = postData?.meta?.total ?? 0;
+  const totalPages = Math.max(Math.ceil(total / pageSize), 1);
+
   return (
-    <PageWrapper className="p-0 text-text" innerClassName="gap-0">
-      <div className="grid gap-5 rounded-[26px] border border-border bg-panel/82 p-6 shadow-[0_18px_50px_rgba(5,6,7,0.24)] backdrop-blur-xl md:p-7">
-        <div className="grid gap-3">
-          <p className="m-0 text-[13px] font-semibold uppercase tracking-[0.08em] text-accent">커뮤니티 MVP</p>
-          <h1 className="m-0 text-[clamp(30px,5vw,44px)] font-semibold tracking-[-0.04em] text-text">
-            카테고리 목록에서 바로 글 목록으로 진입합니다.
-          </h1>
-          <p className="max-w-[62ch] text-sm leading-7 text-muted">
-            공지, 질문, 후기, 정보, 자유 게시판 기준의 최소 흐름을 먼저 열고, 웹 MVP에서 카테고리 &gt; 목록 &gt; 상세로
-            이어지는 구조를 잡습니다.
-          </p>
+    <PageWrapper innerClassName="gap-4 md:gap-6">
+      <div className="flex flex-col">
+        <h1 className="m-0 text-[clamp(30px,5vw,44px)] font-semibold tracking-[var(--tracking-heading-xl)] text-text">
+          게시글
+        </h1>
+        <div className="flex justify-end">
+          <Button variant="primary" size="md">
+            <a href="/posts/new">글 작성하기</a>
+          </Button>
         </div>
+      </div>
 
-        <div className="flex flex-wrap gap-2">
-          {categoryOrder.map((slug) => {
-            const category = slug === "all" ? null : communityCategories.find((item) => item.slug === slug);
+      <div className="flex flex-1 gap-3 w-full flex-col items-start md:flex-row md:items-end">
+        <Input
+          type="search"
+          placeholder="제목, 본문, 작성자명으로 검색"
+          value={searchInput}
+          onChange={(event) => {
+            const nextValue = event.target.value;
+            startTransition(() => {
+              setSearchInput(nextValue);
+              setPage(1);
+            });
+          }}
+          className="flex-1"
+          leftIcon={<Search className="h-4 w-4" aria-hidden="true" />}
+        />
+        <SelectInput
+          value={sort}
+          onValueChange={(value) => {
+            startTransition(() => {
+              setSort(value as "latest" | "views");
+              setPage(1);
+            });
+          }}
+          className="min-w-30 max-w-100"
+          options={sortOptions}
+        />
+      </div>
 
-            return (
-              <Link
-                key={slug}
-                href={slug === "all" ? "/community" : `/community/${slug}`}
-                className={cn(
-                  "inline-flex items-center gap-2 rounded-full border px-4 py-2 text-sm font-medium transition duration-150 ease-out hover:-translate-y-0.5",
-                  slug === "all"
-                    ? "border-accent bg-accent text-text shadow-[0_10px_24px_rgba(229,87,47,0.28)]"
-                    : "border-border bg-panel-solid text-text hover:border-accent hover:text-accent-strong"
-                )}>
-                <span>{slug === "all" ? "전체" : category?.label}</span>
-                {category ? <span className="text-xs text-muted/80">{category.hint}</span> : null}
-              </Link>
+      <Tabs
+        value={category ?? "all"}
+        onValueChange={(value) => {
+          startTransition(() => {
+            setCategory(
+              value === "all" ? undefined : (value as CommunityCategorySlug)
             );
-          })}
-        </div>
+            setPage(1);
+          });
+        }}
+      >
+        <TabsList
+          className="w-full max-w-full flex-wrap rounded-[18px] border-none bg-transparent p-0"
+          items={categoryTabs}
+        />
+      </Tabs>
 
-        <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-4">
-          {spotlightPosts.map((post) => {
-            const category = communityCategories.find((item) => item.slug === post.category);
+      {isLoading && <LoadingState label="게시글을 불러오는 중" />}
 
-            return (
-              <Link
-                key={post.id}
-                href={`/community/${post.category}`}
-                className="grid gap-3 rounded-[20px] border border-border bg-bg/52 p-4 transition duration-150 ease-out hover:-translate-y-0.5 hover:border-accent">
-                <div className="flex items-center justify-between gap-3">
-                  <span className="rounded-full border border-border bg-panel-solid px-3 py-1 text-xs font-medium text-muted">
-                    {category?.label}
-                  </span>
-                  {post.pinned ? (
-                    <span className="rounded-full border border-accent/20 bg-accent/10 px-3 py-1 text-xs font-medium text-accent">
-                      고정
-                    </span>
-                  ) : null}
-                </div>
-                <div className="grid gap-2">
-                  <h2 className="m-0 text-lg font-semibold tracking-[-0.03em] text-text">{post.title}</h2>
-                  <p className="m-0 text-sm leading-7 text-muted">{post.excerpt}</p>
-                </div>
-                <div className="flex items-center justify-between gap-3 text-xs text-muted">
-                  <span>{post.author}</span>
-                  <span>{post.timeLabel}</span>
-                </div>
-              </Link>
-            );
-          })}
-        </div>
+      {isError && (
+        <ErrorState
+          title="커뮤니티 글 목록을 불러오지 못했습니다"
+          message={error instanceof Error ? error.message : undefined}
+        />
+      )}
+
+      {!isLoading && !isError && posts.length === 0 && (
+        <EmptyState title="카테고리에 글이 아직 없습니다." />
+      )}
+
+      {!isLoading && !isError && posts.length > 0 && <PostList posts={posts} />}
+      <div className="w-full flex justify-center items-center mt-5 ">
+        <Pagination
+          page={page}
+          totalPages={totalPages}
+          onPageChange={(nextPage) => startTransition(() => setPage(nextPage))}
+        />
       </div>
     </PageWrapper>
   );

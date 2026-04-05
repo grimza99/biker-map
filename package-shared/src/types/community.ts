@@ -15,8 +15,9 @@ export type CommunityPost = {
 export type CommunityPostsQuery = {
   category?: CommunityCategorySlug;
   search?: string;
-  cursor?: string;
-  limit?: number;
+  page?: number;
+  pageSize?: number;
+  sort?: "latest" | "views";
 };
 
 export type CommunityPostAuthor = {
