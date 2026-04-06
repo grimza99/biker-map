@@ -35,7 +35,7 @@ export function useCommunityPosts(filters: CommunityPostsQuery) {
     queryKey: queryKeys.posts(filters),
     queryFn: async () => {
       const data = await apiFetch<PostsListResponseData>(
-        `${API_PATHS}?${query}`
+        `${API_PATHS.community.posts}?${query}`
       );
       return data;
     },
