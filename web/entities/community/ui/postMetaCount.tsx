@@ -1,6 +1,6 @@
 import { Eye, MessageSquare } from "lucide-react";
 
-export default function PostCount({
+export default function PostMetaCount({
   commentCount,
   viewCount,
 }: {
