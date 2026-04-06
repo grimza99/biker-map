@@ -20,7 +20,6 @@ import {
 
 import { PostList } from "@/entities/community";
 import { communityCategories } from "@/entities/community/community-categories";
-import { communityPosts } from "./community-content";
 
 const categoryTabs = [
   { value: "all", label: "전체" },
@@ -59,8 +58,7 @@ export default function CommunityPage() {
     sort,
   });
 
-  // const posts = postData?.data.items ?? [];
-  const posts = communityPosts;
+  const posts = postData?.data.items ?? [];
   const total = postData?.meta?.total ?? 0;
   const totalPages = Math.max(Math.ceil(total / pageSize), 1);
 
