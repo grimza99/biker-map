@@ -1,13 +1,17 @@
 "use client";
 
-import type { CommunityCategorySlug, CreatePostBody, CreatePostResponseData } from "@package-shared/types/community";
-import { useMutation } from "@tanstack/react-query";
+import type {
+  CommunityCategorySlug,
+  CreatePostBody,
+  CreatePostResponseData,
+} from "@package-shared/types/community";
 import { useMemo, useState } from "react";
 
-import { ApiClientError, apiFetch } from "@shared/api/http";
-import { Button, Input, SelectInput, Textarea } from "@shared/ui";
+import { ApiClientError } from "@shared/api/http";
+import { Button, Input, SelectInput, Textarea, Toast } from "@shared/ui";
 
 import { communityCategoryOptions } from "../model/category-options";
+import { useCreateCommunityPost } from "../model/use-create-community-post";
 
 type CommunityPostFormProps = {
   allowedCategories?: CommunityCategorySlug[];
@@ -43,21 +47,25 @@ export function CommunityPostForm({
   const [title, setTitle] = useState("");
   const [content, setContent] = useState("");
   const [images, setImages] = useState("");
+  const [dismissedToast, setDismissedToast] = useState<
+    "success" | "error" | null
+  >(null);
 
-  const createPostMutation = useMutation({
-    mutationFn: (payload: CreatePostBody) =>
-      apiFetch<CreatePostResponseData>("/api/posts", {
-        method: "POST",
-        body: JSON.stringify(payload),
-      }),
-    onSuccess(response) {
-      setTitle("");
-      setContent("");
-      setImages("");
-      setCategory(defaultCategory ?? options[0]?.value ?? "question");
-      onSuccess?.(response.data);
-    },
-  });
+  const createPostMutation = useCreateCommunityPost();
+
+  function handleSubmit(payload: CreatePostBody) {
+    setDismissedToast(null);
+
+    createPostMutation.mutate(payload, {
+      onSuccess(response) {
+        setTitle("");
+        setContent("");
+        setImages("");
+        setCategory(defaultCategory ?? options[0]?.value ?? "question");
+        onSuccess?.(response.data);
+      },
+    });
+  }
 
   const errorMessage =
     createPostMutation.error instanceof ApiClientError
@@ -82,7 +90,7 @@ export function CommunityPostForm({
             .filter(Boolean),
         };
 
-        createPostMutation.mutate(payload);
+        handleSubmit(payload);
       }}
     >
       <SelectInput
@@ -122,16 +130,22 @@ export function CommunityPostForm({
         fieldClassName="min-h-[120px]"
       />
 
-      {errorMessage ? (
-        <p className="m-0 rounded-[16px] border border-danger/30 bg-danger/8 px-4 py-3 text-sm text-danger">
-          {errorMessage}
-        </p>
+      {errorMessage && dismissedToast !== "error" ? (
+        <Toast
+          tone="danger"
+          title="게시글 생성에 실패했습니다."
+          description={errorMessage}
+          onClose={() => setDismissedToast("error")}
+        />
       ) : null}
 
-      {createPostMutation.isSuccess ? (
-        <p className="m-0 rounded-[16px] border border-active/30 bg-active/10 px-4 py-3 text-sm text-active">
-          게시글이 생성되었습니다.
-        </p>
+      {createPostMutation.isSuccess && dismissedToast !== "success" ? (
+        <Toast
+          tone="success"
+          title="게시글이 생성되었습니다."
+          description="새 글이 커뮤니티 목록에 반영되었습니다."
+          onClose={() => setDismissedToast("success")}
+        />
       ) : null}
 
       <div className="flex items-center justify-end gap-2">
