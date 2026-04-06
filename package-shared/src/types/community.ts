@@ -43,7 +43,7 @@ export type PostsListResponseData = {
 };
 
 export type CreatePostBody = {
-  category: Exclude<CommunityCategorySlug, "notice">;
+  category: CommunityCategorySlug;
   title: string;
   content: string;
   images?: string[];

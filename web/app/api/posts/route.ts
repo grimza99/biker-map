@@ -21,7 +21,7 @@ import type { NextRequest } from "next/server";
 import { z } from "zod";
 
 const createPostSchema = z.object({
-  category: z.enum(["question", "info", "free"]),
+  category: z.enum(["notice", "question", "info", "free"]),
   title: z.string().min(1),
   content: z.string().min(1),
   tags: z.array(z.string()).optional(),
@@ -132,6 +132,22 @@ export async function POST(request: Request) {
   }
 
   const supabase = createSupabaseApiClient(request);
+  if (payload.category === "notice") {
+    const { data: profile, error: profileError } = await supabase
+      .from("profiles")
+      .select("role")
+      .eq("id", session.userId)
+      .maybeSingle();
+
+    if (profileError) {
+      return internalServerError(profileError.message);
+    }
+
+    if (profile?.role !== "admin") {
+      return badRequest("공지 작성 권한이 없습니다.");
+    }
+  }
+
   const { data, error } = await supabase
     .from("posts")
     .insert({

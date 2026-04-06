@@ -75,7 +75,7 @@ export function AuthFormPanel({ defaultTab = "login" }: AuthFormPanelProps) {
         credentials: "include",
       }),
     onSuccess(response) {
-      setSession(response.data.session);
+      setSession(response.data.session, response.data.accessToken);
       router.push("/map");
       router.refresh();
     },
@@ -89,7 +89,7 @@ export function AuthFormPanel({ defaultTab = "login" }: AuthFormPanelProps) {
         credentials: "include",
       }),
     onSuccess(response) {
-      setSession(response.data.session);
+      setSession(response.data.session, response.data.accessToken);
       router.push("/map");
       router.refresh();
     },
