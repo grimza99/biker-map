@@ -1,2 +1,2 @@
 export { cn } from "./cn";
-export { formatIsoDate, formatRelativeLabel } from "./date";
+export { formatDateByType, formatRelativeLabel } from "./date";

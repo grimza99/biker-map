@@ -1,5 +1,46 @@
-export function formatIsoDate(date = new Date()) {
-  return date.toISOString();
+type DateFormatType =
+  | "iso"
+  | "date"
+  | "dateTime"
+  | "time"
+  | "relative"
+  | "monthDay"
+  | "yearMonthDay";
+export function formatDateByType(date: string, type: DateFormatType) {
+  const target = new Date(date);
+
+  if (Number.isNaN(target.getTime())) {
+    return "";
+  }
+
+  switch (type) {
+    case "iso":
+      return target.toISOString();
+    case "date":
+      return target.toLocaleDateString("ko-KR");
+    case "dateTime":
+      return target.toLocaleString("ko-KR", {
+        year: "numeric",
+        month: "2-digit",
+        day: "2-digit",
+        hour: "2-digit",
+        minute: "2-digit",
+      });
+    case "time":
+      return target.toLocaleTimeString("ko-KR", {
+        hour: "2-digit",
+        minute: "2-digit",
+      });
+    case "monthDay":
+      return target.toLocaleDateString("ko-KR", {
+        month: "short",
+        day: "numeric",
+      });
+    case "relative":
+      return formatRelativeLabel(target);
+    default:
+      return target.toLocaleString("ko-KR");
+  }
 }
 
 export function formatRelativeLabel(input: string | Date, now = new Date()) {
@@ -27,7 +68,6 @@ export function formatRelativeLabel(input: string | Date, now = new Date()) {
 
   return target.toLocaleDateString("ko-KR", {
     month: "short",
-    day: "numeric"
+    day: "numeric",
   });
 }
-
