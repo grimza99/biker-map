@@ -3,7 +3,7 @@
 import { useCommunityPosts } from "@features/community/model/use-community-posts";
 import type { CommunityCategorySlug } from "@package-shared/types/community";
 import { Search } from "lucide-react";
-import { startTransition, useDeferredValue, useState } from "react";
+import { startTransition, useDeferredValue, useMemo, useState } from "react";
 
 import {
   Button,
@@ -20,12 +20,18 @@ import {
 
 import { PostList } from "@/entities/community";
 import { communityCategories } from "@/entities/community/community-categories";
+import { getCommunityCategory } from "@/entities/community/ui/PostList";
 
 const categoryTabs = [
   { value: "all", label: "전체" },
   ...communityCategories.map((category) => ({
     value: category.slug,
-    label: category.label,
+    label: (
+      <div className="flex flex-row gap-1 items-center">
+        <span>{category.label}</span>
+        <span className="text-xs text-muted/80">{category.hint}</span>
+      </div>
+    ),
   })),
 ];
 
@@ -36,7 +42,7 @@ const sortOptions = [
 
 const pageSize = 12;
 
-export default function CommunityPage() {
+export default function CommunityPostsPage() {
   const [category, setCategory] = useState<CommunityCategorySlug | undefined>();
   const [sort, setSort] = useState<"latest" | "views">("latest");
   const [searchInput, setSearchInput] = useState("");
@@ -49,7 +55,6 @@ export default function CommunityPage() {
     isLoading,
     isError,
     error,
-    isFetching,
   } = useCommunityPosts({
     category,
     page,
@@ -61,18 +66,22 @@ export default function CommunityPage() {
   const posts = postData?.data.items ?? [];
   const total = postData?.meta?.total ?? 0;
   const totalPages = Math.max(Math.ceil(total / pageSize), 1);
-
+  const categoryMeta = useMemo(
+    () => (category ? getCommunityCategory(category) : undefined),
+    [category]
+  );
   return (
-    <PageWrapper innerClassName="gap-4 md:gap-6">
-      <div className="flex flex-col">
-        <h1 className="m-0 text-[clamp(30px,5vw,44px)] font-semibold tracking-(--tracking-heading-xl) text-text">
-          게시글
-        </h1>
-        <div className="flex justify-end">
-          <Button variant="primary" size="md">
-            <a href="/posts/new">글 작성하기</a>
-          </Button>
-        </div>
+    <PageWrapper>
+      <p className="m-0 text-[13px] font-semibold uppercase tracking-[0.08em] text-accent">
+        커뮤니티 카테고리
+      </p>
+      <h1 className="text-3xl font-bold tracking-(--tracking-heading-lg)">
+        {categoryMeta?.label ?? "전체"}
+      </h1>
+      <div className="flex justify-end">
+        <Button variant="primary" size="md">
+          <a href="/posts/new">글 작성하기</a>
+        </Button>
       </div>
 
       <div className="flex flex-1 gap-3 w-full flex-col items-start md:flex-row md:items-end">
@@ -116,6 +125,9 @@ export default function CommunityPage() {
       >
         <TabsList
           className="w-full max-w-full flex-wrap rounded-[18px] border-none bg-transparent p-0"
+          tabItemClassName={
+            "hover:-translate-y-0.5 hover:border-accent hover:text-accent-strong"
+          }
           items={categoryTabs}
         />
       </Tabs>
