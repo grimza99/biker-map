@@ -10,9 +10,9 @@ import {
   mapNotificationItem,
   ok,
   paginateByCursor,
-  requireApiSession,
 } from "@shared/api";
 import type { NextRequest } from "next/server";
+import { requireApiSession } from "@shared/api/auth";
 
 const notificationViews = new Set<NotificationsView>([
   "all",

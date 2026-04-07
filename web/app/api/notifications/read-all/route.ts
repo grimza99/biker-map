@@ -2,8 +2,8 @@ import {
   createSupabaseApiClient,
   internalServerError,
   ok,
-  requireApiSession,
 } from "@shared/api";
+import { requireApiSession } from "@shared/api/auth";
 
 export async function POST(request: Request) {
   const session = await requireApiSession(request);

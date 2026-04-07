@@ -1,6 +1,5 @@
 import type { AppSession } from "@package-shared/types/session";
 import type { Session, User } from "@supabase/supabase-js";
-import { cookies } from "next/headers";
 
 import { refreshTokenCookieOptions } from "@shared/config";
 import { createSupabaseAuthClient, mapSupabaseSession } from "@shared/lib/supabase";
@@ -117,9 +116,4 @@ export function clearRefreshTokenCookie(response: Response) {
   }
 
   cookieStore.append("Set-Cookie", parts.join("; "));
-}
-
-export async function getRefreshTokenFromCookie() {
-  const cookieStore = await cookies();
-  return cookieStore.get(refreshTokenCookieOptions.name)?.value ?? null;
 }

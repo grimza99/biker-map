@@ -1,11 +1,13 @@
 import {
   badRequest,
-  clearRefreshTokenCookie,
-  getRefreshTokenFromCookie,
   mapRefreshData,
   ok,
-  setRefreshTokenCookie,
 } from "@shared/api";
+import {
+  clearRefreshTokenCookie,
+  setRefreshTokenCookie,
+} from "@shared/api/auth";
+import { getRefreshTokenFromCookie } from "@shared/api/auth.server";
 
 import { createSupabaseAuthClient } from "@shared/lib/supabase";
 import { NextResponse } from "next/server";

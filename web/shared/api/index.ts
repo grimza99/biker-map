@@ -33,7 +33,5 @@ export {
   paginateByCursor,
 } from "./supabase-record";
 export { parseBody, parseRequestBody } from "./validation";
-
-export * from "./auth";
 export * from "./supabase";
 export * from "./supabase-mappers";

@@ -3,8 +3,8 @@ import {
   internalServerError,
   notFound,
   ok,
-  requireApiSession,
 } from "@shared/api";
+import { requireApiSession } from "@shared/api/auth";
 
 export async function POST(
   request: Request,

@@ -16,10 +16,10 @@ import {
   ok,
   paginateByCursor,
   placeCategories,
-  requireApiSession,
 } from "@shared/api";
 import type { NextRequest } from "next/server";
 import { z } from "zod";
+import { requireApiSession } from "@shared/api/auth";
 
 /**-----------------------------get place list-------------------------------- */
 export async function GET(request: NextRequest) {
