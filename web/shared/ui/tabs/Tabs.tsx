@@ -60,10 +60,15 @@ export function Tabs({
 
 export type TabsListProps = {
   items: { value: TabsValue; label: ReactNode }[];
+  tabItemClassName?: string;
   className?: string;
 };
 
-export function TabsList({ items, className }: TabsListProps) {
+export function TabsList({
+  items,
+  className,
+  tabItemClassName,
+}: TabsListProps) {
   return (
     <div
       role="tablist"
@@ -73,7 +78,11 @@ export function TabsList({ items, className }: TabsListProps) {
       )}
     >
       {items.map((item) => (
-        <TabsTrigger key={item.value} value={item.value}>
+        <TabsTrigger
+          key={item.value}
+          value={item.value}
+          className={tabItemClassName}
+        >
           {item.label}
         </TabsTrigger>
       ))}
