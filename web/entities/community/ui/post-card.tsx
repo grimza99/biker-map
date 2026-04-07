@@ -2,8 +2,7 @@ import Link from "next/link";
 
 import { formatDateByType } from "@/shared";
 import type { CommunityPost } from "@package-shared/types/community";
-import { DefaultCardContainer, StatusChip } from "@shared/ui";
-import PostMetaCount from "./postMetaCount";
+import { DefaultCardContainer, MetaCounts, StatusChip } from "@shared/ui";
 
 type CommunityPostCardProps = {
   post: CommunityPost;
@@ -53,7 +52,7 @@ export function CommunityPostCard({
           <span className="truncate font-medium text-text/88">
             {post.author}
           </span>
-          <PostMetaCount
+          <MetaCounts
             commentCount={post.commentCount}
             viewCount={post.viewCount}
           />

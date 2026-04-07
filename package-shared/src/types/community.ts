@@ -38,8 +38,32 @@ export type CommunityPostDetail = {
   images?: string[];
 };
 
+export type CommunityReply = {
+  id: string;
+  parentCommentId: string;
+  author: CommunityPostAuthor;
+  content: string;
+  timeLabel: string;
+};
+
+export type CommunityComment = {
+  id: string;
+  postId: string;
+  author: CommunityPostAuthor;
+  content: string;
+  timeLabel: string;
+  replyCount: number;
+  replies: CommunityReply[];
+};
+
 export type PostsListResponseData = {
   items: CommunityPost[];
+};
+
+export type PostDetailResponseData = CommunityPostDetail;
+
+export type PostCommentsResponseData = {
+  items: CommunityComment[];
 };
 
 export type CreatePostBody = {
