@@ -9,5 +9,7 @@ export const API_PATHS = {
   },
   community: {
     posts: `${BASE_URL}/posts`,
+    post: (postId: string) => `${BASE_URL}/posts/${postId}`,
+    comments: (postId: string) => `${BASE_URL}/posts/${postId}/comments`,
   },
 };
