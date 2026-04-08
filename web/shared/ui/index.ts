@@ -1,3 +1,4 @@
+export * from "./acts";
 export * from "./button";
 export * from "./cards";
 export * from "./chips";

@@ -9,7 +9,7 @@ export const queryKeys = {
   posts: (params?: Record<string, string | number | undefined>) =>
     ["posts", params ?? {}] as const,
   post: (postId: string) => ["posts", postId] as const,
-  comments: ["comments"] as const,
+  comments: (postId: string) => ["comments", postId],
   reactions: ["reactions"] as const,
-  notifications: ["notifications"] as const
+  notifications: ["notifications"] as const,
 };

@@ -9,8 +9,8 @@ import {
   internalServerError,
   notFound,
   parseRequestBody,
-  requireApiSession,
 } from "@shared/api";
+import { requireApiSession } from "@shared/api/auth";
 import { z } from "zod";
 
 const createReplySchema = z.object({

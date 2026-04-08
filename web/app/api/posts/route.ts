@@ -15,8 +15,8 @@ import {
   mapCommunityPostItem,
   ok,
   parseRequestBody,
-  requireApiSession,
 } from "@shared/api";
+import { requireApiSession } from "@shared/api/auth";
 import type { NextRequest } from "next/server";
 import { z } from "zod";
 

@@ -9,7 +9,7 @@ import { NotificationBell } from "@widgets/notification-bell";
 
 const navItems = [
   { href: "/map", label: "지도" },
-  { href: "/community", label: "커뮤니티" },
+  { href: "/posts", label: "커뮤니티" },
   { href: "/favorites", label: "즐겨찾기" },
   { href: "/me", label: "내 정보" },
 ];

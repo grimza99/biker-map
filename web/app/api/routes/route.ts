@@ -10,10 +10,10 @@ import {
   mapRouteListItem,
   ok,
   paginateByCursor,
-  requireApiSession,
 } from "@shared/api";
 import type { NextRequest } from "next/server";
 import { z } from "zod";
+import { requireApiSession } from "@shared/api/auth";
 
 /**----------------------------------------get route list ------------------------------------------- */
 
