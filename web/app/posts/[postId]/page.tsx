@@ -1,13 +1,25 @@
 "use client";
-import { useParams } from "next/navigation";
+import { ApiClientError, formatDateByType } from "@/shared";
+import { useParams, useRouter } from "next/navigation";
+import { useState } from "react";
 
 import Comment from "@/entities/community/ui/Comment";
 import { useCommunityPostComments } from "@/features/community/model/use-comments";
+
+import {
+  useDeleteCommunityPost,
+  useUpdateCommunityPost,
+} from "@/features/community/model/use-post";
 import CommentForm from "@/features/community/ui/CommentForm";
+import { CommunityPostForm } from "@features/community";
 import { useCommunityPostDetail } from "@features/community/model/use-community-post-detail";
 import { useSession } from "@features/session/model/use-session";
-import { formatDateByType } from "@shared/lib";
 import {
+  Button,
+  Dialog,
+  DialogBody,
+  DialogContent,
+  DialogHeader,
   Divider,
   ErrorState,
   LoadingState,
@@ -15,12 +27,16 @@ import {
   PageWrapper,
   Profile,
   StatusChip,
+  Toast,
 } from "@shared/ui";
 
 export default function PostDetailPage() {
   const params = useParams<{ postId: string }>();
+  const router = useRouter();
   const postId = params?.postId ?? "";
-  const { status } = useSession();
+  const { status, session } = useSession();
+  const [isEditOpen, setIsEditOpen] = useState(false);
+  const [deleteError, setDeleteError] = useState<string | null>(null);
   const {
     data: detailpostData,
     isLoading,
@@ -31,6 +47,8 @@ export default function PostDetailPage() {
   const comments = commentsQuery.data?.data.items ?? [];
 
   const post = detailpostData?.data;
+  const updatePostMutation = useUpdateCommunityPost(postId);
+  const deletePostMutation = useDeleteCommunityPost(postId);
 
   if (isLoading) {
     return <LoadingState label="게시글을 불러오는 중" />;
@@ -48,10 +66,88 @@ export default function PostDetailPage() {
   }
 
   const timeLabel = formatDateByType(post.timeLabel, "dateTime");
+  const isOwner = Boolean(
+    session?.userId && post.author.id && session.userId === post.author.id
+  );
   return (
     <PageWrapper>
       <div className="flex flex-col gap-3 w-full">
-        <StatusChip statusLabel={post.category} />
+        <div className="flex items-start justify-between gap-3">
+          <StatusChip statusLabel={post.category} />
+          {isOwner && (
+            <div className="flex items-center gap-2">
+              <Dialog open={isEditOpen} onOpenChange={setIsEditOpen}>
+                <Button
+                  size="sm"
+                  variant="secondary"
+                  onClick={() => setIsEditOpen(true)}
+                >
+                  게시글 수정
+                </Button>
+                <DialogContent size="lg" className="border border-border">
+                  <DialogHeader
+                    title={
+                      <span className="text-lg font-semibold text-text">
+                        게시글 수정
+                      </span>
+                    }
+                  />
+                  <DialogBody className="pt-0">
+                    <CommunityPostForm
+                      submitLabel="수정하기"
+                      initialValues={{
+                        category: post.category,
+                        title: post.title,
+                        content: post.content,
+                        images: post.images ?? [],
+                      }}
+                      onSubmit={(payload) =>
+                        updatePostMutation.mutateAsync({
+                          category: payload.category,
+                          title: payload.title,
+                          content: payload.content,
+                          images: payload.images,
+                        })
+                      }
+                      onSuccess={() => {
+                        setIsEditOpen(false);
+                      }}
+                      onCancel={() => setIsEditOpen(false)}
+                    />
+                  </DialogBody>
+                </DialogContent>
+              </Dialog>
+              <Button
+                size="sm"
+                variant="ghost"
+                loading={deletePostMutation.isPending}
+                onClick={async () => {
+                  setDeleteError(null);
+                  const confirmed =
+                    window.confirm("이 게시글을 삭제하시겠습니까?");
+                  if (!confirmed) {
+                    return;
+                  }
+
+                  try {
+                    await deletePostMutation.mutateAsync();
+                    router.replace("/posts");
+                  } catch (error) {
+                    setDeleteError(
+                      error instanceof ApiClientError
+                        ? error.message
+                        : error instanceof Error
+                        ? error.message
+                        : "게시글을 삭제하지 못했습니다."
+                    );
+                  }
+                }}
+              >
+                게시글 삭제
+              </Button>
+            </div>
+          )}
+        </div>
         <h1 className="m-0 text-[clamp(28px,4vw,42px)] font-semibold tracking-[-0.04em] text-text">
           {post.title}
         </h1>
@@ -74,27 +170,31 @@ export default function PostDetailPage() {
         <p className="m-0 whitespace-pre-wrap leading-8 text-text/92">
           {post.content}
         </p>
-        {/* {post.images?.length && (
-          <div className="grid gap-2">
-            <p className="m-0 text-xs font-semibold uppercase tracking-[0.08em] text-muted">
-              첨부 이미지
-            </p>
-            <div className="grid gap-2 md:grid-cols-2">
-              {post.images.map((image) => (
-                <a
-                  key={image}
-                  href={image}
-                  target="_blank"
-                  rel="noreferrer"
-                  className="rounded-2xl border border-border bg-panel-solid px-4 py-3 text-sm text-accent transition hover:-translate-y-0.5"
-                >
-                  {image}
-                </a>
-              ))}
-            </div>
+        {post.images?.length && (
+          <div className="grid gap-2 md:grid-cols-2">
+            {post.images.map((image) => (
+              <a
+                key={image}
+                href={image}
+                target="_blank"
+                rel="noreferrer"
+                className="rounded-2xl border border-border bg-panel-solid px-4 py-3 text-sm text-accent transition hover:-translate-y-0.5"
+              >
+                {image}
+              </a>
+            ))}
           </div>
-        )} */}
+        )}
       </div>
+
+      {deleteError ? (
+        <Toast
+          tone="danger"
+          title="게시글을 삭제하지 못했습니다."
+          description={deleteError}
+          onClose={() => setDeleteError(null)}
+        />
+      ) : null}
 
       <Divider />
       {/* 댓글영역 */}
