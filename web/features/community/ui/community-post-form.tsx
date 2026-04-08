@@ -3,9 +3,12 @@
 import {
   allowedCommunityCategoryOptions,
   communityCategoryOptions,
+  type ApiResponse,
   type CommunityCategorySlug,
   type CreatePostBody,
   type CreatePostResponseData,
+  type UpdatePostBody,
+  type UpdatePostResponseData,
 } from "@package-shared/index";
 
 import { ApiClientError } from "@shared/api/http";
@@ -24,7 +27,16 @@ type CommunityPostFormProps = {
   allowedCategories?: CommunityCategorySlug[];
   defaultCategory?: CommunityCategorySlug;
   submitLabel?: string;
-  onSuccess?: (data: CreatePostResponseData) => void;
+  initialValues?: Partial<CreatePostBody>;
+  onSubmit?: (
+    payload: CreatePostBody | UpdatePostBody
+  ) => Promise<
+    | ApiResponse<CreatePostResponseData>
+    | ApiResponse<UpdatePostResponseData>
+    | CreatePostResponseData
+    | UpdatePostResponseData
+  >;
+  onSuccess?: (data: CreatePostResponseData | UpdatePostResponseData) => void;
   onCancel?: () => void;
   className?: string;
 };
@@ -35,6 +47,8 @@ export function CommunityPostForm({
   ),
   defaultCategory,
   submitLabel = "글 등록",
+  initialValues,
+  onSubmit,
   onSuccess,
   onCancel,
   className,
@@ -43,37 +57,67 @@ export function CommunityPostForm({
     allowedCategories.includes(option.value)
   );
   const [category, setCategory] = useState<CommunityCategorySlug>(
-    defaultCategory ?? options[0]?.value ?? "question"
+    initialValues?.category ??
+      defaultCategory ??
+      options[0]?.value ??
+      "question"
   );
-  const [title, setTitle] = useState("");
-  const [content, setContent] = useState("");
-  const [images, setImages] = useState([""]);
+  const [title, setTitle] = useState(initialValues?.title ?? "");
+  const [content, setContent] = useState(initialValues?.content ?? "");
+  const [images, setImages] = useState(initialValues?.images ?? []);
   const [dismissedToast, setDismissedToast] = useState<
     "success" | "error" | null
   >(null);
+  const [customError, setCustomError] = useState<string | null>(null);
+  const [customSuccess, setCustomSuccess] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   const createPostMutation = useCreateCommunityPost();
 
-  function handleSubmit(payload: CreatePostBody) {
+  async function handleSubmit(payload: CreatePostBody | UpdatePostBody) {
     setDismissedToast(null);
+    setCustomError(null);
+    setCustomSuccess(false);
 
-    createPostMutation.mutate(payload, {
+    if (onSubmit) {
+      try {
+        setIsSubmitting(true);
+        const response = await onSubmit(payload);
+        setCustomSuccess(true);
+        onSuccess?.("data" in response ? response.data : response);
+      } catch (error) {
+        setCustomError(
+          error instanceof ApiClientError
+            ? error.message
+            : error instanceof Error
+            ? error.message
+            : "요청을 처리하지 못했습니다."
+        );
+      } finally {
+        setIsSubmitting(false);
+      }
+      return;
+    }
+
+    createPostMutation.mutate(payload as CreatePostBody, {
       onSuccess(response) {
         setTitle("");
         setContent("");
-        setImages([""]);
+        setImages([]);
         setCategory(defaultCategory ?? options[0]?.value ?? "question");
         onSuccess?.(response.data);
       },
     });
   }
 
+  const createError = createPostMutation.error;
   const errorMessage =
-    createPostMutation.error instanceof ApiClientError
-      ? createPostMutation.error.message
-      : createPostMutation.error instanceof Error
-      ? createPostMutation.error.message
-      : null;
+    customError ??
+    (createError instanceof ApiClientError
+      ? createError.message
+      : createError instanceof Error
+      ? createError.message
+      : null);
 
   return (
     <form
@@ -81,14 +125,14 @@ export function CommunityPostForm({
       onSubmit={(event) => {
         event.preventDefault();
 
-        const payload: CreatePostBody = {
+        const payload: CreatePostBody | UpdatePostBody = {
           category,
           title: title.trim(),
           content: content.trim(),
-          images: images.map((url) => url.trim()),
+          images: images.map((url) => url.trim()).filter(Boolean),
         };
 
-        handleSubmit(payload);
+        void handleSubmit(payload);
       }}
     >
       <SelectInput
@@ -132,14 +176,21 @@ export function CommunityPostForm({
         />
       )}
 
-      {createPostMutation.isSuccess && dismissedToast !== "success" && (
-        <Toast
-          tone="success"
-          title="게시글이 생성되었습니다."
-          description="새 글이 커뮤니티 목록에 반영되었습니다."
-          onClose={() => setDismissedToast("success")}
-        />
-      )}
+      {(customSuccess || createPostMutation.isSuccess) &&
+        dismissedToast !== "success" && (
+          <Toast
+            tone="success"
+            title={
+              onSubmit ? "게시글이 수정되었습니다." : "게시글이 생성되었습니다."
+            }
+            description={
+              onSubmit
+                ? "수정한 내용이 게시글에 반영되었습니다."
+                : "새 글이 커뮤니티 목록에 반영되었습니다."
+            }
+            onClose={() => setDismissedToast("success")}
+          />
+        )}
 
       <div className="flex items-center justify-end gap-2">
         {onCancel && (
@@ -147,7 +198,10 @@ export function CommunityPostForm({
             취소
           </Button>
         )}
-        <Button type="submit" loading={createPostMutation.isPending}>
+        <Button
+          type="submit"
+          loading={isSubmitting || createPostMutation.isPending}
+        >
           {submitLabel}
         </Button>
       </div>
