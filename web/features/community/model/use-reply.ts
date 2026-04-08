@@ -14,6 +14,7 @@ export function useCreateCommentReply(commentId?: string) {
       });
     },
     onSuccess: async () => {
+      if (!commentId) return;
       await queryClient.invalidateQueries({
         queryKey: queryKeys.comments(commentId),
       });
