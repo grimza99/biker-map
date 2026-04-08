@@ -18,7 +18,7 @@ import {
   Toast,
 } from "@shared/ui";
 import { useState } from "react";
-import { useCreateCommunityPost } from "../model/use-create-community-post";
+import { useCreateCommunityPost } from "../model/use-post";
 
 type CommunityPostFormProps = {
   allowedCategories?: CommunityCategorySlug[];
