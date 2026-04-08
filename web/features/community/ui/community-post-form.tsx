@@ -2,6 +2,7 @@
 
 import {
   allowedCommunityCategoryOptions,
+  communityCategoryOptions,
   type CommunityCategorySlug,
   type CreatePostBody,
   type CreatePostResponseData,
@@ -20,6 +21,7 @@ import { useState } from "react";
 import { useCreateCommunityPost } from "../model/use-create-community-post";
 
 type CommunityPostFormProps = {
+  allowedCategories?: CommunityCategorySlug[];
   defaultCategory?: CommunityCategorySlug;
   submitLabel?: string;
   onSuccess?: (data: CreatePostResponseData) => void;
@@ -28,16 +30,18 @@ type CommunityPostFormProps = {
 };
 
 export function CommunityPostForm({
+  allowedCategories = allowedCommunityCategoryOptions.map(
+    (option) => option.value
+  ),
   defaultCategory,
   submitLabel = "글 등록",
   onSuccess,
   onCancel,
   className,
 }: CommunityPostFormProps) {
-  const options = allowedCommunityCategoryOptions.map((option) => ({
-    value: option.value,
-    label: option.label,
-  }));
+  const options = communityCategoryOptions.filter((option) =>
+    allowedCategories.includes(option.value)
+  );
   const [category, setCategory] = useState<CommunityCategorySlug>(
     defaultCategory ?? options[0]?.value ?? "question"
   );

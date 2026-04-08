@@ -1,4 +1,4 @@
-import { CommunityCategorySlug } from "src/types/community";
+import type { CommunityCategorySlug } from "../types/community";
 
 export const communityCategoryOptions: Array<{
   value: CommunityCategorySlug;
