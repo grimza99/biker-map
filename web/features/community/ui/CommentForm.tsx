@@ -1,32 +1,43 @@
 import { ApiClientError, Button, Input } from "@/shared";
 import { SubmitEvent, useState } from "react";
 import { useCreatePostComment } from "../model/use-comments";
+import { useCreateCommentReply } from "../model/use-reply";
 
 interface CommentFormProps {
   postId: string;
   disabled?: boolean;
   placeholder?: string;
+  submitType?: "comment" | "reply";
+  commentId?: string; // reply인 경우에 필요
 }
 export default function CommentForm({
   postId,
   disabled,
   placeholder,
+  submitType = "comment",
+  commentId,
 }: CommentFormProps) {
   const [comment, setComment] = useState("");
   const createCommentMutation = useCreatePostComment(postId);
-
+  const createReplyMutation = useCreateCommentReply(commentId ?? "");
   placeholder = placeholder ?? "댓글을 입력하세요";
 
-  const handleSubmitComment = (event: SubmitEvent<HTMLFormElement>) => {
+  const handleSubmit = (event: SubmitEvent<HTMLFormElement>) => {
     event.preventDefault();
     if (!comment.trim()) return;
-    createCommentMutation.mutate(comment.trim(), {
-      onSuccess: () => setComment(""),
-    });
+    if (submitType === "comment") {
+      createCommentMutation.mutate(comment.trim(), {
+        onSuccess: () => setComment(""),
+      });
+    } else {
+      createReplyMutation.mutate(comment.trim(), {
+        onSuccess: () => setComment(""),
+      });
+    }
   };
 
   return (
-    <form className="flex gap-3 justify-end" onSubmit={handleSubmitComment}>
+    <form className="flex gap-3 justify-end" onSubmit={handleSubmit}>
       <Input
         placeholder={placeholder}
         value={comment}
