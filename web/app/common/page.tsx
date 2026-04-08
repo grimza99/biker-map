@@ -17,6 +17,7 @@ import {
   Divider,
   DropdownMenu,
   DropdownMenuTrigger,
+  ImageInput,
   Input,
   PageWrapper,
   Profile,
@@ -273,6 +274,10 @@ export default function CommonPage() {
               label="오류 상태"
               defaultValue="잘못된 값"
               errorText="입력 형식을 다시 확인해주세요."
+            />
+            <ImageInput
+              label="image input"
+              helperText="대표 이미지 한 장을 선택할 수 있습니다."
             />
           </div>
           <Textarea
