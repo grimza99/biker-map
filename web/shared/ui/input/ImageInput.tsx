@@ -2,7 +2,14 @@
 
 import { Image as ImageIcon, Upload, X } from "lucide-react";
 import Image from "next/image";
-import { useEffect, useId, useMemo, useRef, useState } from "react";
+import {
+  type MutableRefObject,
+  useEffect,
+  useId,
+  useMemo,
+  useRef,
+  useState,
+} from "react";
 
 import { cn } from "@/shared/lib";
 
@@ -14,6 +21,17 @@ import {
   fieldSizeClassNames,
   fieldToneClassName,
 } from "./FieldShell";
+
+type ImageValueItem = {
+  id: string;
+  value: string;
+};
+
+type SelectedFileMeta = {
+  id: string;
+  name: string;
+  size: number;
+};
 
 export type ImageInputProps = FieldBaseProps & {
   id?: string;
@@ -47,31 +65,37 @@ export function ImageInput({
   const fallbackId = useId();
   const resolvedId = id ?? fallbackId;
   const inputRef = useRef<HTMLInputElement | null>(null);
+  const idRef = useRef(0);
+  const currentValueIdMapRef = useRef<Map<string, string[]>>(new Map());
   const [uncontrolledValue, setUncontrolledValue] = useState<string[] | null>(
     normalizeImageUrls(defaultValue)
   );
-  const [localPreviewUrls, setLocalPreviewUrls] = useState<string[]>([]);
+  const [localPreviewUrls, setLocalPreviewUrls] = useState<ImageValueItem[]>([]);
   const [selectedFiles, setSelectedFiles] = useState<
-    Array<{ name: string; size: number }>
+    SelectedFileMeta[]
   >([]);
   const [isUploading, setIsUploading] = useState(false);
   const [uploadError, setUploadError] = useState<string | null>(null);
 
   const currentValue = useMemo(
-    () => (value === undefined ? uncontrolledValue : normalizeImageUrls(value)),
+    () => normalizeImageUrls(value === undefined ? uncontrolledValue : value),
     [uncontrolledValue, value]
   );
+  const currentValueItems = useMemo(
+    () => toImageValueItems(currentValue, currentValueIdMapRef, idRef),
+    [currentValue]
+  );
   const previewUrls = useMemo(
-    () => (localPreviewUrls.length > 0 ? localPreviewUrls : currentValue ?? []),
+    () => (localPreviewUrls.length > 0 ? localPreviewUrls : currentValueItems),
     [currentValue, localPreviewUrls]
   );
   const isMaxReached = previewUrls.length >= maxImages;
 
   useEffect(() => {
     return () => {
-      localPreviewUrls.forEach((url) => {
-        if (url.startsWith("blob:")) {
-          URL.revokeObjectURL(url);
+      localPreviewUrls.forEach(({ value }) => {
+        if (value.startsWith("blob:")) {
+          URL.revokeObjectURL(value);
         }
       });
     };
@@ -84,22 +108,23 @@ export function ImageInput({
     onValueChange?.(nextValue);
   }
 
-  function handleRemove(index: number) {
-    const nextValues = (currentValue ?? []).filter(
-      (_, currentIndex) => currentIndex !== index
-    );
+  function handleRemove(targetId: string) {
+    const nextValues = currentValueItems
+      .filter((item) => item.id !== targetId)
+      .map((item) => item.value);
+    const removedPreview = localPreviewUrls.find((item) => item.id === targetId);
     const nextLocalPreviewUrls = localPreviewUrls.filter(
-      (_, currentIndex) => currentIndex !== index
+      (item) => item.id !== targetId
     );
-    const removedPreview = localPreviewUrls[index];
-    if (removedPreview?.startsWith("blob:")) {
-      URL.revokeObjectURL(removedPreview);
+
+    if (removedPreview?.value.startsWith("blob:")) {
+      URL.revokeObjectURL(removedPreview.value);
     }
 
     updateValue(nextValues.length > 0 ? nextValues : null);
     setLocalPreviewUrls(nextLocalPreviewUrls);
     setSelectedFiles((previous) =>
-      previous.filter((_, currentIndex) => currentIndex !== index)
+      previous.filter((item) => item.id !== targetId)
     );
     setUploadError(null);
     if (inputRef.current) {
@@ -145,16 +170,18 @@ export function ImageInput({
             }
 
             const acceptedFiles = nextFiles.slice(0, availableSlots);
-            const nextPreviewUrls = acceptedFiles.map((file) =>
-              URL.createObjectURL(file)
-            );
+            const nextPreviewUrls = acceptedFiles.map((file) => ({
+              id: nextImageValueId(idRef),
+              value: URL.createObjectURL(file),
+            }));
             setLocalPreviewUrls((previous) => [
               ...previous,
               ...nextPreviewUrls,
             ]);
             setSelectedFiles((previous) => [
               ...previous,
-              ...acceptedFiles.map((file) => ({
+              ...acceptedFiles.map((file, index) => ({
+                id: nextPreviewUrls[index]?.id ?? nextImageValueId(idRef),
                 name: file.name,
                 size: file.size,
               })),
@@ -162,7 +189,10 @@ export function ImageInput({
             setUploadError(null);
 
             if (!onUpload) {
-              updateValue([...currentUrls, ...nextPreviewUrls]);
+              updateValue([
+                ...currentUrls,
+                ...nextPreviewUrls.map((item) => item.value),
+              ]);
               return;
             }
 
@@ -230,17 +260,17 @@ export function ImageInput({
         <div className="grid gap-3 rounded-[22px] border border-border bg-panel-solid/72 p-4">
           <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-3">
             {previewUrls.map((url, index) => {
-              const fileMeta = selectedFiles[index];
+              const fileMeta = selectedFiles.find((item) => item.id === url.id);
               const isCover = index === 0;
 
               return (
                 <div
-                  key={`${url}-${index}`}
+                  key={url.id}
                   className="grid gap-3 rounded-[18px] border border-border bg-bg/40 p-3"
                 >
                   <div className="relative aspect-4/3 overflow-hidden rounded-[14px] border border-border bg-bg/50">
                     <Image
-                      src={url}
+                      src={url.value}
                       alt={`${previewAlt} ${index + 1}`}
                       fill
                       sizes="(max-width: 768px) 100vw, 320px"
@@ -263,12 +293,14 @@ export function ImageInput({
                           {(fileMeta.size / 1024 / 1024).toFixed(2)} MB
                         </p>
                       ) : (
-                        <p className="m-0 truncate text-xs text-muted">{url}</p>
+                        <p className="m-0 truncate text-xs text-muted">
+                          {url.value}
+                        </p>
                       )}
                     </div>
                     <button
                       type="button"
-                      onClick={() => handleRemove(index)}
+                      onClick={() => handleRemove(url.id)}
                       className="inline-flex h-9 w-9 items-center justify-center rounded-full border border-border bg-panel text-muted transition hover:border-danger/45 hover:text-danger"
                       aria-label={`${index + 1}번째 이미지 제거`}
                     >
@@ -296,4 +328,36 @@ function normalizeImageUrls(value: string | string[] | null | undefined) {
 
   const values = Array.isArray(value) ? value : [value];
   return values.filter(Boolean);
+}
+
+function nextImageValueId(idRef: MutableRefObject<number>) {
+  idRef.current += 1;
+  return `image-${idRef.current}`;
+}
+
+function toImageValueItems(
+  values: string[] | null,
+  valueIdMapRef: MutableRefObject<Map<string, string[]>>,
+  idRef: MutableRefObject<number>
+) {
+  if (!values || values.length === 0) {
+    valueIdMapRef.current = new Map();
+    return [];
+  }
+
+  const previousBuckets = valueIdMapRef.current;
+  const nextBuckets = new Map<string, string[]>();
+
+  const items = values.map((value) => {
+    const previousIds = previousBuckets.get(value);
+    const id = previousIds?.shift() ?? nextImageValueId(idRef);
+    const nextIds = nextBuckets.get(value) ?? [];
+    nextIds.push(id);
+    nextBuckets.set(value, nextIds);
+
+    return { id, value };
+  });
+
+  valueIdMapRef.current = nextBuckets;
+  return items;
 }
