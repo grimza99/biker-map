@@ -2,11 +2,9 @@
 import { useParams } from "next/navigation";
 
 import Comment from "@/entities/community/ui/Comment";
+import { useCommunityPostComments } from "@/features/community/model/use-comments";
 import CommentForm from "@/features/community/ui/CommentForm";
-import {
-  useCommunityPostComments,
-  useCommunityPostDetail,
-} from "@features/community/model/use-community-post-detail";
+import { useCommunityPostDetail } from "@features/community/model/use-community-post-detail";
 import { useSession } from "@features/session/model/use-session";
 import { formatDateByType } from "@shared/lib";
 import {

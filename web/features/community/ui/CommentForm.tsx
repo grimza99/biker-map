@@ -1,6 +1,6 @@
 import { ApiClientError, Button, Input } from "@/shared";
 import { SubmitEvent, useState } from "react";
-import { useCreatePostComment } from "../model/use-community-post-detail";
+import { useCreatePostComment } from "../model/use-comments";
 
 interface CommentFormProps {
   postId: string;
