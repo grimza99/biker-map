@@ -11,6 +11,7 @@ interface MapSidePanelProps {
   isLoading: boolean;
   isError: boolean;
   error: unknown;
+  isStale?: boolean;
 }
 export function MapSidePanel({
   places,
@@ -18,6 +19,7 @@ export function MapSidePanel({
   isLoading,
   isError,
   error,
+  isStale = false,
 }: MapSidePanelProps) {
   const [searchInput, setSearchInput] = useState("");
 
@@ -41,7 +43,10 @@ export function MapSidePanel({
       />
       <div className="mt-2 h-full grid gap-2 rounded-[22px] border border-border bg-panel/82 p-4 shadow-[0_18px_50px_rgba(5,6,7,0.24)] backdrop-blur-xl">
         검색 결과 {places.length}곳
-        <div className="mt-2 flex flex-col max-h-180 h-full gap-2 overflow-y-scroll pr-1">
+        <div
+          className="mt-2 flex h-full max-h-180 flex-col gap-2 overflow-y-scroll pr-1 transition-opacity duration-200"
+          style={{ opacity: isStale ? 0.5 : 1 }}
+        >
           {isLoading && <LoadingState label="장소를 불러오는 중" />}
           {isError && (
             <ErrorState

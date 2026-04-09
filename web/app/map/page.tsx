@@ -18,6 +18,7 @@ export default function MapPage() {
   const [searchInput, setSearchInput] = useState("");
   const [category, setCategory] = useState<PlaceCategory | undefined>();
   const deferredSearch = useDeferredValue(searchInput);
+  const isStale = searchInput !== deferredSearch;
   const filters = useMemo(
     () => ({
       search: deferredSearch,
@@ -88,6 +89,7 @@ export default function MapPage() {
                   isLoading={isLoading}
                   isError={isError}
                   error={error}
+                  isStale={isStale}
                 />
               </SidePanelBody>
             </SidePanelContent>
