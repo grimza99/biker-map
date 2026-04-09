@@ -1,6 +1,7 @@
 "use client";
 
 import { CommunityPostForm } from "@/features/community";
+import { CreatePlaceDialog } from "@/widgets/admin";
 import {
   Button,
   DefaultCardContainer,
@@ -13,7 +14,7 @@ import {
 } from "@shared/ui";
 import { useState } from "react";
 
-type AdminModalId = "post" | null;
+export type AdminModalId = "post" | "place-create" | "route" | null;
 
 export default function AdminPage() {
   const [openModalId, setOpenModalId] = useState<AdminModalId>(null);
@@ -24,9 +25,7 @@ export default function AdminPage() {
         <h2 className="m-0 text-lg font-semibold text-text">게시글 관리</h2>
         <Dialog
           open={openModalId === "post"}
-          onOpenChange={(nextOpen) =>
-            setOpenModalId(nextOpen ? "post" : null)
-          }
+          onOpenChange={(nextOpen) => setOpenModalId(nextOpen ? "post" : null)}
         >
           <DialogTrigger asChild>
             <Button size="lg">Post</Button>
@@ -51,6 +50,17 @@ export default function AdminPage() {
             </DialogBody>
           </DialogContent>
         </Dialog>
+      </DefaultCardContainer>
+      {/*----------------------------------------------------------- place 등록, 관리 -----------------------------------------*/}
+      <DefaultCardContainer>
+        <h2 className="m-0 text-lg font-semibold text-text">장소 큐레이션</h2>
+        <p className="m-0 text-sm leading-7 text-muted">
+          지도에 노출할 장소 등록 , 관리
+        </p>
+        <CreatePlaceDialog
+          openModalId={openModalId}
+          setOpenModalId={(modalId) => setOpenModalId(modalId)}
+        />
       </DefaultCardContainer>
     </PageWrapper>
   );
