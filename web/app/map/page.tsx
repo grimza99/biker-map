@@ -5,7 +5,7 @@ import type { PlaceCategory } from "@package-shared/types/place";
 import { ArrowLeftToLine } from "lucide-react";
 import { startTransition, useDeferredValue, useMemo, useState } from "react";
 
-import { MapSidePanel, quickFilters } from "@/entities/map";
+import { MapSidePanel, placeCategoryOptions } from "@/entities/map";
 import {
   Button,
   SidePanel,
@@ -49,7 +49,7 @@ export default function MapPage() {
       <div className="absolute inset-0">
         <div className="flex w-full h-full items-start justify-between gap-4 p-5 md:p-6">
           <div className="rounded-2xl flex flex-wrap gap-2 border border-border bg-panel/82 p-2 shadow-[0_18px_50px_rgba(5,6,7,0.24)] backdrop-blur-xl">
-            {quickFilters.map((filter) => {
+            {placeCategoryOptions.map((filter) => {
               const active = category === filter.value;
 
               return (
