@@ -42,9 +42,35 @@ export async function GET(
 const updateRouteSchema = z
   .object({
     title: z.string().min(1).optional(),
-    region: z.string().min(1).optional(),
     summary: z.string().min(1).optional(),
-    provider: z.enum(["naver", "kakao", "google", "etc"]).optional(),
+    content: z.string().min(1).optional(),
+    departureRegion: z
+      .enum([
+        "seoul",
+        "busan",
+        "daegu",
+        "incheon",
+        "gwangju",
+        "daejeon",
+        "ulsan",
+        "sejong",
+        "jeju",
+      ])
+      .optional(),
+    destinationRegion: z
+      .enum([
+        "seoul",
+        "busan",
+        "daegu",
+        "incheon",
+        "gwangju",
+        "daejeon",
+        "ulsan",
+        "sejong",
+        "jeju",
+      ])
+      .optional(),
+    provider: z.enum(["naver", "etc"]).optional(),
     externalMapUrl: z.string().url().optional(),
     thumbnailUrl: z.string().url().optional(),
     distanceKm: z.number().optional(),
@@ -55,8 +81,10 @@ const updateRouteSchema = z
   .refine(
     (value) =>
       value.title !== undefined ||
-      value.region !== undefined ||
       value.summary !== undefined ||
+      value.content !== undefined ||
+      value.departureRegion !== undefined ||
+      value.destinationRegion !== undefined ||
       value.provider !== undefined ||
       value.externalMapUrl !== undefined ||
       value.thumbnailUrl !== undefined ||
@@ -117,6 +145,11 @@ export async function PATCH(
   if (payload.title !== undefined) updateInput.title = payload.title.trim();
   if (payload.summary !== undefined)
     updateInput.summary = payload.summary.trim();
+  if (payload.content !== undefined) updateInput.content = payload.content.trim();
+  if (payload.departureRegion !== undefined)
+    updateInput.departure_region = payload.departureRegion;
+  if (payload.destinationRegion !== undefined)
+    updateInput.destination_region = payload.destinationRegion;
   if (payload.provider !== undefined) updateInput.provider = payload.provider;
   if (payload.externalMapUrl !== undefined)
     updateInput.external_map_url = payload.externalMapUrl;
