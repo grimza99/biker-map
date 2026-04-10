@@ -6,6 +6,7 @@ export * from "./dialog";
 export * from "./divider";
 export * from "./dropdown-menu";
 export * from "./input";
+export * from "./markdown";
 export * from "./page-wrapper";
 export * from "./pagination";
 export * from "./profile";
