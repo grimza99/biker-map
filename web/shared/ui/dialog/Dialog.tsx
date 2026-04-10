@@ -204,7 +204,7 @@ export function DialogContent({
         aria-modal="true"
         aria-labelledby={context.id}
         className={cn(
-          "relative z-10 w-full overflow-hidden rounded-2xl  bg-panel-solid shadow-[(--shadow)]",
+          "relative z-10 w-full max-h-[calc(100vh-10%)] overflow-y-scroll rounded-2xl  bg-panel-solid shadow-[(--shadow)]",
           dialogSizeClassName[size],
           className
         )}

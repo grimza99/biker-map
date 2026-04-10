@@ -80,6 +80,7 @@ export async function GET(request: NextRequest) {
 const createRouteSchema = z.object({
   title: z.string().min(1),
   summary: z.string().min(1),
+  content: z.string().min(1),
   departureRegion: z.enum([
     "seoul",
     "busan",
@@ -102,7 +103,7 @@ const createRouteSchema = z.object({
     "sejong",
     "jeju",
   ]),
-  provider: z.enum(["naver"]),
+  provider: z.enum(["naver", "etc"]),
   externalMapUrl: z.string().url(),
   thumbnailUrl: z.string().url().optional(),
   distanceKm: z.number().optional(),
@@ -145,6 +146,9 @@ export async function POST(request: Request) {
     .insert({
       title: payload.title.trim(),
       summary: payload.summary.trim(),
+      content: payload.content.trim(),
+      departure_region: payload.departureRegion,
+      destination_region: payload.destinationRegion,
       provider: payload.provider,
       external_map_url: payload.externalMapUrl,
       thumbnail_url: payload.thumbnailUrl ?? null,

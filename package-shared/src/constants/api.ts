@@ -13,6 +13,9 @@ export const API_PATHS = {
     comments: (postId: string) => `${BASE_URL}/posts/${postId}/comments`,
     reply: (commentId: string) => `${BASE_URL}/comments/${commentId}/replies`,
   },
+  uploads: {
+    image: `${BASE_URL}/uploads/image`,
+  },
   places: {
     list: `${BASE_URL}/places`,
     detail: (placeId: string) => `${BASE_URL}/places/${placeId}`,
