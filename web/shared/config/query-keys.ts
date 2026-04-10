@@ -4,7 +4,8 @@ export const queryKeys = {
   places: (params?: Record<string, unknown>) =>
     ["places", params ?? {}] as const,
   place: (placeId: string) => ["places", placeId] as const,
-  routes: ["routes"] as const,
+  routes: (params?: Record<string, string | number | undefined>) =>
+    ["routes", params ?? {}] as const,
   route: (routeId: string) => ["routes", routeId] as const,
   favorites: ["favorites"] as const,
   posts: (params?: Record<string, string | number | undefined>) =>

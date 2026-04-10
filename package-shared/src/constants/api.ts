@@ -17,4 +17,9 @@ export const API_PATHS = {
     list: `${BASE_URL}/places`,
     detail: (placeId: string) => `${BASE_URL}/places/${placeId}`,
   },
+
+  routes: {
+    list: `${BASE_URL}/routes`,
+    detail: (routeId: string) => `${BASE_URL}/routes/${routeId}`,
+  },
 };

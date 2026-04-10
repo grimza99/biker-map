@@ -1,17 +1,28 @@
-export type RouteProvider = "naver" | "kakao" | "google" | "etc";
+export type RouteProvider = "naver" | "etc";
 export type RouteSourceType = "curated" | "user";
+export type RouteRegion =
+  | "seoul"
+  | "busan"
+  | "daegu"
+  | "incheon"
+  | "gwangju"
+  | "daejeon"
+  | "ulsan"
+  | "sejong"
+  | "jeju"
+  | "all";
 
 export type RoutesQuery = {
-  search?: string;
-  region?: string;
-  cursor?: string;
-  limit?: number;
+  departureRegion?: RouteRegion;
+  destinationRegion?: RouteRegion;
+  maxDistanceKm?: number;
 };
 
 export type RouteListItem = {
   id: string;
   title: string;
-  region: string;
+  departureRegion?: RouteRegion;
+  destinationRegion?: RouteRegion;
   summary: string;
   provider: RouteProvider;
   externalMapUrl: string;
@@ -22,24 +33,13 @@ export type RouteListItem = {
   sourceType: RouteSourceType;
 };
 
-export type RouteDetail = RouteListItem;
-
 export type RoutesListResponseData = {
   items: RouteListItem[];
 };
 
-export type CreateRouteBody = {
-  title: string;
-  region: string;
-  summary: string;
-  provider: RouteProvider;
-  externalMapUrl: string;
-  thumbnailUrl?: string;
-  distanceKm?: number;
-  estimatedDurationMinutes?: number;
-  tags?: string[];
-  sourceType?: RouteSourceType;
-};
+export interface CreateRouteBody extends Omit<RouteListItem, "id"> {
+  // id는 서버에서 생성하므로 클라이언트에서는 제공하지 않음
+}
 
 export type CreateRouteResponseData = {
   id: string;

@@ -1,4 +1,8 @@
-import type { CreateRouteBody, RoutesQuery } from "@package-shared/types/route";
+import type {
+  CreateRouteBody,
+  RouteRegion,
+  RoutesQuery,
+} from "@package-shared/types/route";
 import {
   badRequest,
   createSupabaseApiClient,
@@ -11,19 +15,22 @@ import {
   ok,
   paginateByCursor,
 } from "@shared/api";
+import { requireApiSession } from "@shared/api/auth";
 import type { NextRequest } from "next/server";
 import { z } from "zod";
-import { requireApiSession } from "@shared/api/auth";
 
 /**----------------------------------------get route list ------------------------------------------- */
 
 export async function GET(request: NextRequest) {
   const searchParams = request.nextUrl.searchParams;
   const query: RoutesQuery = {
-    search: getStringParam(searchParams, "search"),
-    region: getStringParam(searchParams, "region"),
-    cursor: getStringParam(searchParams, "cursor"),
-    limit: getNumberParam(searchParams, "limit"),
+    departureRegion: getStringParam(searchParams, "departureRegion") as
+      | RouteRegion
+      | undefined,
+    destinationRegion: getStringParam(searchParams, "destinationRegion") as
+      | RouteRegion
+      | undefined,
+    maxDistanceKm: getNumberParam(searchParams, "maxDistanceKm"),
   };
 
   const supabase = createSupabaseApiClient(request);
@@ -40,30 +47,31 @@ export async function GET(request: NextRequest) {
     .map(mapRouteListItem)
     .filter((item): item is NonNullable<typeof item> => Boolean(item))
     .filter((item) => {
-      if (query.search) {
-        const keyword = query.search.toLowerCase();
-        if (
-          ![item.title, item.summary].join(" ").toLowerCase().includes(keyword)
-        ) {
-          return false;
-        }
+      if (
+        query.departureRegion &&
+        item.departureRegion !== query.departureRegion
+      ) {
+        return false;
       }
 
-      if (query.region) {
-        const region = query.region.toLowerCase();
-        if (!item.region.toLowerCase().includes(region)) {
-          return false;
-        }
+      if (
+        query.destinationRegion &&
+        item.destinationRegion !== query.destinationRegion
+      ) {
+        return false;
+      }
+
+      if (
+        query.maxDistanceKm !== undefined &&
+        (item.distanceKm === undefined || item.distanceKm > query.maxDistanceKm)
+      ) {
+        return false;
       }
 
       return true;
     });
 
-  const { items: pagedItems, meta } = paginateByCursor(
-    items,
-    query.cursor,
-    query.limit
-  );
+  const { items: pagedItems, meta } = paginateByCursor(items);
 
   return ok({ items: pagedItems }, undefined, meta);
 }
@@ -71,15 +79,36 @@ export async function GET(request: NextRequest) {
 /**----------------------------------------create route ------------------------------------------- */
 const createRouteSchema = z.object({
   title: z.string().min(1),
-  region: z.string().min(1),
   summary: z.string().min(1),
-  provider: z.enum(["naver", "kakao", "google", "etc"]),
+  departureRegion: z.enum([
+    "seoul",
+    "busan",
+    "daegu",
+    "incheon",
+    "gwangju",
+    "daejeon",
+    "ulsan",
+    "sejong",
+    "jeju",
+  ]),
+  destinationRegion: z.enum([
+    "seoul",
+    "busan",
+    "daegu",
+    "incheon",
+    "gwangju",
+    "daejeon",
+    "ulsan",
+    "sejong",
+    "jeju",
+  ]),
+  provider: z.enum(["naver"]),
   externalMapUrl: z.string().url(),
   thumbnailUrl: z.string().url().optional(),
   distanceKm: z.number().optional(),
   estimatedDurationMinutes: z.number().int().optional(),
-  tags: z.array(z.string()).optional(),
-  sourceType: z.enum(["curated", "user"]).optional(),
+  tags: z.array(z.string()),
+  sourceType: z.enum(["curated", "user"]),
 });
 
 export async function POST(request: Request) {
@@ -115,7 +144,6 @@ export async function POST(request: Request) {
     .from("routes")
     .insert({
       title: payload.title.trim(),
-      region: payload.region.trim(),
       summary: payload.summary.trim(),
       provider: payload.provider,
       external_map_url: payload.externalMapUrl,
