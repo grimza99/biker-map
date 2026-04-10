@@ -1,7 +1,7 @@
 import { PlaceListItem } from "@package-shared/index";
 import { useRouter } from "next/navigation";
 
-import { Button, StatusChip } from "@/shared";
+import { Button, Chip } from "@/shared";
 import { placeCategoryOptions } from "../model/map-filters";
 
 export function PlaceCard({ place }: { place: PlaceListItem }) {
@@ -19,7 +19,7 @@ export function PlaceCard({ place }: { place: PlaceListItem }) {
     <div className="cursor-pointer rounded-lg border border-border bg-panel-solid p-4 flex flex-col gap-2">
       <div className="flex items-center justify-between gap-3">
         <span className="font-semibold text-lg">{place.name}</span>
-        {label && <StatusChip statusLabel={label} />}
+        {label && <Chip label={label} />}
       </div>
       <p className="m-0 text-sm leading-5 text-muted">{place.address}</p>
       <div className="flex gap-2 items-center">

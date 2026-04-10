@@ -10,7 +10,7 @@ import {
 import type { ReactNode } from "react";
 
 import { cn } from "@shared/lib";
-import { StatusChip } from "../chips";
+import { Chip } from "../chips";
 
 type ToastTone = "success" | "info" | "warning" | "danger";
 
@@ -54,8 +54,8 @@ export function Toast({
     >
       <div className="flex items-start justify-between gap-1">
         <div className="grid gap-3">
-          <StatusChip
-            statusLabel={title}
+          <Chip
+            label={title}
             icon={toneIcons[tone]}
             className={toneClassNames[tone]}
           />
