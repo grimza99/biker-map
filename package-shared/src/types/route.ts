@@ -33,13 +33,15 @@ export type RouteListItem = {
   sourceType: RouteSourceType;
 };
 
+export type RouteDetail = RouteListItem & {
+  content: string;
+};
+
 export type RoutesListResponseData = {
   items: RouteListItem[];
 };
 
-export interface CreateRouteBody extends Omit<RouteListItem, "id"> {
-  // id는 서버에서 생성하므로 클라이언트에서는 제공하지 않음
-}
+export type CreateRouteBody = Omit<RouteDetail, "id">;
 
 export type CreateRouteResponseData = {
   id: string;
