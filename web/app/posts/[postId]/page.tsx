@@ -16,6 +16,7 @@ import { useCommunityPostDetail } from "@features/community/model/use-community-
 import { useSession } from "@features/session/model/use-session";
 import {
   Button,
+  Chip,
   Dialog,
   DialogBody,
   DialogContent,
@@ -26,7 +27,6 @@ import {
   MetaCounts,
   PageWrapper,
   Profile,
-  StatusChip,
   Toast,
 } from "@shared/ui";
 
@@ -73,7 +73,7 @@ export default function PostDetailPage() {
     <PageWrapper>
       <div className="flex flex-col gap-3 w-full">
         <div className="flex items-start justify-between gap-3">
-          <StatusChip statusLabel={post.category} />
+          <Chip label={post.category} />
           {isOwner && (
             <div className="flex items-center gap-2">
               <Dialog open={isEditOpen} onOpenChange={setIsEditOpen}>
