@@ -1,7 +1,11 @@
 "use client";
 
 import { CommunityPostForm } from "@/features/community";
-import { CreatePlaceDialog, CreateRouteDialog } from "@/widgets/admin";
+import {
+  CreatePlaceDialog,
+  CreateRouteDialog,
+  ManageRouteDialog,
+} from "@/widgets/admin";
 import {
   Button,
   DefaultCardContainer,
@@ -14,7 +18,12 @@ import {
 } from "@shared/ui";
 import { useState } from "react";
 
-export type AdminModalId = "post" | "place-create" | "route-create" | null;
+export type AdminModalId =
+  | "post"
+  | "place-create"
+  | "route-create"
+  | "route-manage"
+  | null;
 
 export default function AdminPage() {
   const [openModalId, setOpenModalId] = useState<AdminModalId>(null);
@@ -71,6 +80,10 @@ export default function AdminPage() {
           추천 경로 메타데이터와 외부 지도 링크 관리
         </p>
         <CreateRouteDialog
+          openModalId={openModalId}
+          setOpenModalId={(modalId) => setOpenModalId(modalId)}
+        />
+        <ManageRouteDialog
           openModalId={openModalId}
           setOpenModalId={(modalId) => setOpenModalId(modalId)}
         />
