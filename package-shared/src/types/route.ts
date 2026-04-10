@@ -1,4 +1,4 @@
-export type RouteProvider = "naver";
+export type RouteProvider = "naver" | "etc";
 export type RouteSourceType = "curated" | "user";
 export type RouteRegion =
   | "seoul"
@@ -37,7 +37,9 @@ export type RoutesListResponseData = {
   items: RouteListItem[];
 };
 
-export type CreateRouteBody = RouteListItem;
+export interface CreateRouteBody extends Omit<RouteListItem, "id"> {
+  // id는 서버에서 생성하므로 클라이언트에서는 제공하지 않음
+}
 
 export type CreateRouteResponseData = {
   id: string;

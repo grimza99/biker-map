@@ -1,7 +1,7 @@
 import {
-  RouteDetail,
   RouteListItem,
   RouteProvider,
+  RouteRegion,
   RouteSourceType,
 } from "@package-shared/types/route";
 
@@ -12,13 +12,19 @@ import {
   SupabaseRecord,
 } from "../supabase-record";
 
-const routeProviders = new Set<RouteProvider>([
-  "naver",
-  "kakao",
-  "google",
-  "etc",
-]);
+const routeProviders = new Set<RouteProvider>(["naver"]);
 const routeSourceTypes = new Set<RouteSourceType>(["curated", "user"]);
+const routeRegions = new Set<RouteRegion>([
+  "seoul",
+  "busan",
+  "daegu",
+  "incheon",
+  "gwangju",
+  "daejeon",
+  "ulsan",
+  "sejong",
+  "jeju",
+]);
 
 function toRouteProvider(value: string) {
   return routeProviders.has(value as RouteProvider)
@@ -32,25 +38,35 @@ function toRouteSourceType(value: string) {
     : "curated";
 }
 
+function toRouteRegion(value: string) {
+  return routeRegions.has(value as RouteRegion)
+    ? (value as RouteRegion)
+    : undefined;
+}
+
 export function mapRouteListItem(row: SupabaseRecord): RouteListItem | null {
   const id = getRecordString(row, ["id"]);
   const title = getRecordString(row, ["title"]);
-  const region = getRecordString(row, ["region"]);
   const summary = getRecordString(row, ["summary"]);
-  const provider = toRouteProvider(getRecordString(row, ["provider"], "etc"));
+  const provider = toRouteProvider(getRecordString(row, ["provider"]));
   const externalMapUrl = getRecordString(row, [
     "external_map_url",
     "externalMapUrl",
   ]);
 
-  if (!id || !title || !region || !summary || !externalMapUrl) {
+  if (!id || !title || !summary || !externalMapUrl) {
     return null;
   }
 
   return {
     id,
     title,
-    region,
+    departureRegion: toRouteRegion(
+      getRecordString(row, ["departure_region", "departureRegion"], "")
+    ),
+    destinationRegion: toRouteRegion(
+      getRecordString(row, ["destination_region", "destinationRegion"], "")
+    ),
     summary,
     provider,
     externalMapUrl,
@@ -79,6 +95,6 @@ export function mapRouteListItem(row: SupabaseRecord): RouteListItem | null {
   };
 }
 
-export function mapRouteDetail(row: SupabaseRecord): RouteDetail | null {
+export function mapRouteDetail(row: SupabaseRecord): RouteListItem | null {
   return mapRouteListItem(row);
 }
