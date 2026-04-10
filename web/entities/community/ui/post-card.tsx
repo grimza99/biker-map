@@ -1,8 +1,12 @@
 import Link from "next/link";
 
-import { formatDateByType } from "@/shared";
+import {
+  Chip,
+  DefaultCardContainer,
+  formatDateByType,
+  MetaCounts,
+} from "@/shared";
 import type { CommunityPost } from "@package-shared/types/community";
-import { DefaultCardContainer, MetaCounts, StatusChip } from "@shared/ui";
 
 type CommunityPostCardProps = {
   post: CommunityPost;
@@ -28,10 +32,10 @@ export function CommunityPostCard({
       <DefaultCardContainer className={className}>
         <div className="flex items-start justify-between gap-2">
           <div className="flex items-center gap-2">
-            <StatusChip statusLabel={categoryLabel} className={chipColor} />
+            <Chip label={categoryLabel} className={chipColor} />
             {post.pinned && (
-              <StatusChip
-                statusLabel={"고정"}
+              <Chip
+                label={"고정"}
                 className="text-muted border-border bg-panel"
               />
             )}

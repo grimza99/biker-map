@@ -39,15 +39,3 @@ export function Chip({
     </span>
   );
 }
-
-export function StatusChip({
-  statusLabel,
-  className,
-  icon,
-}: {
-  statusLabel: string;
-  className?: string;
-  icon?: ReactNode;
-}) {
-  return <Chip label={statusLabel} className={className} icon={icon} />;
-}
