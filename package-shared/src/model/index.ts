@@ -2,4 +2,4 @@ export {
   allowedCommunityCategoryOptions,
   communityCategoryOptions,
 } from "./community";
-export { distanceOptions, routeRegionOptions } from "./route";
+export { distanceOptions, regionLabel, routeRegionOptions } from "./route";
