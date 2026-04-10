@@ -1,8 +1,8 @@
 import { PlaceListItem } from "@package-shared/index";
 import { useRouter } from "next/navigation";
 
-import { quickFilters } from "@/entities/map";
 import { Button, Chip } from "@/shared";
+import { placeCategoryOptions } from "../model/map-filters";
 
 export function PlaceCard({ place }: { place: PlaceListItem }) {
   const router = useRouter();
@@ -12,7 +12,7 @@ export function PlaceCard({ place }: { place: PlaceListItem }) {
   };
 
   const label =
-    quickFilters.find((item) => item.value === place.category)?.label ??
+    placeCategoryOptions.find((item) => item.value === place.category)?.label ??
     undefined;
 
   return (
