@@ -15,6 +15,7 @@ import {
 
 const providerLabel = {
   naver: "네이버 지도",
+  ect: "ect",
 } as const;
 
 const sourceTypeLabel = {
@@ -51,7 +52,12 @@ export default function RouteDetailPage() {
       <div className="grid gap-3">
         <div className="flex flex-wrap items-center gap-2">
           <Chip label={sourceTypeLabel[route.sourceType]} />
-          <Chip label={providerLabel[route.provider]} />
+          <Chip
+            label={
+              providerLabel[route.provider as keyof typeof providerLabel] ??
+              "알 수 없음"
+            }
+          />
         </div>
         <h1 className="m-0 text-[clamp(28px,4vw,42px)] font-semibold tracking-[-0.04em] text-text">
           {route.title}

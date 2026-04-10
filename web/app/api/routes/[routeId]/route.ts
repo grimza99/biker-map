@@ -115,7 +115,6 @@ export async function PATCH(
   const updateInput: Record<string, unknown> = {};
 
   if (payload.title !== undefined) updateInput.title = payload.title.trim();
-  if (payload.region !== undefined) updateInput.region = payload.region.trim();
   if (payload.summary !== undefined)
     updateInput.summary = payload.summary.trim();
   if (payload.provider !== undefined) updateInput.provider = payload.provider;

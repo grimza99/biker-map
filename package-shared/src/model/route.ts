@@ -1,4 +1,4 @@
-import { RouteRegion } from "src/types/route";
+import { RouteRegion } from "../types/route";
 
 export const routeRegionOptions: Array<{ label: string; value: RouteRegion }> =
   [
