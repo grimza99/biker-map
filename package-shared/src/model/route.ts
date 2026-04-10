@@ -21,3 +21,16 @@ export const distanceOptions = [
   { value: "200", label: "200km 이하" },
   { value: "over200", label: "200km 이상" },
 ];
+
+export const regionLabel: Record<RouteRegion, string> = {
+  all: "전체",
+  seoul: "서울",
+  busan: "부산",
+  daegu: "대구",
+  incheon: "인천",
+  gwangju: "광주",
+  daejeon: "대전",
+  ulsan: "울산",
+  sejong: "세종",
+  jeju: "제주",
+};

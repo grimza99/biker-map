@@ -1,20 +1,7 @@
 import { Chip, DefaultCardContainer } from "@/shared";
-import { RouteListItem, RouteRegion } from "@package-shared/index";
+import { regionLabel, RouteListItem } from "@package-shared/index";
 import { ExternalLink, MapPinned, RouteIcon, Timer } from "lucide-react";
 import Link from "next/link";
-
-const regionLabel: Record<RouteRegion, string> = {
-  all: "전체",
-  seoul: "서울",
-  busan: "부산",
-  daegu: "대구",
-  incheon: "인천",
-  gwangju: "광주",
-  daejeon: "대전",
-  ulsan: "울산",
-  sejong: "세종",
-  jeju: "제주",
-};
 
 export function RouteCard({ route }: { route: RouteListItem }) {
   return (

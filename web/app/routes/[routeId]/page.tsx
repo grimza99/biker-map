@@ -9,13 +9,14 @@ import {
   DefaultCardContainer,
   ErrorState,
   LoadingState,
+  MarkdownContent,
   PageWrapper,
   TagChip,
 } from "@shared/ui";
 
 const providerLabel = {
   naver: "네이버 지도",
-  ect: "ect",
+  etc: "외부 지도",
 } as const;
 
 const sourceTypeLabel = {
@@ -104,7 +105,7 @@ export default function RouteDetailPage() {
           </a>
         </DefaultCardContainer>
       </div>
-      <p className="m-0 text-sm leading-7 text-muted">{route.summary}</p>
+      <MarkdownContent content={route.content} />
     </PageWrapper>
   );
 }
