@@ -156,12 +156,14 @@ export function SidePanelContent({
   closeOnBackdropClick = true,
   widthClassName = "w-[min(32rem,100vw)]",
   title,
+  overlayClassName,
 }: {
   children: ReactNode;
   className?: string;
   closeOnBackdropClick?: boolean;
   widthClassName?: string;
   title: string | ReactNode;
+  overlayClassName?: string;
 }) {
   const context = useContext(SidePanelContext);
 
@@ -174,7 +176,10 @@ export function SidePanelContent({
       <button
         type="button"
         aria-label="사이드 패널 닫기"
-        className="absolute inset-0 bg-bg/72 backdrop-blur-sm"
+        className={cn(
+          "absolute inset-0 bg-bg/72 backdrop-blur-sm",
+          overlayClassName
+        )}
         onClick={closeOnBackdropClick ? context.close : undefined}
       />
 

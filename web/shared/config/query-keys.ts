@@ -1,7 +1,8 @@
 export const queryKeys = {
   session: ["session"] as const,
   users: ["users"] as const,
-  places: ["places"] as const,
+  places: (params?: Record<string, unknown>) =>
+    ["places", params ?? {}] as const,
   place: (placeId: string) => ["places", placeId] as const,
   routes: ["routes"] as const,
   route: (routeId: string) => ["routes", routeId] as const,
