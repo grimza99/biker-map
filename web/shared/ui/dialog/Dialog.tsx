@@ -166,7 +166,7 @@ type DialogContentProps = {
   children: ReactNode;
   className?: string;
   closeOnBackdropClick?: boolean;
-  size?: "sm" | "md" | "lg";
+  size?: "sm" | "md" | "lg" | "xl";
 };
 
 const dialogSizeClassName: Record<
@@ -176,6 +176,7 @@ const dialogSizeClassName: Record<
   sm: "max-w-[26rem]",
   md: "max-w-[34rem]",
   lg: "max-w-[42rem]",
+  xl: "max-w-[60rem]",
 };
 
 export function DialogContent({

@@ -31,7 +31,10 @@ export function CreateRouteDialog({
         </Button>
       </DialogTrigger>
 
-      <DialogContent size="lg" className="border border-border">
+      <DialogContent
+        size="lg"
+        className="border border-border min-h-[calc(100vh-20%)]"
+      >
         <DialogHeader
           title={
             <span className="text-lg font-semibold text-text">경로 등록</span>

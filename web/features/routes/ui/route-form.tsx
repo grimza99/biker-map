@@ -1,7 +1,6 @@
 "use client";
 
 import {
-  API_PATHS,
   RouteRegion,
   routeRegionOptions,
   type CreateRouteBody,
@@ -10,17 +9,18 @@ import {
   type RouteSourceType,
   type UpdateRouteBody,
 } from "@package-shared/index";
-import { useMutation } from "@tanstack/react-query";
 import { useEffect, useState } from "react";
 
-import { ApiClientError, apiFetch } from "@shared/api/http";
+import {
+  useCreateRouteMutate,
+  useEditRouteMutate,
+} from "@/features/admin/route";
 import {
   Button,
   ImageInput,
   Input,
   MarkdownEditor,
   SelectInput,
-  Toast,
 } from "@shared/ui";
 
 const providerOptions: Array<{ value: RouteProvider; label: string }> = [
@@ -58,6 +58,11 @@ export function RouteForm({
   const [tags, setTags] = useState("");
   const [sourceType, setSourceType] = useState<RouteSourceType>("curated");
   const isEditMode = Boolean(initialData);
+
+  const { mutateAsync: createRoute, isPending: isCreatePending } =
+    useCreateRouteMutate();
+  const { mutateAsync: updateRoute, isPending: isUpdatePending } =
+    useEditRouteMutate(initialData?.id ?? "");
 
   const resetForm = () => {
     setTitle("");
@@ -100,34 +105,24 @@ export function RouteForm({
     setSourceType(initialData.sourceType);
   }, [initialData]);
 
-  const routeMutation = useMutation({
-    mutationFn: (payload: CreateRouteBody | UpdateRouteBody) => {
-      if (isEditMode && initialData) {
-        return apiFetch(API_PATHS.routes.detail(initialData.id), {
-          method: "PATCH",
-          body: JSON.stringify(payload),
-        });
-      }
-
-      return apiFetch(API_PATHS.routes.list, {
-        method: "POST",
-        body: JSON.stringify(payload),
-      });
-    },
-    onSuccess() {
-      if (!isEditMode) {
-        resetForm();
-      }
+  const handleCreateSubmit = async (payload: CreateRouteBody) => {
+    try {
+      await createRoute(payload);
+      resetForm();
       onSuccess?.();
-    },
-  });
+    } catch {
+      console.error("Failed to update route");
+    }
+  };
 
-  const errorMessage =
-    routeMutation.error instanceof ApiClientError
-      ? routeMutation.error.message
-      : routeMutation.error instanceof Error
-      ? routeMutation.error.message
-      : null;
+  const handleEditSubmit = async (payload: UpdateRouteBody) => {
+    try {
+      await updateRoute(payload);
+      onSuccess?.();
+    } catch {
+      console.error("Failed to update route");
+    }
+  };
 
   return (
     <form
@@ -136,9 +131,9 @@ export function RouteForm({
         event.preventDefault();
 
         const payload = {
-          title: title.trim(),
-          summary: summary.trim(),
-          content: content.trim(),
+          title,
+          summary,
+          content,
           departureRegion,
           destinationRegion,
           provider,
@@ -154,21 +149,24 @@ export function RouteForm({
             .filter(Boolean),
           sourceType,
         };
-
-        routeMutation.mutate(payload);
+        if (isEditMode) {
+          handleEditSubmit(payload);
+        } else {
+          handleCreateSubmit(payload);
+        }
       }}
     >
       <Input
         label="경로명"
         value={title}
-        onChange={(event) => setTitle(event.target.value)}
+        onChange={(event) => setTitle(event.target.value.trim())}
         placeholder="예: 서울 북부 야간 루트"
         required
       />
       <Input
         label="소개"
         value={summary}
-        onChange={(event) => setSummary(event.target.value)}
+        onChange={(event) => setSummary(event.target.value.trim)}
         placeholder="리스트 카드에 보여줄 짧은 소개"
         required
       />
@@ -247,16 +245,6 @@ export function RouteForm({
         onValueChange={(value) => setThumbnailUrl(value ? value[0] : "")}
         maxImages={1}
       />
-      {errorMessage && <Toast tone="warning" title={"경로 등록 실패"} />}
-
-      {routeMutation.isSuccess && (
-        <Toast
-          tone="success"
-          title={
-            isEditMode ? "경로가 수정되었습니다." : "경로가 등록되었습니다."
-          }
-        />
-      )}
 
       <div className="flex items-center justify-end gap-2">
         {onCancel && (
@@ -264,7 +252,7 @@ export function RouteForm({
             취소
           </Button>
         )}
-        <Button type="submit" loading={routeMutation.isPending}>
+        <Button type="submit" loading={isCreatePending || isUpdatePending}>
           {submitLabel ?? (isEditMode ? "경로 수정" : "경로 등록")}
         </Button>
       </div>
