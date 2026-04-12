@@ -40,8 +40,6 @@ export async function POST(request: Request) {
   )}.${ext}`;
 
   const data = new Uint8Array(await file.arrayBuffer());
-
-  console.log(path, data);
   const supabase = createSupabaseApiClient(request);
   const { error } = await supabase.storage
     .from(BUCKET_NAME)
