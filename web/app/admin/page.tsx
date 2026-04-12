@@ -1,7 +1,7 @@
 "use client";
 
 import { CommunityPostForm } from "@/features/community";
-import { CreatePlaceDialog } from "@/widgets/admin";
+import { CreatePlaceDialog, CreateRouteDialog } from "@/widgets/admin";
 import {
   Button,
   DefaultCardContainer,
@@ -14,7 +14,7 @@ import {
 } from "@shared/ui";
 import { useState } from "react";
 
-export type AdminModalId = "post" | "place-create" | "route" | null;
+export type AdminModalId = "post" | "place-create" | "route-create" | null;
 
 export default function AdminPage() {
   const [openModalId, setOpenModalId] = useState<AdminModalId>(null);
@@ -58,6 +58,19 @@ export default function AdminPage() {
           지도에 노출할 장소 등록 , 관리
         </p>
         <CreatePlaceDialog
+          openModalId={openModalId}
+          setOpenModalId={(modalId) => setOpenModalId(modalId)}
+        />
+      </DefaultCardContainer>
+
+      {/*----------------------------------------------------------- 경로 큐레이션 등록, 관리 -----------------------------------------*/}
+
+      <DefaultCardContainer>
+        <h2 className="m-0 text-lg font-semibold text-text">경로 큐레이션</h2>
+        <p className="m-0 text-sm leading-7 text-muted">
+          추천 경로 메타데이터와 외부 지도 링크 관리
+        </p>
+        <CreateRouteDialog
           openModalId={openModalId}
           setOpenModalId={(modalId) => setOpenModalId(modalId)}
         />

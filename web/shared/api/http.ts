@@ -67,18 +67,21 @@ export async function apiFetch<T>(
   init?: RequestInit,
   retried = false
 ): Promise<ApiResponse<T>> {
+  const headers = new Headers(init?.headers);
+  const isFormDataBody = init?.body instanceof FormData;
+
+  if (!isFormDataBody && !headers.has("Content-Type")) {
+    headers.set("Content-Type", "application/json");
+  }
+
+  if (accessToken && !headers.has("Authorization")) {
+    headers.set("Authorization", `Bearer ${accessToken}`);
+  }
+
   const response = await fetch(input, {
     ...init,
     credentials: init?.credentials ?? "include",
-    headers: {
-      "Content-Type": "application/json",
-      ...(accessToken
-        ? {
-            Authorization: `Bearer ${accessToken}`,
-          }
-        : {}),
-      ...(init?.headers ?? {}),
-    },
+    headers,
   });
 
   const payload = await response.json().catch(() => null);

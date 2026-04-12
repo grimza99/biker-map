@@ -1,4 +1,5 @@
 import {
+  RouteDetail,
   RouteListItem,
   RouteProvider,
   RouteRegion,
@@ -95,6 +96,15 @@ export function mapRouteListItem(row: SupabaseRecord): RouteListItem | null {
   };
 }
 
-export function mapRouteDetail(row: SupabaseRecord): RouteListItem | null {
-  return mapRouteListItem(row);
+export function mapRouteDetail(row: SupabaseRecord): RouteDetail | null {
+  const item = mapRouteListItem(row);
+
+  if (!item) {
+    return null;
+  }
+
+  return {
+    ...item,
+    content: getRecordString(row, ["content"], ""),
+  };
 }
