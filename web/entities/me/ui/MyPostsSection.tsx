@@ -3,11 +3,23 @@
 import { CommunityPostCard } from "@/entities/community";
 import { useMyPosts } from "@features/me/model/use-my-posts";
 import { categoryLabelMap } from "@package-shared/model";
-import { EmptyState, ErrorState, LoadingState } from "@shared/ui";
+import { EmptyState, ErrorState, LoadingState, Pagination } from "@shared/ui";
+import { startTransition, useEffect, useState } from "react";
 
 export function MyPostsSection() {
-  const myPostsQuery = useMyPosts();
+  const [page, setPage] = useState(1);
+  const pageSize = 6;
+
+  const myPostsQuery = useMyPosts({ page, pageSize });
   const posts = myPostsQuery.data?.data.items ?? [];
+  const total = myPostsQuery.data?.meta?.total ?? 0;
+  const totalPages = Math.max(Math.ceil(total / pageSize), 1);
+
+  useEffect(() => {
+    if (page > totalPages) {
+      setPage(totalPages);
+    }
+  }, [page, totalPages]);
 
   if (myPostsQuery.isLoading) {
     return <LoadingState label="내가 쓴 글을 불러오는 중" />;
@@ -39,10 +51,18 @@ export function MyPostsSection() {
     <div className="grid gap-4">
       {posts.map((post) => (
         <CommunityPostCard
+          key={post.id}
           post={post}
           categoryLabel={categoryLabelMap[post.category]}
         />
       ))}
+      <Pagination
+        page={page}
+        totalPages={totalPages}
+        onPageChange={(nextPage) => {
+          startTransition(() => setPage(nextPage));
+        }}
+      />
     </div>
   );
 }

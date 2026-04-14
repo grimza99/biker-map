@@ -9,10 +9,28 @@ import { useQuery } from "@tanstack/react-query";
 import { apiFetch } from "@shared/api/http";
 import { queryKeys } from "@shared/config/query-keys";
 
-export function useMyPosts(enabled = true) {
+export type MyPostsQuery = {
+  page: number;
+  pageSize: number;
+};
+
+function buildMyPostsSearchParams({ page, pageSize }: MyPostsQuery) {
+  const searchParams = new URLSearchParams();
+  searchParams.set("page", String(page));
+  searchParams.set("pageSize", String(pageSize));
+  return searchParams.toString();
+}
+
+export function useMyPosts(filters: MyPostsQuery, enabled = true) {
+  const query = buildMyPostsSearchParams(filters);
+
   return useQuery({
-    queryKey: queryKeys.myPosts,
-    queryFn: async () => apiFetch<PostsListResponseData>(API_PATHS.me.posts),
+    queryKey: queryKeys.myPosts(filters),
+    queryFn: async () =>
+      apiFetch<PostsListResponseData>(
+        `${API_PATHS.me.posts}?${query}`
+      ),
     enabled,
+    placeholderData: (previousData) => previousData,
   });
 }
