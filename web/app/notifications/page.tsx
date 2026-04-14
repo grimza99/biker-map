@@ -13,7 +13,6 @@ import {
   useNotifications,
   useReadAllNotifications,
 } from "@/features/notifications";
-import { cn } from "@shared/lib";
 import {
   Button,
   EmptyState,
@@ -87,19 +86,13 @@ export default function NotificationsPage() {
 
       <div className="flex flex-wrap gap-3" aria-label="알림 필터">
         {notificationsfilterTabs.map((tab) => (
-          <button
+          <Button
             key={tab.key}
-            type="button"
             onClick={() => startTransition(() => setView(tab.key))}
-            className={cn(
-              "inline-flex items-center justify-center rounded-full px-4 py-2.5 text-sm font-medium transition duration-150 ease-out hover:-translate-y-0.5",
-              view === tab.key
-                ? "bg-accent text-text shadow-[0_10px_24px_var(--shadow-accent)]"
-                : "border border-border bg-panel-solid text-text"
-            )}
+            variant={tab.buttonVariant}
           >
             {tab.label}
-          </button>
+          </Button>
         ))}
       </div>
 

@@ -3,9 +3,10 @@ import { InboxNotification, NotificationsView } from "src/types/notification";
 export const notificationsfilterTabs: Array<{
   key: NotificationsView;
   label: string;
+  buttonVariant?: "primary" | "secondary";
 }> = [
-  { key: "all", label: "전체" },
-  { key: "unread", label: "읽지 않음" },
+  { key: "all", label: "전체", buttonVariant: "primary" },
+  { key: "unread", label: "읽지 않음", buttonVariant: "secondary" },
 ];
 
 export const notificationskindMeta: Record<
