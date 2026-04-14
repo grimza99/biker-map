@@ -1,6 +1,5 @@
 "use client";
 
-import Link from "next/link";
 import { useState } from "react";
 
 import {
@@ -35,11 +34,6 @@ export default function MePage() {
     return (
       <PageWrapper className="p-6" innerClassName="gap-5">
         <EmptyState title="로그인이 필요합니다" />
-        <div className="flex justify-end">
-          <Button asChild variant="primary">
-            <Link href="/auth">로그인하기</Link>
-          </Button>
-        </div>
       </PageWrapper>
     );
   }
