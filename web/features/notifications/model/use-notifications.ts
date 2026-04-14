@@ -51,9 +51,12 @@ export function useReadAllNotifications(filters: NotificationsQuery) {
 
   return useMutation({
     mutationFn: async () =>
-      apiFetch<ReadAllNotificationsResponseData>(API_PATHS.notifications.readAll, {
-        method: "POST",
-      }),
+      apiFetch<ReadAllNotificationsResponseData>(
+        API_PATHS.notifications.readAll,
+        {
+          method: "POST",
+        }
+      ),
     onSuccess: () => {
       void queryClient.invalidateQueries({
         queryKey: queryKeys.notifications(filters),
@@ -65,7 +68,7 @@ export function useReadAllNotifications(filters: NotificationsQuery) {
   });
 }
 
-export function useReadNotification(filters: NotificationsQuery) {
+export function useReadNotification() {
   const queryClient = useQueryClient();
 
   return useMutation({
@@ -77,9 +80,6 @@ export function useReadNotification(filters: NotificationsQuery) {
         }
       ),
     onSuccess: () => {
-      void queryClient.invalidateQueries({
-        queryKey: queryKeys.notifications(filters),
-      });
       void queryClient.invalidateQueries({
         queryKey: queryKeys.notifications(),
       });
