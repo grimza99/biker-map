@@ -1,9 +1,9 @@
 "use client";
 
 import { RouteCard } from "@/entities/route";
+import { useDeleteRouteMutate } from "@/features/routes/model/use-route";
 import { RouteForm } from "@/features/routes/ui/route-form";
 import { useMyRoutes } from "@features/me/model/use-my-routes";
-import { useDeleteRoute } from "@features/routes/model/use-manage-route";
 import { useRouteDetail } from "@features/routes/model/use-route-detail";
 import type { RouteRegion } from "@package-shared/types/route";
 import { queryKeys } from "@shared/config/query-keys";
@@ -38,7 +38,7 @@ export function MyRoutesSection() {
   const [editingRouteId, setEditingRouteId] = useState<string | null>(null);
   const [actionError, setActionError] = useState<string | null>(null);
 
-  const deleteRouteMutation = useDeleteRoute();
+  const deleteRouteMutation = useDeleteRouteMutate();
   const queryClient = useQueryClient();
   const editingRouteQuery = useRouteDetail(editingRouteId ?? "");
 
