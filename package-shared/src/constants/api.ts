@@ -5,7 +5,11 @@ export const API_PATHS = {
     signup: `${BASE_URL}/auth/signup`,
     logout: `${BASE_URL}/auth/logout`,
     refresh: `${BASE_URL}/auth/refresh`,
-    me: `${BASE_URL}/me`,
+  },
+  me: {
+    profile: `${BASE_URL}/me`,
+    posts: `${BASE_URL}/me/posts`,
+    routes: `${BASE_URL}/me/routes`,
   },
   community: {
     posts: `${BASE_URL}/posts`,

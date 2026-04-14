@@ -4,7 +4,8 @@ import { useRoutes } from "@/features/routes/model/use-routes";
 import { RouteForm } from "@/features/routes/ui/route-form";
 import { useMemo, useState } from "react";
 
-import { ManageRouteItem, useDeleteRouteMutate } from "@/features/admin/route";
+import { ManageRouteItem } from "@/features/admin/route";
+import { useDeleteRouteMutate } from "@/features/routes";
 import {
   Button,
   DefaultCardContainer,

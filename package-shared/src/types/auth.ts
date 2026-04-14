@@ -29,3 +29,9 @@ export type MeResponseData = {
   authenticated: boolean;
   session: AppSession | null;
 };
+
+export type DeleteAccountResponseData = {
+  deleted: true;
+  deletedAt: string;
+  purgeAfter: string;
+};
