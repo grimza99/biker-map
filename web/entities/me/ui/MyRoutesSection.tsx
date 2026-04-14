@@ -3,7 +3,6 @@
 import { RouteForm } from "@/features/routes/ui/route-form";
 import { useMyRoutes } from "@features/me/model/use-my-routes";
 import { useRouteDetail } from "@features/routes/model/use-route-detail";
-import { queryKeys } from "@shared/config/query-keys";
 import {
   Dialog,
   DialogBody,
@@ -13,7 +12,6 @@ import {
   ErrorState,
   LoadingState,
 } from "@shared/ui";
-import { useQueryClient } from "@tanstack/react-query";
 import { useState } from "react";
 import { MyRouteCard } from "./MyRouteCard";
 
@@ -22,7 +20,6 @@ export function MyRoutesSection() {
   const routes = myRoutesQuery.data?.data.items ?? [];
   const [editingRouteId, setEditingRouteId] = useState<string | null>(null);
 
-  const queryClient = useQueryClient();
   const editingRouteQuery = useRouteDetail(editingRouteId ?? "");
 
   if (myRoutesQuery.isLoading) {
@@ -90,11 +87,8 @@ export function MyRoutesSection() {
                 initialData={editingRouteQuery.data.data}
                 submitLabel="경로 수정"
                 onCancel={() => setEditingRouteId(null)}
-                onSuccess={async () => {
+                onSuccess={() => {
                   setEditingRouteId(null);
-                  await queryClient.invalidateQueries({
-                    queryKey: queryKeys.myRoutes(),
-                  });
                 }}
               />
             ) : null}
