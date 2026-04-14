@@ -14,7 +14,7 @@ export type InboxNotification = {
   message: string;
   timeLabel: string;
   unread: boolean;
-  area: string;
+  url: string;
 };
 
 export type NotificationsView = "all" | "unread";

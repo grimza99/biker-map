@@ -34,6 +34,13 @@ export function mapNotificationItem(
     return null;
   }
 
+  const sourcePostId = getRecordString(row, ["source_post_id", "sourcePostId"]);
+  const sourceRouteId = getRecordString(row, [
+    "source_route_id",
+    "sourceRouteId",
+  ]);
+  const rawUrl = getRecordString(row, ["url"], "");
+
   return {
     id,
     kind,
@@ -45,6 +52,12 @@ export function mapNotificationItem(
       "방금 전"
     ),
     unread: getRecordBoolean(row, ["unread"], true),
-    area: getRecordString(row, ["area"], "커뮤니티"),
+    url:
+      rawUrl ||
+      (sourcePostId
+        ? `/posts/${sourcePostId}`
+        : sourceRouteId
+        ? `/routes/${sourceRouteId}`
+        : "/notifications"),
   };
 }

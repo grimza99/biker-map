@@ -1,3 +1,5 @@
+import Link from "next/link";
+
 import { cn, DefaultCardContainer } from "@/shared";
 import {
   InboxNotification,
@@ -18,16 +20,17 @@ interface NotificationCardProps {
 }
 
 export function NotificationCard({ n }: NotificationCardProps) {
-  const { id, title, message, timeLabel, unread, area, kind } = n;
+  const { id, title, message, timeLabel, unread, url, kind } = n;
   const meta = notificationskindMeta[kind];
   const { mutateAsync: readN, isPending: isReadNPending } =
     useReadNotification();
 
-  return (
+  const card = (
     <DefaultCardContainer
       className={cn(
         "grid gap-3 border-2 rounded-2xl p-3 shadow-[0_8px_24px_var(--shadow)] transition duration-150 ease-out",
-        unread ? "border-active/40 ring-1 ring-active/10" : "border-border"
+        unread ? "border-active/40 ring-1 ring-active/10" : "border-border",
+        url ? "cursor-pointer hover:-translate-y-0.5" : ""
       )}
     >
       <div className="flex items-center justify-between gap-3">
@@ -40,7 +43,11 @@ export function NotificationCard({ n }: NotificationCardProps) {
             <button
               type="button"
               className="rounded-full border border-border bg-panel-solid px-3 py-1.5 text-xs font-medium text-text transition hover:-translate-y-0.5"
-              onClick={() => readN(id)}
+              onClick={(event) => {
+                event.preventDefault();
+                event.stopPropagation();
+                void readN(id);
+              }}
               disabled={isReadNPending}
             >
               읽음 처리
@@ -56,5 +63,15 @@ export function NotificationCard({ n }: NotificationCardProps) {
 
       <div className="flex items-center justify-end gap-3"></div>
     </DefaultCardContainer>
+  );
+
+  if (!url) {
+    return card;
+  }
+
+  return (
+    <Link href={url} className="block">
+      {card}
+    </Link>
   );
 }

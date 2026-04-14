@@ -1,4 +1,7 @@
-import { InboxNotification, NotificationsView } from "src/types/notification";
+import type {
+  InboxNotification,
+  NotificationsView,
+} from "../types/notification";
 
 export const notificationsfilterTabs: Array<{
   key: NotificationsView;
