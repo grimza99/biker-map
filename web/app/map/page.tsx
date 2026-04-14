@@ -5,7 +5,11 @@ import type { PlaceCategory } from "@package-shared/types/place";
 import { ArrowLeftToLine } from "lucide-react";
 import { startTransition, useDeferredValue, useMemo, useState } from "react";
 
-import { MapSidePanel, placeCategoryOptions } from "@/entities/map";
+import {
+  MapSidePanel,
+  NaverDynamicMap,
+  placeCategoryOptions,
+} from "@/entities/map";
 import {
   Button,
   SidePanel,
@@ -37,19 +41,11 @@ export default function MapPage() {
 
   return (
     <div className="relative min-h-[calc(100vh-11rem)] h-full overflow-hidden ">
-      {/* 백그라운드 이미지- 추후 지도 ui로 대체  */}
-      <div
-        className="absolute inset-0"
-        style={{
-          background:
-            "radial-gradient(circle at 20% 20%, rgba(229, 87, 47, 0.18), transparent 26%), radial-gradient(circle at 82% 18%, rgba(0, 194, 168, 0.14), transparent 24%), radial-gradient(circle at 50% 88%, rgba(77, 163, 255, 0.10), transparent 28%), linear-gradient(180deg, rgba(23, 26, 30, 0.96) 0%, rgba(29, 34, 40, 0.98) 46%, rgba(17, 19, 21, 0.99) 100%)",
-        }}
-      />
-      {/* 백그라운드 이미지- 추후 지도 ui로 대체  */}
+      <NaverDynamicMap places={places} />
 
-      <div className="absolute inset-0">
+      <div className="pointer-events-none absolute inset-0">
         <div className="flex w-full h-full items-start justify-between gap-4 p-5 md:p-6">
-          <div className="rounded-2xl flex flex-wrap gap-2 border border-border bg-panel/82 p-2 shadow-[0_18px_50px_rgba(5,6,7,0.24)] backdrop-blur-xl">
+          <div className="pointer-events-auto rounded-2xl flex flex-wrap gap-2 border border-border bg-panel/82 p-2 shadow-[0_18px_50px_rgba(5,6,7,0.24)] backdrop-blur-xl">
             {placeCategoryOptions.map((filter) => {
               const active = category === filter.value;
 
@@ -72,7 +68,8 @@ export default function MapPage() {
             })}
           </div>
 
-          <SidePanel>
+          <div className="pointer-events-auto">
+            <SidePanel>
             <SidePanelTrigger asChild>
               <Button variant="primary">
                 <ArrowLeftToLine className="w-4 h-4 m-0" />
@@ -93,7 +90,8 @@ export default function MapPage() {
                 />
               </SidePanelBody>
             </SidePanelContent>
-          </SidePanel>
+            </SidePanel>
+          </div>
         </div>
       </div>
     </div>
