@@ -21,35 +21,6 @@ import {
   PageWrapper,
 } from "@shared/ui";
 
-const mockNotifications: InboxNotification[] = [
-  {
-    id: "1",
-    kind: "comment",
-    title: "새 댓글이 달렸습니다",
-    message: "사용자123님이 내 게시글에 댓글을 남겼습니다.",
-    timeLabel: "5분 전",
-    unread: true,
-    area: "게시글 제목 예시",
-  },
-  {
-    id: "2",
-    kind: "reply",
-    title: "새 답글이 달렸습니다",
-    message: "사용자456님이 내 댓글에 답글을 남겼습니다.",
-    timeLabel: "10분 전",
-    unread: false,
-    area: "댓글 내용 예시",
-  },
-  {
-    id: "3",
-    kind: "reply",
-    title: "새 답글이 달렸습니다",
-    message: "3번",
-    timeLabel: "10분 전",
-    unread: true,
-    area: "댓글 내용 예시",
-  },
-];
 export default function NotificationsPage() {
   const [view, setView] = useState<NotificationsView>("all");
   const filters = useMemo(() => ({ view, limit: 30 }), [view]);
@@ -57,8 +28,7 @@ export default function NotificationsPage() {
   const { mutateAsync: readAll, isPending: isReadAllPending } =
     useReadAllNotifications(filters);
 
-  // const notifications = data?.data.items ?? [];
-  const notifications = mockNotifications;
+  const notifications = data?.data.items ?? [];
   const unreadCount = data?.data.unreadCount ?? 0;
 
   return (
