@@ -39,6 +39,7 @@ export function useEditRouteMutate(id: string) {
         await queryClient.invalidateQueries({
           queryKey: queryKeys.route(id),
         });
+      await queryClient.invalidateQueries({ queryKey: queryKeys.myRoutes() });
     },
   });
 }
@@ -54,6 +55,7 @@ export function useDeleteRouteMutate() {
       //toast
 
       await queryClient.invalidateQueries({ queryKey: queryKeys.routes() });
+      await queryClient.invalidateQueries({ queryKey: queryKeys.myRoutes() });
     },
   });
 }
