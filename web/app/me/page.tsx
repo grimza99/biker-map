@@ -1,9 +1,13 @@
 "use client";
 
-import Link from "next/link";
 import { useState } from "react";
 
-import { MyInfoSection, MyPostsSection, useMe } from "@/entities/me";
+import {
+  MyInfoSection,
+  MyPostsSection,
+  MyRoutesSection,
+  useMe,
+} from "@/entities/me";
 import { useSession } from "@features/session/model/use-session";
 import {
   Button,
@@ -30,11 +34,6 @@ export default function MePage() {
     return (
       <PageWrapper className="p-6" innerClassName="gap-5">
         <EmptyState title="로그인이 필요합니다" />
-        <div className="flex justify-end">
-          <Button asChild variant="primary">
-            <Link href="/auth">로그인하기</Link>
-          </Button>
-        </div>
       </PageWrapper>
     );
   }
@@ -56,7 +55,7 @@ export default function MePage() {
       case "my-posts":
         return <MyPostsSection />;
       case "my-routes":
-        return <div>내 경로</div>;
+        return <MyRoutesSection />;
       case "draw":
         return <div>회원 탈퇴</div>;
     }

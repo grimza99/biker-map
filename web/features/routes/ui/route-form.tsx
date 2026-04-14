@@ -12,16 +12,13 @@ import {
 import { useEffect, useState } from "react";
 
 import {
-  useCreateRouteMutate,
-  useEditRouteMutate,
-} from "@/features/admin/route";
-import {
   Button,
   ImageInput,
   Input,
   MarkdownEditor,
   SelectInput,
 } from "@shared/ui";
+import { useCreateRouteMutate, useEditRouteMutate } from "../model/use-route";
 
 const providerOptions: Array<{ value: RouteProvider; label: string }> = [
   { value: "naver", label: "네이버 지도" },
