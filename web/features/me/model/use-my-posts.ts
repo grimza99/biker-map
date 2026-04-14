@@ -1,9 +1,6 @@
 "use client";
 
-import {
-  API_PATHS,
-  type PostsListResponseData,
-} from "@package-shared/index";
+import { API_PATHS, type PostsListResponseData } from "@package-shared/index";
 import { useQuery } from "@tanstack/react-query";
 
 import { apiFetch } from "@shared/api/http";
@@ -27,9 +24,7 @@ export function useMyPosts(filters: MyPostsQuery, enabled = true) {
   return useQuery({
     queryKey: queryKeys.myPosts(filters),
     queryFn: async () =>
-      apiFetch<PostsListResponseData>(
-        `${API_PATHS.me.posts}?${query}`
-      ),
+      apiFetch<PostsListResponseData>(`${API_PATHS.me.posts}?${query}`),
     enabled,
     placeholderData: (previousData) => previousData,
   });

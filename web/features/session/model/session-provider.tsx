@@ -1,11 +1,21 @@
 "use client";
 
-import { createContext, useContext, useEffect, useMemo, useState, type ReactNode } from "react";
 import { API_PATHS } from "@package-shared/constants/api";
 import type { ApiResponse } from "@package-shared/types/api";
-import type { MeResponseData, RefreshResponseData } from "@package-shared/types/auth";
+import type {
+  MeResponseData,
+  RefreshResponseData,
+} from "@package-shared/types/auth";
 import type { AppSession } from "@package-shared/types/session";
 import { apiFetch, setApiAccessToken } from "@shared/api/http";
+import {
+  createContext,
+  useContext,
+  useEffect,
+  useMemo,
+  useState,
+  type ReactNode,
+} from "react";
 
 type SessionState = {
   session: AppSession | null;
@@ -20,7 +30,7 @@ const SessionContext = createContext<SessionState | null>(null);
 
 export function SessionProvider({
   children,
-  initialSession
+  initialSession,
 }: {
   children: ReactNode;
   initialSession: AppSession | null;
@@ -68,7 +78,7 @@ export function SessionProvider({
 
         let mePayload: ApiResponse<MeResponseData>;
         try {
-          mePayload = await apiFetch<MeResponseData>(API_PATHS.auth.me);
+          mePayload = await apiFetch<MeResponseData>(API_PATHS.me.profile);
         } catch {
           updateSession(null, null);
           return null;
@@ -84,7 +94,7 @@ export function SessionProvider({
           credentials: "include",
         });
         updateSession(null, null);
-      }
+      },
     }),
     [accessToken, session, status]
   );
@@ -115,7 +125,7 @@ export function SessionProvider({
           return;
         }
 
-        const mePayload = await apiFetch<MeResponseData>(API_PATHS.auth.me);
+        const mePayload = await apiFetch<MeResponseData>(API_PATHS.me.profile);
         if (cancelled) {
           return;
         }
@@ -133,7 +143,9 @@ export function SessionProvider({
     };
   }, [accessToken, initialSession]);
 
-  return <SessionContext.Provider value={value}>{children}</SessionContext.Provider>;
+  return (
+    <SessionContext.Provider value={value}>{children}</SessionContext.Provider>
+  );
 }
 
 export function useSessionState() {
