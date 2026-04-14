@@ -1,6 +1,13 @@
 import { AuthResponseData, type LoginBody } from "@package-shared/types/auth";
-import { badRequest, ok, parseRequestBody } from "@shared/api";
-import { setRefreshTokenCookie } from "@shared/api/auth";
+import {
+  badRequest,
+  forbidden,
+  internalServerError,
+  ok,
+  parseRequestBody,
+} from "@shared/api";
+import { clearRefreshTokenCookie, setRefreshTokenCookie } from "@shared/api/auth";
+import { getProfileStatus } from "@shared/api/supabase-profiles";
 import { createSupabaseAuthClient, mapSupabaseSession } from "@shared/lib/supabase";
 import { NextResponse } from "next/server";
 import { z } from "zod";
@@ -38,6 +45,25 @@ export async function POST(request: Request) {
   const mappedSession = mapSupabaseSession(session);
   if (!mappedSession) {
     return badRequest("로그인 사용자 정보를 확인할 수 없습니다.");
+  }
+
+  let profileStatus = null;
+  try {
+    profileStatus = await getProfileStatus(supabase, mappedSession.userId);
+  } catch (profileError) {
+    return internalServerError(
+      profileError instanceof Error
+        ? profileError.message
+        : "프로필 상태를 확인하지 못했습니다."
+    );
+  }
+
+  if (profileStatus?.deletedAt) {
+    const response = forbidden(
+      "탈퇴 처리된 계정입니다. 복구가 필요하면 관리자에게 문의해 주세요."
+    ) as NextResponse;
+    clearRefreshTokenCookie(response);
+    return response;
   }
 
   const response = ok<AuthResponseData>({
