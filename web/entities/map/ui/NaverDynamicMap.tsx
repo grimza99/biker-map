@@ -4,6 +4,8 @@ import { ErrorState } from "@/shared";
 import type { PlaceListItem } from "@package-shared/types/place";
 import { useEffect, useMemo, useRef, useState } from "react";
 
+import { PlaceMarker } from "../model/PlaceMarker";
+
 declare global {
   interface Window {
     naver?: any;
@@ -75,7 +77,7 @@ export function NaverDynamicMap({ places }: NaverDynamicMapProps) {
   const mapElementRef = useRef<HTMLDivElement | null>(null);
   const mapRef = useRef<any>(null);
   const mapsApiRef = useRef<any>(null);
-  const markersRef = useRef<any[]>([]);
+  const markersRef = useRef<PlaceMarker[]>([]);
   const [error, setError] = useState<string | null>(null);
   const [isLoaded, setIsLoaded] = useState(false);
 
@@ -164,14 +166,9 @@ export function NaverDynamicMap({ places }: NaverDynamicMapProps) {
       return;
     }
 
-    markersRef.current.forEach((marker) => marker.setMap(null));
+    markersRef.current.forEach((marker) => marker.detach());
     markersRef.current = validPlaces.map(
-      (place) =>
-        new maps.Marker({
-          map,
-          position: new maps.LatLng(place.lat, place.lng),
-          title: place.name,
-        })
+      (place) => new PlaceMarker(maps, map, place)
     );
   }, [validPlaces]);
 
