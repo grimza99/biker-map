@@ -93,6 +93,8 @@ export function mapRouteListItem(row: SupabaseRecord): RouteListItem | null {
     sourceType: toRouteSourceType(
       getRecordString(row, ["source_type", "sourceType"], "curated")
     ),
+    createdById:
+      getRecordString(row, ["created_by", "createdById"], "") || undefined,
   };
 }
 

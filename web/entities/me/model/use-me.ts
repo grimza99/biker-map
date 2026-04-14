@@ -9,7 +9,7 @@ import { queryKeys } from "@shared/config/query-keys";
 export function useMe(enabled = true) {
   return useQuery({
     queryKey: queryKeys.session,
-    queryFn: async () => apiFetch<MeResponseData>(API_PATHS.auth.me),
+    queryFn: async () => apiFetch<MeResponseData>(API_PATHS.me.profile),
     enabled,
   });
 }

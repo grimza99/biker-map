@@ -1,5 +1,6 @@
 export {
   allowedCommunityCategoryOptions,
+  categoryLabelMap,
   communityCategoryOptions,
 } from "./community";
 export { notificationsfilterTabs, notificationskindMeta } from "./notification";

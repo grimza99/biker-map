@@ -3,6 +3,7 @@ import type { Session, User } from "@supabase/supabase-js";
 
 import { refreshTokenCookieOptions } from "@shared/config";
 import { createSupabaseAuthClient, mapSupabaseSession } from "@shared/lib/supabase";
+import { getProfileStatus } from "./supabase-profiles";
 import { unauthorized } from "./response";
 
 /**
@@ -53,7 +54,24 @@ export async function getSupabaseAuthSession(
  */
 async function getApiSession(request: Request): Promise<AppSession | null> {
   const session = await getSupabaseAuthSession(request);
-  return mapSupabaseSession(session ?? null);
+  const mappedSession = mapSupabaseSession(session ?? null);
+
+  if (!mappedSession || !session?.access_token) {
+    return mappedSession;
+  }
+
+  const supabase = createSupabaseAuthClient(session.access_token);
+
+  try {
+    const profileStatus = await getProfileStatus(supabase, mappedSession.userId);
+    if (profileStatus?.deletedAt) {
+      return null;
+    }
+  } catch {
+    return null;
+  }
+
+  return mappedSession;
 }
 
 /**

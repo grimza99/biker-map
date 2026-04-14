@@ -37,7 +37,7 @@ export async function GET(
   return ok(route);
 }
 
-/**----------------------------------------update route - admin only ------------------------------------------- */
+/**----------------------------------------update route ------------------------------------------- */
 
 const updateRouteSchema = z
   .object({
@@ -122,13 +122,9 @@ export async function PATCH(
     return internalServerError(profileError.message);
   }
 
-  if (profile?.role !== "admin") {
-    return forbidden("경로 수정은 운영자만 가능합니다.");
-  }
-
   const { data: currentRoute, error: currentRouteError } = await supabase
     .from("routes")
-    .select("id")
+    .select("id, created_by")
     .eq("id", routeId)
     .maybeSingle();
 
@@ -140,12 +136,20 @@ export async function PATCH(
     return notFound("경로를 찾을 수 없습니다.");
   }
 
+  const isAdmin = profile?.role === "admin";
+  const isOwner = String(currentRoute.created_by ?? "") === session.userId;
+
+  if (!isAdmin && !isOwner) {
+    return forbidden("경로 수정은 작성자 또는 운영자만 가능합니다.");
+  }
+
   const updateInput: Record<string, unknown> = {};
 
   if (payload.title !== undefined) updateInput.title = payload.title.trim();
   if (payload.summary !== undefined)
     updateInput.summary = payload.summary.trim();
-  if (payload.content !== undefined) updateInput.content = payload.content.trim();
+  if (payload.content !== undefined)
+    updateInput.content = payload.content.trim();
   if (payload.departureRegion !== undefined)
     updateInput.departure_region = payload.departureRegion;
   if (payload.destinationRegion !== undefined)
@@ -181,7 +185,7 @@ export async function PATCH(
   });
 }
 
-/**----------------------------------------remove route - admin only ------------------------------------------- */
+/**----------------------------------------remove route ------------------------------------------- */
 export async function DELETE(
   request: Request,
   { params }: { params: Promise<{ routeId: string }> }
@@ -203,8 +207,25 @@ export async function DELETE(
     return internalServerError(profileError.message);
   }
 
-  if (profile?.role !== "admin") {
-    return forbidden("경로 삭제는 운영자만 가능합니다.");
+  const { data: currentRoute, error: currentRouteError } = await supabase
+    .from("routes")
+    .select("id, created_by")
+    .eq("id", routeId)
+    .maybeSingle();
+
+  if (currentRouteError) {
+    return internalServerError(currentRouteError.message);
+  }
+
+  if (!currentRoute) {
+    return notFound("경로를 찾을 수 없습니다.");
+  }
+
+  const isAdmin = profile?.role === "admin";
+  const isOwner = String(currentRoute.created_by ?? "") === session.userId;
+
+  if (!isAdmin && !isOwner) {
+    return forbidden("경로 삭제는 작성자 또는 운영자만 가능합니다.");
   }
 
   const { error } = await supabase.from("routes").delete().eq("id", routeId);
