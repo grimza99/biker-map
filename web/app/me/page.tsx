@@ -3,7 +3,12 @@
 import Link from "next/link";
 import { useState } from "react";
 
-import { MyInfoSection, MyPostsSection, useMe } from "@/entities/me";
+import {
+  MyInfoSection,
+  MyPostsSection,
+  MyRoutesSection,
+  useMe,
+} from "@/entities/me";
 import { useSession } from "@features/session/model/use-session";
 import {
   Button,
@@ -56,7 +61,7 @@ export default function MePage() {
       case "my-posts":
         return <MyPostsSection />;
       case "my-routes":
-        return <div>내 경로</div>;
+        return <MyRoutesSection />;
       case "draw":
         return <div>회원 탈퇴</div>;
     }
