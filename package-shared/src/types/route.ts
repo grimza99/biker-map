@@ -31,6 +31,7 @@ export type RouteListItem = {
   estimatedDurationMinutes?: number;
   tags: string[];
   sourceType: RouteSourceType;
+  createdById?: string;
 };
 
 export type RouteDetail = RouteListItem & {
@@ -41,7 +42,7 @@ export type RoutesListResponseData = {
   items: RouteListItem[];
 };
 
-export type CreateRouteBody = Omit<RouteDetail, "id">;
+export interface CreateRouteBody extends Omit<RouteDetail, "id"> {}
 
 export type CreateRouteResponseData = {
   id: string;
