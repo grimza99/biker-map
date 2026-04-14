@@ -18,3 +18,10 @@ export const allowedCommunityCategoryOptions: Array<{
   { value: "info", label: "정보" },
   { value: "free", label: "자유" },
 ];
+
+export const categoryLabelMap: Record<CommunityCategorySlug, string> = {
+  notice: "공지",
+  question: "질문",
+  info: "정보",
+  free: "자유",
+};
