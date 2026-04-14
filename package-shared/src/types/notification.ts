@@ -17,7 +17,7 @@ export type InboxNotification = {
   area: string;
 };
 
-export type NotificationsView = "all" | "unread" | "mentions";
+export type NotificationsView = "all" | "unread";
 
 export type NotificationsQuery = {
   view?: NotificationsView;
