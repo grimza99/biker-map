@@ -22,6 +22,7 @@ export const API_PATHS = {
   },
   places: {
     list: `${BASE_URL}/places`,
+    geocode: `${BASE_URL}/places/geocode`,
     detail: (placeId: string) => `${BASE_URL}/places/${placeId}`,
   },
 
