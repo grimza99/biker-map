@@ -42,6 +42,12 @@ export type PlacesListResponseData = {
   items: PlaceListItem[];
 };
 
+export type PlaceGeocodeResponseData = {
+  address: string;
+  lat: number;
+  lng: number;
+};
+
 export type CreatePlaceBody = {
   name: string;
   category: PlaceCategory;

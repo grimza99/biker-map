@@ -4,12 +4,13 @@ import type {
   CreatePlaceResponseData,
   PlaceCategory,
 } from "@package-shared/types/place";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 
 import { placeCategoryOptions } from "@/entities/map/model/map-filters";
 import { ApiClientError } from "@shared/api/http";
 import { Button, Input, SelectInput, Textarea, Toast } from "@shared/ui";
 import { useCreatePlace } from "../model/use-place";
+import { usePlaceGeocode } from "../model/use-place-geocode";
 
 export function PlaceForm({
   onSuccess,
@@ -27,6 +28,7 @@ export function PlaceForm({
   const [lng, setLng] = useState("");
   const [naverPlaceUrl, setNaverPlaceUrl] = useState("");
   const [images, setImages] = useState("");
+  const geocodeQuery = usePlaceGeocode(address);
   const {
     mutateAsync: createPlace,
     error: createPlaceError,
@@ -77,6 +79,23 @@ export function PlaceForm({
       ? createPlaceError.message
       : null;
 
+  const geocodeErrorMessage =
+    geocodeQuery.error instanceof ApiClientError
+      ? geocodeQuery.error.message
+      : geocodeQuery.error instanceof Error
+      ? geocodeQuery.error.message
+      : null;
+
+  useEffect(() => {
+    const geocoded = geocodeQuery.data?.data;
+    if (!geocoded) {
+      return;
+    }
+
+    setLat(String(geocoded.lat));
+    setLng(String(geocoded.lng));
+  }, [geocodeQuery.data]);
+
   return (
     <form className="grid gap-4" onSubmit={handleSubmit}>
       <Input
@@ -97,6 +116,15 @@ export function PlaceForm({
         value={address}
         onChange={(event) => setAddress(event.target.value)}
         placeholder="도로명 주소"
+        helperText={
+          geocodeQuery.isFetching
+            ? "주소를 기준으로 좌표를 찾는 중입니다."
+            : geocodeErrorMessage
+            ? geocodeErrorMessage
+            : lat && lng
+            ? "입력한 주소 기준으로 위도/경도가 자동 입력되었습니다."
+            : "주소 입력 후 잠시 기다리면 위도/경도가 자동 입력됩니다."
+        }
         required
       />
       <Input
