@@ -14,11 +14,7 @@ import {
 import type { NextRequest } from "next/server";
 import { requireApiSession } from "@shared/api/auth";
 
-const notificationViews = new Set<NotificationsView>([
-  "all",
-  "unread",
-  "mentions",
-]);
+const notificationViews = new Set<NotificationsView>(["all", "unread"]);
 
 export async function GET(request: NextRequest) {
   const session = await requireApiSession(request);
@@ -56,14 +52,6 @@ export async function GET(request: NextRequest) {
   const items = baseItems.filter((item) => {
     if (query.view === "unread") {
       return item.unread;
-    }
-
-    if (query.view === "mentions") {
-      return (
-        item.kind === "comment" ||
-        item.kind === "reply" ||
-        item.kind === "reaction"
-      );
     }
 
     return true;
