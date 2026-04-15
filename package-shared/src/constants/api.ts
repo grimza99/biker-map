@@ -30,4 +30,10 @@ export const API_PATHS = {
     list: `${BASE_URL}/routes`,
     detail: (routeId: string) => `${BASE_URL}/routes/${routeId}`,
   },
+  notifications: {
+    list: `${BASE_URL}/notifications`,
+    readAll: `${BASE_URL}/notifications/read-all`,
+    read: (notificationId: string) =>
+      `${BASE_URL}/notifications/${notificationId}/read`,
+  },
 };
