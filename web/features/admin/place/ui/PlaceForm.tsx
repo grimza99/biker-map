@@ -9,8 +9,16 @@ import type {
 import { useEffect, useState } from "react";
 
 import { placeCategoryOptions } from "@/entities/map/model/map-filters";
+import { uploadImage } from "@/features/image/model/upload-image";
 import { ApiClientError } from "@shared/api/http";
-import { Button, Input, SelectInput, Textarea, Toast } from "@shared/ui";
+import {
+  Button,
+  ImageInput,
+  Input,
+  SelectInput,
+  Textarea,
+  Toast,
+} from "@shared/ui";
 import { useCreatePlace, useEditPlace } from "../model/use-place";
 import { usePlaceGeocode } from "../model/use-place-geocode";
 
@@ -31,7 +39,7 @@ export function PlaceForm({
   const [lat, setLat] = useState("");
   const [lng, setLng] = useState("");
   const [naverPlaceUrl, setNaverPlaceUrl] = useState("");
-  const [images, setImages] = useState("");
+  const [images, setImages] = useState<string[]>([]);
   const isEditMode = Boolean(initialData);
   const geocodeQuery = usePlaceGeocode(address);
   const {
@@ -59,7 +67,7 @@ export function PlaceForm({
     setLat("");
     setLng("");
     setNaverPlaceUrl("");
-    setImages("");
+    setImages([]);
   };
 
   useEffect(() => {
@@ -76,7 +84,7 @@ export function PlaceForm({
     setLat(String(initialData.lat));
     setLng(String(initialData.lng));
     setNaverPlaceUrl(initialData.naverPlaceUrl);
-    setImages((initialData.images ?? []).join("\n"));
+    setImages(initialData.images ?? []);
   }, [initialData]);
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
@@ -91,10 +99,7 @@ export function PlaceForm({
       lat: Number(lat),
       lng: Number(lng),
       naverPlaceUrl: naverPlaceUrl.trim(),
-      images: images
-        .split("\n")
-        .map((item) => item.trim())
-        .filter(Boolean),
+      images: images.map((item) => item.trim()).filter(Boolean),
     };
 
     if (isEditMode) {
@@ -203,11 +208,14 @@ export function PlaceForm({
         placeholder="https://..."
         required
       />
-      <Textarea
-        label="이미지 URL"
+      <ImageInput
+        label="이미지 업로드"
         value={images}
-        onChange={(event) => setImages(event.target.value)}
-        placeholder="이미지 URL을 줄바꿈으로 구분해 입력"
+        onValueChange={(urls) => setImages(urls ?? [])}
+        onUpload={async (file) => {
+          const uploaded = await uploadImage(file);
+          return uploaded.url;
+        }}
       />
 
       {errorMessage && dismissedToast !== "error" && (
