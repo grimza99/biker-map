@@ -27,7 +27,7 @@ import {
   MetaCounts,
   PageWrapper,
   Profile,
-  Toast,
+  useToast,
 } from "@shared/ui";
 
 export default function PostDetailPage() {
@@ -35,8 +35,8 @@ export default function PostDetailPage() {
   const router = useRouter();
   const postId = params?.postId ?? "";
   const { status, session } = useSession();
+  const { showToast } = useToast();
   const [isEditOpen, setIsEditOpen] = useState(false);
-  const [deleteError, setDeleteError] = useState<string | null>(null);
   const {
     data: detailpostData,
     isLoading,
@@ -122,7 +122,6 @@ export default function PostDetailPage() {
                 variant="ghost"
                 loading={deletePostMutation.isPending}
                 onClick={async () => {
-                  setDeleteError(null);
                   const confirmed =
                     window.confirm("이 게시글을 삭제하시겠습니까?");
                   if (!confirmed) {
@@ -133,13 +132,16 @@ export default function PostDetailPage() {
                     await deletePostMutation.mutateAsync();
                     router.replace("/posts");
                   } catch (error) {
-                    setDeleteError(
-                      error instanceof ApiClientError
-                        ? error.message
-                        : error instanceof Error
-                        ? error.message
-                        : "게시글을 삭제하지 못했습니다."
-                    );
+                    showToast({
+                      tone: "danger",
+                      title: "게시글을 삭제하지 못했습니다.",
+                      description:
+                        error instanceof ApiClientError
+                          ? error.message
+                          : error instanceof Error
+                          ? error.message
+                          : "게시글을 삭제하지 못했습니다.",
+                    });
                   }
                 }}
               >
@@ -186,15 +188,6 @@ export default function PostDetailPage() {
           </div>
         )}
       </div>
-
-      {deleteError ? (
-        <Toast
-          tone="danger"
-          title="게시글을 삭제하지 못했습니다."
-          description={deleteError}
-          onClose={() => setDeleteError(null)}
-        />
-      ) : null}
 
       <Divider />
       {/* 댓글영역 */}
