@@ -7,7 +7,7 @@ import { useEffect, useRef, useState } from "react";
 import { uploadImage } from "@/features/image";
 import { ApiClientError } from "@shared/api/http";
 import { Button } from "@shared/ui/button";
-import { Toast } from "@shared/ui/toast";
+import { useToast } from "@shared/ui/toast";
 import { commands } from "@uiw/react-md-editor";
 
 const MDEditor = dynamic(() => import("@uiw/react-md-editor"), { ssr: false });
@@ -50,7 +50,7 @@ export function MarkdownEditor({
   const selectionRef = useRef({ start: 0, end: 0 });
   const pendingCaretPositionRef = useRef<number | null>(null);
   const [isUploading, setIsUploading] = useState(false);
-  const [uploadError, setUploadError] = useState<string | null>(null);
+  const { showToast } = useToast();
 
   useEffect(() => {
     valueRef.current = value;
@@ -84,7 +84,6 @@ export function MarkdownEditor({
 
   async function handleUpload(files: FileList | File[]) {
     setIsUploading(true);
-    setUploadError(null);
 
     try {
       const uploadedUrls: string[] = [];
@@ -107,13 +106,16 @@ export function MarkdownEditor({
       pendingCaretPositionRef.current = nextCaretPosition;
       onChange(nextValue);
     } catch (error) {
-      setUploadError(
-        error instanceof ApiClientError
-          ? error.message
-          : error instanceof Error
-          ? error.message
-          : "이미지 업로드에 실패했습니다."
-      );
+      showToast({
+        tone: "danger",
+        title: "이미지 업로드 실패",
+        description:
+          error instanceof ApiClientError
+            ? error.message
+            : error instanceof Error
+            ? error.message
+            : "이미지 업로드에 실패했습니다.",
+      });
     } finally {
       setIsUploading(false);
       if (fileInputRef.current) {
@@ -212,14 +214,6 @@ export function MarkdownEditor({
         />
       </div>
 
-      {uploadError && (
-        <Toast
-          title="이미지 업로드 실패"
-          description={uploadError}
-          tone="danger"
-          onClose={() => setUploadError(null)}
-        />
-      )}
     </div>
   );
 }

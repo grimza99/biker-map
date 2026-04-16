@@ -2,8 +2,8 @@
 
 import type {
   CreatePlaceResponseData,
-  PlaceDetail,
   PlaceCategory,
+  PlaceDetail,
   UpdatePlaceBody,
 } from "@package-shared/types/place";
 import { useEffect, useState } from "react";

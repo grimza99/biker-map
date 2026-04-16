@@ -5,6 +5,7 @@ import type { AppSession } from "@package-shared/types/session";
 
 import { AppQueryProvider } from "./query-provider";
 import { SessionProvider } from "@features/session";
+import { ToastProvider } from "@shared/ui";
 
 export function AppProviders({
   children,
@@ -15,7 +16,11 @@ export function AppProviders({
 }) {
   return (
     <AppQueryProvider>
-      <SessionProvider initialSession={initialSession}>{children}</SessionProvider>
+      <ToastProvider>
+        <SessionProvider initialSession={initialSession}>
+          {children}
+        </SessionProvider>
+      </ToastProvider>
     </AppQueryProvider>
   );
 }

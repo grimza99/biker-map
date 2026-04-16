@@ -18,7 +18,7 @@ import {
   Input,
   SelectInput,
   Textarea,
-  Toast,
+  useToast,
 } from "@shared/ui";
 import { useState } from "react";
 import { useCreateCommunityPost } from "../model/use-post";
@@ -65,34 +65,33 @@ export function CommunityPostForm({
   const [title, setTitle] = useState(initialValues?.title ?? "");
   const [content, setContent] = useState(initialValues?.content ?? "");
   const [images, setImages] = useState(initialValues?.images ?? []);
-  const [dismissedToast, setDismissedToast] = useState<
-    "success" | "error" | null
-  >(null);
-  const [customError, setCustomError] = useState<string | null>(null);
-  const [customSuccess, setCustomSuccess] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const { showToast } = useToast();
 
   const createPostMutation = useCreateCommunityPost();
 
   async function handleSubmit(payload: CreatePostBody | UpdatePostBody) {
-    setDismissedToast(null);
-    setCustomError(null);
-    setCustomSuccess(false);
-
     if (onSubmit) {
       try {
         setIsSubmitting(true);
         const response = await onSubmit(payload);
-        setCustomSuccess(true);
+        showToast({
+          tone: "success",
+          title: "게시글이 수정되었습니다.",
+          description: "수정한 내용이 게시글에 반영되었습니다.",
+        });
         onSuccess?.("data" in response ? response.data : response);
       } catch (error) {
-        setCustomError(
-          error instanceof ApiClientError
-            ? error.message
-            : error instanceof Error
-            ? error.message
-            : "요청을 처리하지 못했습니다."
-        );
+        showToast({
+          tone: "danger",
+          title: "게시글 저장에 실패했습니다.",
+          description:
+            error instanceof ApiClientError
+              ? error.message
+              : error instanceof Error
+              ? error.message
+              : "요청을 처리하지 못했습니다.",
+        });
       } finally {
         setIsSubmitting(false);
       }
@@ -105,19 +104,27 @@ export function CommunityPostForm({
         setContent("");
         setImages([]);
         setCategory(defaultCategory ?? options[0]?.value ?? "question");
+        showToast({
+          tone: "success",
+          title: "게시글이 생성되었습니다.",
+          description: "새 글이 커뮤니티 목록에 반영되었습니다.",
+        });
         onSuccess?.(response.data);
+      },
+      onError(error) {
+        showToast({
+          tone: "danger",
+          title: "게시글 생성에 실패했습니다.",
+          description:
+            error instanceof ApiClientError
+              ? error.message
+              : error instanceof Error
+              ? error.message
+              : "요청을 처리하지 못했습니다.",
+        });
       },
     });
   }
-
-  const createError = createPostMutation.error;
-  const errorMessage =
-    customError ??
-    (createError instanceof ApiClientError
-      ? createError.message
-      : createError instanceof Error
-      ? createError.message
-      : null);
 
   return (
     <form
@@ -167,30 +174,6 @@ export function CommunityPostForm({
         value={images}
         onValueChange={(urls) => setImages(urls ?? [])}
       />
-      {errorMessage && dismissedToast !== "error" && (
-        <Toast
-          tone="danger"
-          title="게시글 생성에 실패했습니다."
-          description={errorMessage}
-          onClose={() => setDismissedToast("error")}
-        />
-      )}
-
-      {(customSuccess || createPostMutation.isSuccess) &&
-        dismissedToast !== "success" && (
-          <Toast
-            tone="success"
-            title={
-              onSubmit ? "게시글이 수정되었습니다." : "게시글이 생성되었습니다."
-            }
-            description={
-              onSubmit
-                ? "수정한 내용이 게시글에 반영되었습니다."
-                : "새 글이 커뮤니티 목록에 반영되었습니다."
-            }
-            onClose={() => setDismissedToast("success")}
-          />
-        )}
 
       <div className="flex items-center justify-end gap-2">
         {onCancel && (
