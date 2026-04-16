@@ -7,8 +7,8 @@ import type {
 import { useEffect, useState } from "react";
 
 import { placeCategoryOptions } from "@/entities/map/model/map-filters";
-import { ApiClientError } from "@shared/api/http";
-import { Button, Input, SelectInput, Textarea, Toast } from "@shared/ui";
+import { uploadImage } from "@/features/image/model/upload-image";
+import { Button, ImageInput, Input, SelectInput, Textarea, useToast } from "@shared/ui";
 import { useCreatePlace } from "../model/use-place";
 import { usePlaceGeocode } from "../model/use-place-geocode";
 
@@ -27,38 +27,27 @@ export function PlaceForm({
   const [lat, setLat] = useState("");
   const [lng, setLng] = useState("");
   const [naverPlaceUrl, setNaverPlaceUrl] = useState("");
-  const [images, setImages] = useState("");
+  const [images, setImages] = useState<string[]>([]);
+  const { showToast } = useToast();
   const geocodeQuery = usePlaceGeocode(address);
-  const {
-    mutateAsync: createPlace,
-    error: createPlaceError,
-    isSuccess,
-    data: successData,
-    isPending,
-  } = useCreatePlace();
-  const [dismissedToast, setDismissedToast] = useState<
-    "success" | "error" | null
-  >(null);
+  const { mutateAsync: createPlace, isPending } = useCreatePlace();
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
 
-    await createPlace({
-      name: name.trim(),
-      category,
-      address: address.trim(),
-      phone: phone.trim() || undefined,
-      description: description.trim() || undefined,
-      lat: Number(lat),
-      lng: Number(lng),
-      naverPlaceUrl: naverPlaceUrl.trim(),
-      images: images
-        .split("\n")
-        .map((item) => item.trim())
-        .filter(Boolean),
-    });
+    try {
+      const createdPlace = await createPlace({
+        name: name.trim(),
+        category,
+        address: address.trim(),
+        phone: phone.trim() || undefined,
+        description: description.trim() || undefined,
+        lat: Number(lat),
+        lng: Number(lng),
+        naverPlaceUrl: naverPlaceUrl.trim(),
+        images: images.map((item) => item.trim()).filter(Boolean),
+      });
 
-    if (isSuccess && successData) {
       setName("");
       setCategory("gas");
       setAddress("");
@@ -67,24 +56,22 @@ export function PlaceForm({
       setLat("");
       setLng("");
       setNaverPlaceUrl("");
-      setImages("");
-      onSuccess?.(successData.data);
+      setImages([]);
+      showToast({
+        tone: "success",
+        title: "장소등록 성공",
+        description: "새로운 장소가 지도에 등록되었습니다.",
+      });
+      onSuccess?.(createdPlace.data);
+    } catch (error) {
+      showToast({
+        tone: "danger",
+        title: "장소등록 실패",
+        description:
+          error instanceof Error ? error.message : "장소를 등록하지 못했습니다.",
+      });
     }
   };
-
-  const errorMessage =
-    createPlaceError instanceof ApiClientError
-      ? createPlaceError.message
-      : createPlaceError instanceof Error
-      ? createPlaceError.message
-      : null;
-
-  const geocodeErrorMessage =
-    geocodeQuery.error instanceof ApiClientError
-      ? geocodeQuery.error.message
-      : geocodeQuery.error instanceof Error
-      ? geocodeQuery.error.message
-      : null;
 
   useEffect(() => {
     const geocoded = geocodeQuery.data?.data;
@@ -119,8 +106,8 @@ export function PlaceForm({
         helperText={
           geocodeQuery.isFetching
             ? "주소를 기준으로 좌표를 찾는 중입니다."
-            : geocodeErrorMessage
-            ? geocodeErrorMessage
+            : geocodeQuery.error instanceof Error
+            ? geocodeQuery.error.message
             : lat && lng
             ? "입력한 주소 기준으로 위도/경도가 자동 입력되었습니다."
             : "주소 입력 후 잠시 기다리면 위도/경도가 자동 입력됩니다."
@@ -162,30 +149,15 @@ export function PlaceForm({
         placeholder="https://..."
         required
       />
-      <Textarea
-        label="이미지 URL"
+      <ImageInput
+        label="이미지 업로드"
         value={images}
-        onChange={(event) => setImages(event.target.value)}
-        placeholder="이미지 URL을 줄바꿈으로 구분해 입력"
+        onValueChange={(urls) => setImages(urls ?? [])}
+        onUpload={async (file) => {
+          const uploaded = await uploadImage(file);
+          return uploaded.url;
+        }}
       />
-
-      {errorMessage && dismissedToast !== "error" && (
-        <Toast
-          tone="danger"
-          title="장소등록 실패"
-          description={errorMessage}
-          onClose={() => setDismissedToast("error")}
-        />
-      )}
-
-      {isSuccess && (
-        <Toast
-          tone="success"
-          title="장소등록 성공"
-          description="새로운 장소가 지도에 등록되었습니다."
-          onClose={() => setDismissedToast("success")}
-        />
-      )}
 
       <div className="flex items-center justify-end gap-2">
         {onCancel && (
