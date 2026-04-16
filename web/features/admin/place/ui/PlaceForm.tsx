@@ -41,7 +41,11 @@ export function PlaceForm({
   const [naverPlaceUrl, setNaverPlaceUrl] = useState("");
   const [images, setImages] = useState<string[]>([]);
   const isEditMode = Boolean(initialData);
-  const geocodeQuery = usePlaceGeocode(address);
+  const normalizedAddress = address.trim();
+  const initialNormalizedAddress = initialData?.address.trim() ?? "";
+  const shouldAutofillCoordinates =
+    !isEditMode || normalizedAddress !== initialNormalizedAddress;
+  const geocodeQuery = usePlaceGeocode(address, shouldAutofillCoordinates);
   const {
     mutateAsync: createPlace,
     error: createPlaceError,
@@ -167,6 +171,8 @@ export function PlaceForm({
             ? "주소를 기준으로 좌표를 찾는 중입니다."
             : geocodeErrorMessage
             ? geocodeErrorMessage
+            : isEditMode && !shouldAutofillCoordinates
+            ? "기존 저장 좌표를 유지합니다. 주소를 수정하면 위도/경도가 자동 갱신됩니다."
             : lat && lng
             ? "입력한 주소 기준으로 위도/경도가 자동 입력되었습니다."
             : "주소 입력 후 잠시 기다리면 위도/경도가 자동 입력됩니다."
