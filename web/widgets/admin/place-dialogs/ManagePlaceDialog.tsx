@@ -7,6 +7,7 @@ import { PlaceForm } from "@/features/admin/place/ui/PlaceForm";
 import { usePlaceDetail } from "@/features/places/model/use-place-detail";
 import { usePlaces } from "@/features/places/model/use-places";
 import { ManageEntityDialogLayout } from "@/widgets/admin/manage-entity-dialog";
+import { buildCursor } from "@shared/api";
 import {
   Button,
   Dialog,
@@ -14,6 +15,7 @@ import {
   DialogContent,
   DialogHeader,
   DialogTrigger,
+  Pagination,
 } from "@shared/ui";
 
 interface ManagePlaceDialogProps {
@@ -26,11 +28,18 @@ export function ManagePlaceDialog({
   setOpenModalId,
 }: ManagePlaceDialogProps) {
   const [editingPlaceId, setEditingPlaceId] = useState<string | null>(null);
+  const [page, setPage] = useState(1);
+  const pageSize = 8;
 
-  const placesQuery = usePlaces({ limit: 50 });
+  const placesQuery = usePlaces({
+    limit: pageSize,
+    cursor: page > 1 ? buildCursor((page - 1) * pageSize) : undefined,
+  });
   const placeDetailQuery = usePlaceDetail(editingPlaceId ?? "");
   const places = placesQuery.data?.data.items ?? [];
   const deleteMutation = useDeletePlace();
+  const total = placesQuery.data?.meta?.total ?? 0;
+  const totalPages = Math.max(1, Math.ceil(total / pageSize));
 
   const selectedPlace = useMemo(
     () => placeDetailQuery.data?.data ?? null,
@@ -91,6 +100,16 @@ export function ManagePlaceDialog({
                 }
               />
             ))}
+            listFooter={
+              total > pageSize ? (
+                <Pagination
+                  page={page}
+                  totalPages={totalPages}
+                  onPageChange={setPage}
+                  className="pt-2"
+                />
+              ) : null
+            }
             editorContent={
               selectedPlace ? (
                 <PlaceForm

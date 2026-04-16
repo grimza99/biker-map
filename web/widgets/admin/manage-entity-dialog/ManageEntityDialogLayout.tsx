@@ -17,6 +17,7 @@ interface ManageEntityDialogLayoutProps {
   isEmpty?: boolean;
   emptyTitle?: string;
   listContent: ReactNode;
+  listFooter?: ReactNode;
   editorContent?: ReactNode;
 }
 
@@ -28,6 +29,7 @@ export function ManageEntityDialogLayout({
   isEmpty = false,
   emptyTitle = "등록된 항목이 없습니다.",
   listContent,
+  listFooter,
   editorContent,
 }: ManageEntityDialogLayoutProps) {
   return (
@@ -38,6 +40,7 @@ export function ManageEntityDialogLayout({
           {isLoading && <LoadingState label="목록을 불러오는 중" />}
           {!isLoading && isEmpty && <EmptyState title={emptyTitle} />}
           {listContent}
+          {listFooter}
         </DefaultCardContainer>
       </div>
 
