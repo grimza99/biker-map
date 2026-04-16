@@ -2,21 +2,25 @@
 
 import type {
   CreatePlaceResponseData,
+  PlaceDetail,
   PlaceCategory,
+  UpdatePlaceBody,
 } from "@package-shared/types/place";
 import { useEffect, useState } from "react";
 
 import { placeCategoryOptions } from "@/entities/map/model/map-filters";
 import { ApiClientError } from "@shared/api/http";
 import { Button, Input, SelectInput, Textarea, Toast } from "@shared/ui";
-import { useCreatePlace } from "../model/use-place";
+import { useCreatePlace, useEditPlace } from "../model/use-place";
 import { usePlaceGeocode } from "../model/use-place-geocode";
 
 export function PlaceForm({
+  initialData,
   onSuccess,
   onCancel,
 }: {
-  onSuccess?: (data: CreatePlaceResponseData) => void;
+  initialData?: PlaceDetail | null;
+  onSuccess?: (data?: CreatePlaceResponseData) => void;
   onCancel?: () => void;
 }) {
   const [name, setName] = useState("");
@@ -28,6 +32,7 @@ export function PlaceForm({
   const [lng, setLng] = useState("");
   const [naverPlaceUrl, setNaverPlaceUrl] = useState("");
   const [images, setImages] = useState("");
+  const isEditMode = Boolean(initialData);
   const geocodeQuery = usePlaceGeocode(address);
   const {
     mutateAsync: createPlace,
@@ -36,14 +41,48 @@ export function PlaceForm({
     data: successData,
     isPending,
   } = useCreatePlace();
+  const {
+    mutateAsync: editPlace,
+    error: editPlaceError,
+    isPending: isEditPending,
+  } = useEditPlace(initialData?.id ?? "");
   const [dismissedToast, setDismissedToast] = useState<
     "success" | "error" | null
   >(null);
 
+  const resetForm = () => {
+    setName("");
+    setCategory("gas");
+    setAddress("");
+    setPhone("");
+    setDescription("");
+    setLat("");
+    setLng("");
+    setNaverPlaceUrl("");
+    setImages("");
+  };
+
+  useEffect(() => {
+    if (!initialData) {
+      resetForm();
+      return;
+    }
+
+    setName(initialData.name);
+    setCategory(initialData.category);
+    setAddress(initialData.address);
+    setPhone(initialData.phone ?? "");
+    setDescription(initialData.description ?? "");
+    setLat(String(initialData.lat));
+    setLng(String(initialData.lng));
+    setNaverPlaceUrl(initialData.naverPlaceUrl);
+    setImages((initialData.images ?? []).join("\n"));
+  }, [initialData]);
+
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
 
-    await createPlace({
+    const payload = {
       name: name.trim(),
       category,
       address: address.trim(),
@@ -56,28 +95,30 @@ export function PlaceForm({
         .split("\n")
         .map((item) => item.trim())
         .filter(Boolean),
-    });
+    };
 
-    if (isSuccess && successData) {
-      setName("");
-      setCategory("gas");
-      setAddress("");
-      setPhone("");
-      setDescription("");
-      setLat("");
-      setLng("");
-      setNaverPlaceUrl("");
-      setImages("");
-      onSuccess?.(successData.data);
+    if (isEditMode) {
+      await editPlace(payload satisfies UpdatePlaceBody);
+      onSuccess?.();
+      return;
     }
+
+    const createdPlace = await createPlace(payload);
+    resetForm();
+    onSuccess?.(createdPlace.data);
   };
 
   const errorMessage =
-    createPlaceError instanceof ApiClientError
+    (editPlaceError instanceof ApiClientError
+      ? editPlaceError.message
+      : editPlaceError instanceof Error
+      ? editPlaceError.message
+      : null) ??
+    (createPlaceError instanceof ApiClientError
       ? createPlaceError.message
       : createPlaceError instanceof Error
       ? createPlaceError.message
-      : null;
+      : null);
 
   const geocodeErrorMessage =
     geocodeQuery.error instanceof ApiClientError
@@ -178,7 +219,7 @@ export function PlaceForm({
         />
       )}
 
-      {isSuccess && (
+      {isSuccess && !isEditMode && (
         <Toast
           tone="success"
           title="장소등록 성공"
@@ -193,8 +234,8 @@ export function PlaceForm({
             취소
           </Button>
         )}
-        <Button type="submit" loading={isPending}>
-          장소 등록
+        <Button type="submit" loading={isPending || isEditPending}>
+          {isEditMode ? "장소 수정" : "장소 등록"}
         </Button>
       </div>
     </form>
