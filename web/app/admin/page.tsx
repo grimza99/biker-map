@@ -3,6 +3,7 @@
 import { CommunityPostForm } from "@/features/community";
 import {
   CreatePlaceDialog,
+  ManagePostDialog,
   CreateRouteDialog,
   ManagePlaceDialog,
   ManageRouteDialog,
@@ -21,6 +22,7 @@ import { useState } from "react";
 
 export type AdminModalId =
   | "post"
+  | "post-manage"
   | "place-create"
   | "place-manage"
   | "route-create"
@@ -61,6 +63,10 @@ export default function AdminPage() {
             </DialogBody>
           </DialogContent>
         </Dialog>
+        <ManagePostDialog
+          openModalId={openModalId}
+          setOpenModalId={(modalId) => setOpenModalId(modalId)}
+        />
       </DefaultCardContainer>
       {/*----------------------------------------------------------- place 등록, 관리 -----------------------------------------*/}
       <DefaultCardContainer>

@@ -39,19 +39,27 @@ export function useUpdateCommunityPost(postId: string) {
   });
 }
 
-export function useDeleteCommunityPost(postId: string) {
+export function useDeleteCommunityPost(postId?: string) {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: () =>
-      apiFetch<DeletePostResponseData>(API_PATHS.community.post(postId), {
-        method: "DELETE",
-      }),
-    onSuccess: async () => {
-      await Promise.all([
-        queryClient.removeQueries({ queryKey: queryKeys.post(postId) }),
-        queryClient.invalidateQueries({ queryKey: ["posts"] }),
-      ]);
+    mutationFn: (targetPostId?: string) =>
+      apiFetch<DeletePostResponseData>(
+        API_PATHS.community.post(targetPostId ?? postId ?? ""),
+        {
+          method: "DELETE",
+        }
+      ),
+    onSuccess: async (_, targetPostId) => {
+      const resolvedPostId = targetPostId ?? postId;
+
+      if (resolvedPostId) {
+        await queryClient.removeQueries({
+          queryKey: queryKeys.post(resolvedPostId),
+        });
+      }
+
+      await queryClient.invalidateQueries({ queryKey: ["posts"] });
     },
   });
 }
