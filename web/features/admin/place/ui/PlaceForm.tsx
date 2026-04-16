@@ -3,20 +3,32 @@
 import type {
   CreatePlaceResponseData,
   PlaceCategory,
+  PlaceDetail,
+  UpdatePlaceBody,
 } from "@package-shared/types/place";
 import { useEffect, useState } from "react";
 
 import { placeCategoryOptions } from "@/entities/map/model/map-filters";
 import { uploadImage } from "@/features/image/model/upload-image";
-import { Button, ImageInput, Input, SelectInput, Textarea, useToast } from "@shared/ui";
-import { useCreatePlace } from "../model/use-place";
+import { ApiClientError } from "@shared/api/http";
+import {
+  Button,
+  ImageInput,
+  Input,
+  SelectInput,
+  Textarea,
+  Toast,
+} from "@shared/ui";
+import { useCreatePlace, useEditPlace } from "../model/use-place";
 import { usePlaceGeocode } from "../model/use-place-geocode";
 
 export function PlaceForm({
+  initialData,
   onSuccess,
   onCancel,
 }: {
-  onSuccess?: (data: CreatePlaceResponseData) => void;
+  initialData?: PlaceDetail | null;
+  onSuccess?: (data?: CreatePlaceResponseData) => void;
   onCancel?: () => void;
 }) {
   const [name, setName] = useState("");
@@ -28,50 +40,101 @@ export function PlaceForm({
   const [lng, setLng] = useState("");
   const [naverPlaceUrl, setNaverPlaceUrl] = useState("");
   const [images, setImages] = useState<string[]>([]);
-  const { showToast } = useToast();
-  const geocodeQuery = usePlaceGeocode(address);
-  const { mutateAsync: createPlace, isPending } = useCreatePlace();
+  const isEditMode = Boolean(initialData);
+  const normalizedAddress = address.trim();
+  const initialNormalizedAddress = initialData?.address.trim() ?? "";
+  const shouldAutofillCoordinates =
+    !isEditMode || normalizedAddress !== initialNormalizedAddress;
+  const geocodeQuery = usePlaceGeocode(address, shouldAutofillCoordinates);
+  const {
+    mutateAsync: createPlace,
+    error: createPlaceError,
+    isSuccess,
+    data: successData,
+    isPending,
+  } = useCreatePlace();
+  const {
+    mutateAsync: editPlace,
+    error: editPlaceError,
+    isPending: isEditPending,
+  } = useEditPlace(initialData?.id ?? "");
+  const [dismissedToast, setDismissedToast] = useState<
+    "success" | "error" | null
+  >(null);
+
+  const resetForm = () => {
+    setName("");
+    setCategory("gas");
+    setAddress("");
+    setPhone("");
+    setDescription("");
+    setLat("");
+    setLng("");
+    setNaverPlaceUrl("");
+    setImages([]);
+  };
+
+  useEffect(() => {
+    if (!initialData) {
+      resetForm();
+      return;
+    }
+
+    setName(initialData.name);
+    setCategory(initialData.category);
+    setAddress(initialData.address);
+    setPhone(initialData.phone ?? "");
+    setDescription(initialData.description ?? "");
+    setLat(String(initialData.lat));
+    setLng(String(initialData.lng));
+    setNaverPlaceUrl(initialData.naverPlaceUrl);
+    setImages(initialData.images ?? []);
+  }, [initialData]);
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
 
-    try {
-      const createdPlace = await createPlace({
-        name: name.trim(),
-        category,
-        address: address.trim(),
-        phone: phone.trim() || undefined,
-        description: description.trim() || undefined,
-        lat: Number(lat),
-        lng: Number(lng),
-        naverPlaceUrl: naverPlaceUrl.trim(),
-        images: images.map((item) => item.trim()).filter(Boolean),
-      });
+    const payload = {
+      name: name.trim(),
+      category,
+      address: address.trim(),
+      phone: phone.trim() || undefined,
+      description: description.trim() || undefined,
+      lat: Number(lat),
+      lng: Number(lng),
+      naverPlaceUrl: naverPlaceUrl.trim(),
+      images: images.map((item) => item.trim()).filter(Boolean),
+    };
 
-      setName("");
-      setCategory("gas");
-      setAddress("");
-      setPhone("");
-      setDescription("");
-      setLat("");
-      setLng("");
-      setNaverPlaceUrl("");
-      setImages([]);
-      showToast({
-        tone: "success",
-        title: "장소등록 성공",
-        description: "새로운 장소가 지도에 등록되었습니다.",
-      });
-      onSuccess?.(createdPlace.data);
-    } catch (error) {
-      showToast({
-        tone: "danger",
-        title: "장소등록 실패",
-        description:
-          error instanceof Error ? error.message : "장소를 등록하지 못했습니다.",
-      });
+    if (isEditMode) {
+      await editPlace(payload satisfies UpdatePlaceBody);
+      onSuccess?.();
+      return;
     }
+
+    const createdPlace = await createPlace(payload);
+    resetForm();
+    onSuccess?.(createdPlace.data);
   };
+
+  const errorMessage =
+    (editPlaceError instanceof ApiClientError
+      ? editPlaceError.message
+      : editPlaceError instanceof Error
+      ? editPlaceError.message
+      : null) ??
+    (createPlaceError instanceof ApiClientError
+      ? createPlaceError.message
+      : createPlaceError instanceof Error
+      ? createPlaceError.message
+      : null);
+
+  const geocodeErrorMessage =
+    geocodeQuery.error instanceof ApiClientError
+      ? geocodeQuery.error.message
+      : geocodeQuery.error instanceof Error
+      ? geocodeQuery.error.message
+      : null;
 
   useEffect(() => {
     const geocoded = geocodeQuery.data?.data;
@@ -106,8 +169,10 @@ export function PlaceForm({
         helperText={
           geocodeQuery.isFetching
             ? "주소를 기준으로 좌표를 찾는 중입니다."
-            : geocodeQuery.error instanceof Error
-            ? geocodeQuery.error.message
+            : geocodeErrorMessage
+            ? geocodeErrorMessage
+            : isEditMode && !shouldAutofillCoordinates
+            ? "기존 저장 좌표를 유지합니다. 주소를 수정하면 위도/경도가 자동 갱신됩니다."
             : lat && lng
             ? "입력한 주소 기준으로 위도/경도가 자동 입력되었습니다."
             : "주소 입력 후 잠시 기다리면 위도/경도가 자동 입력됩니다."
@@ -159,14 +224,32 @@ export function PlaceForm({
         }}
       />
 
+      {errorMessage && dismissedToast !== "error" && (
+        <Toast
+          tone="danger"
+          title="장소등록 실패"
+          description={errorMessage}
+          onClose={() => setDismissedToast("error")}
+        />
+      )}
+
+      {isSuccess && !isEditMode && (
+        <Toast
+          tone="success"
+          title="장소등록 성공"
+          description="새로운 장소가 지도에 등록되었습니다."
+          onClose={() => setDismissedToast("success")}
+        />
+      )}
+
       <div className="flex items-center justify-end gap-2">
         {onCancel && (
           <Button type="button" variant="secondary" onClick={onCancel}>
             취소
           </Button>
         )}
-        <Button type="submit" loading={isPending}>
-          장소 등록
+        <Button type="submit" loading={isPending || isEditPending}>
+          {isEditMode ? "장소 수정" : "장소 등록"}
         </Button>
       </div>
     </form>

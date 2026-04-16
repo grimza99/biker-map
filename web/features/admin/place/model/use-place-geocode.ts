@@ -9,7 +9,7 @@ import { useQuery } from "@tanstack/react-query";
 import { useDebouncedValue } from "@/shared";
 import { apiFetch } from "@shared/api/http";
 
-export function usePlaceGeocode(address: string) {
+export function usePlaceGeocode(address: string, enabled = true) {
   const normalizedAddress = address.trim();
   const debouncedAddress = useDebouncedValue(normalizedAddress, 600);
 
@@ -21,7 +21,7 @@ export function usePlaceGeocode(address: string) {
           debouncedAddress
         )}`
       ),
-    enabled: debouncedAddress.length >= 6,
+    enabled: enabled && debouncedAddress.length >= 6,
     staleTime: 1000 * 60 * 5,
   });
 }

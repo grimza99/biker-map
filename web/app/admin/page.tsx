@@ -4,6 +4,7 @@ import { CommunityPostForm } from "@/features/community";
 import {
   CreatePlaceDialog,
   CreateRouteDialog,
+  ManagePlaceDialog,
   ManageRouteDialog,
 } from "@/widgets/admin";
 import {
@@ -21,6 +22,7 @@ import { useState } from "react";
 export type AdminModalId =
   | "post"
   | "place-create"
+  | "place-manage"
   | "route-create"
   | "route-manage"
   | null;
@@ -67,6 +69,10 @@ export default function AdminPage() {
           지도에 노출할 장소 등록 , 관리
         </p>
         <CreatePlaceDialog
+          openModalId={openModalId}
+          setOpenModalId={(modalId) => setOpenModalId(modalId)}
+        />
+        <ManagePlaceDialog
           openModalId={openModalId}
           setOpenModalId={(modalId) => setOpenModalId(modalId)}
         />
