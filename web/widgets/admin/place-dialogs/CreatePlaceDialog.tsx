@@ -19,7 +19,9 @@ export function CreatePlaceDialog({
   return (
     <Dialog
       open={openModalId === "place-create"}
-      onOpenChange={() => setOpenModalId("place-create")}
+      onOpenChange={(nextOpen) =>
+        setOpenModalId(nextOpen ? "place-create" : null)
+      }
     >
       <DialogTrigger asChild>
         <Button size="lg" variant="secondary">
