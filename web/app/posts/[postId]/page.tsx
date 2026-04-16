@@ -130,7 +130,7 @@ export default function PostDetailPage() {
                   }
 
                   try {
-                    await deletePostMutation.mutateAsync();
+                    await deletePostMutation.mutateAsync(undefined);
                     router.replace("/posts");
                   } catch (error) {
                     setDeleteError(
