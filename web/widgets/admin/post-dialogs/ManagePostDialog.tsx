@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 
 import { AdminModalId } from "@/app/admin/page";
 import { ManagePostItem } from "@/features/admin";
@@ -17,8 +17,10 @@ import {
   DialogContent,
   DialogHeader,
   DialogTrigger,
+  Input,
   Pagination,
 } from "@shared/ui";
+import { useDebouncedValue } from "@/shared";
 
 interface ManagePostDialogProps {
   openModalId: AdminModalId | null;
@@ -31,9 +33,12 @@ export function ManagePostDialog({
 }: ManagePostDialogProps) {
   const [editingPostId, setEditingPostId] = useState<string | null>(null);
   const [page, setPage] = useState(1);
+  const [search, setSearch] = useState("");
   const pageSize = 8;
+  const debouncedSearch = useDebouncedValue(search, 300);
 
   const postsQuery = useCommunityPosts({
+    search: debouncedSearch || undefined,
     page,
     pageSize,
     sort: "latest",
@@ -49,6 +54,10 @@ export function ManagePostDialog({
     () => postDetailQuery.data?.data ?? null,
     [postDetailQuery.data?.data]
   );
+
+  useEffect(() => {
+    setPage(1);
+  }, [debouncedSearch]);
 
   const handleDeletePost = async (postId: string) => {
     if (!window.confirm("이 게시글을 삭제하시겠습니까?")) {
@@ -88,6 +97,13 @@ export function ManagePostDialog({
         <DialogBody className="grid h-full gap-5 pt-0">
           <ManageEntityDialogLayout
             listTitle="게시글 목록"
+            listToolbar={
+              <Input
+                value={search}
+                onChange={(event) => setSearch(event.target.value)}
+                placeholder="게시글 제목 검색"
+              />
+            }
             editorTitle="게시글 수정"
             editorDescription="수정할 게시글을 목록에서 선택하면 아래에 폼이 열립니다."
             isLoading={postsQuery.isLoading}

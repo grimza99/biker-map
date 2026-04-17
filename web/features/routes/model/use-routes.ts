@@ -12,6 +12,7 @@ import { apiFetch } from "@shared/api/http";
 import { queryKeys } from "@shared/config/query-keys";
 
 export type RouteListFilters = {
+  search?: string;
   departureRegion?: RouteRegion;
   destinationRegion?: RouteRegion;
   maxDistanceKm?: number;
@@ -20,6 +21,10 @@ export type RouteListFilters = {
 
 function buildRoutesSearchParams(filters: RouteListFilters) {
   const searchParams = new URLSearchParams();
+
+  if (filters.search?.trim()) {
+    searchParams.set("search", filters.search.trim());
+  }
 
   if (filters.departureRegion) {
     searchParams.set("departureRegion", filters.departureRegion);
@@ -43,6 +48,7 @@ function buildRoutesSearchParams(filters: RouteListFilters) {
 export function useRoutes(filters: RouteListFilters) {
   const query = buildRoutesSearchParams(filters);
   const paramsForKey: RoutesQuery = {
+    search: filters.search,
     departureRegion: filters.departureRegion,
     destinationRegion: filters.destinationRegion,
     maxDistanceKm: filters.maxDistanceKm,

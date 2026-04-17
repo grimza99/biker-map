@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 
 import { AdminModalId } from "@/app/admin/page";
 import { ManagePlaceItem } from "@/features/admin";
@@ -15,8 +15,10 @@ import {
   DialogContent,
   DialogHeader,
   DialogTrigger,
+  Input,
   Pagination,
 } from "@shared/ui";
+import { useDebouncedValue } from "@/shared";
 
 interface ManagePlaceDialogProps {
   openModalId: AdminModalId | null;
@@ -29,9 +31,12 @@ export function ManagePlaceDialog({
 }: ManagePlaceDialogProps) {
   const [editingPlaceId, setEditingPlaceId] = useState<string | null>(null);
   const [page, setPage] = useState(1);
+  const [search, setSearch] = useState("");
   const pageSize = 8;
+  const debouncedSearch = useDebouncedValue(search, 300);
 
   const placesQuery = usePlaces({
+    search: debouncedSearch || undefined,
     limit: pageSize,
     cursor: page > 1 ? buildCursor((page - 1) * pageSize) : undefined,
   });
@@ -45,6 +50,10 @@ export function ManagePlaceDialog({
     () => placeDetailQuery.data?.data ?? null,
     [placeDetailQuery.data?.data]
   );
+
+  useEffect(() => {
+    setPage(1);
+  }, [debouncedSearch]);
 
   const handleDeletePlace = async (placeId: string) => {
     if (!window.confirm("이 장소를 삭제하시겠습니까?")) {
@@ -84,6 +93,13 @@ export function ManagePlaceDialog({
         <DialogBody className="grid h-full gap-5 pt-0">
           <ManageEntityDialogLayout
             listTitle="장소 목록"
+            listToolbar={
+              <Input
+                value={search}
+                onChange={(event) => setSearch(event.target.value)}
+                placeholder="장소명 검색"
+              />
+            }
             editorTitle="장소 수정"
             editorDescription="수정할 장소를 목록에서 선택하면 아래에 폼이 열립니다."
             isLoading={placesQuery.isLoading}
