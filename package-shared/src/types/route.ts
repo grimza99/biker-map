@@ -13,6 +13,7 @@ export type RouteRegion =
   | "all";
 
 export type RoutesQuery = {
+  search?: string;
   departureRegion?: RouteRegion;
   destinationRegion?: RouteRegion;
   maxDistanceKm?: number;

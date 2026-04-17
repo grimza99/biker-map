@@ -24,6 +24,7 @@ import { z } from "zod";
 export async function GET(request: NextRequest) {
   const searchParams = request.nextUrl.searchParams;
   const query: RoutesQuery = {
+    search: getStringParam(searchParams, "search"),
     departureRegion: getStringParam(searchParams, "departureRegion") as
       | RouteRegion
       | undefined,
@@ -47,6 +48,13 @@ export async function GET(request: NextRequest) {
     .map(mapRouteListItem)
     .filter((item): item is NonNullable<typeof item> => Boolean(item))
     .filter((item) => {
+      if (query.search) {
+        const keyword = query.search.toLowerCase();
+        if (!item.title.toLowerCase().includes(keyword)) {
+          return false;
+        }
+      }
+
       if (
         query.departureRegion &&
         item.departureRegion !== query.departureRegion
