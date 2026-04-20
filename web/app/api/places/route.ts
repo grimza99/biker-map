@@ -17,9 +17,9 @@ import {
   paginateByCursor,
   placeCategories,
 } from "@shared/api";
+import { requireApiSession } from "@shared/api/auth";
 import type { NextRequest } from "next/server";
 import { z } from "zod";
-import { requireApiSession } from "@shared/api/auth";
 
 /**-----------------------------get place list-------------------------------- */
 export async function GET(request: NextRequest) {
@@ -59,7 +59,9 @@ export async function GET(request: NextRequest) {
           return false;
         }
       }
-
+      if (query.category === "all") {
+        return true;
+      }
       if (query.category && item.category !== query.category) {
         return false;
       }

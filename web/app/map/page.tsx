@@ -27,7 +27,6 @@ export default function MapPage() {
     () => ({
       search: deferredSearch,
       category,
-      limit: 24,
     }),
     [category, deferredSearch]
   );
@@ -70,26 +69,26 @@ export default function MapPage() {
 
           <div className="pointer-events-auto">
             <SidePanel>
-            <SidePanelTrigger asChild>
-              <Button variant="primary">
-                <ArrowLeftToLine className="w-4 h-4 m-0" />
-              </Button>
-            </SidePanelTrigger>
-            <SidePanelContent
-              title={<h2>검색</h2>}
-              overlayClassName="bg-transparent backdrop-blur-none"
-            >
-              <SidePanelBody>
-                <MapSidePanel
-                  places={places}
-                  onChangeSearchInput={handleChangeSearchInput}
-                  isLoading={isLoading}
-                  isError={isError}
-                  error={error}
-                  isStale={isStale}
-                />
-              </SidePanelBody>
-            </SidePanelContent>
+              <SidePanelTrigger asChild>
+                <Button variant="primary">
+                  <ArrowLeftToLine className="w-4 h-4 m-0" />
+                </Button>
+              </SidePanelTrigger>
+              <SidePanelContent
+                title={<h2>검색</h2>}
+                overlayClassName="bg-transparent backdrop-blur-none"
+              >
+                <SidePanelBody>
+                  <MapSidePanel
+                    places={places}
+                    onChangeSearchInput={handleChangeSearchInput}
+                    isLoading={isLoading}
+                    isError={isError}
+                    error={error}
+                    isStale={isStale}
+                  />
+                </SidePanelBody>
+              </SidePanelContent>
             </SidePanel>
           </div>
         </div>
