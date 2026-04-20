@@ -1,5 +1,10 @@
 export type PlaceCategory = "all" | "gas" | "repair" | "cafe" | "shop" | "rest";
-
+export type MarkerblePlaceCategory =
+  | "gas"
+  | "repair"
+  | "cafe"
+  | "shop"
+  | "rest";
 export type PlaceViewport = {
   minLng: number;
   minLat: number;
@@ -18,7 +23,7 @@ export type PlacesQuery = {
 export type PlaceListItem = {
   id: string;
   name: string;
-  category: PlaceCategory;
+  category: MarkerblePlaceCategory;
   address: string;
   lat: number;
   lng: number;

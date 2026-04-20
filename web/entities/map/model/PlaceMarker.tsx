@@ -1,4 +1,7 @@
-import type { PlaceCategory, PlaceListItem } from "@package-shared/types/place";
+import type {
+  MarkerblePlaceCategory,
+  PlaceListItem,
+} from "@package-shared/types/place";
 import {
   CircleEllipsis,
   Coffee,
@@ -11,9 +14,8 @@ import { createElement } from "react";
 import { renderToStaticMarkup } from "react-dom/server";
 
 type NaverMaps = typeof window.naver.maps;
-
 const categoryMarkerMeta: Record<
-  PlaceCategory,
+  MarkerblePlaceCategory,
   { label: string; icon: LucideIcon; color: string }
 > = {
   gas: {
