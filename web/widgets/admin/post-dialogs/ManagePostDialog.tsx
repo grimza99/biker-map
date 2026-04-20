@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useMemo, useState } from "react";
 
 import { AdminModalId } from "@/app/admin/page";
 import { ManagePostItem } from "@/features/admin";
@@ -55,9 +55,20 @@ export function ManagePostDialog({
     [postDetailQuery.data?.data]
   );
 
-  useEffect(() => {
+  const handleSearchChange = (nextSearch: string) => {
+    setSearch(nextSearch);
     setPage(1);
-  }, [debouncedSearch]);
+  };
+
+  const handleOpenChange = (nextOpen: boolean) => {
+    if (!nextOpen) {
+      setSearch("");
+      setPage(1);
+      setEditingPostId(null);
+    }
+
+    setOpenModalId(nextOpen ? "post-manage" : null);
+  };
 
   const handleDeletePost = async (postId: string) => {
     if (!window.confirm("이 게시글을 삭제하시겠습니까?")) {
@@ -78,9 +89,7 @@ export function ManagePostDialog({
   return (
     <Dialog
       open={openModalId === "post-manage"}
-      onOpenChange={(nextOpen) =>
-        setOpenModalId(nextOpen ? "post-manage" : null)
-      }
+      onOpenChange={handleOpenChange}
     >
       <DialogTrigger asChild>
         <Button size="lg" variant="secondary">
@@ -100,7 +109,7 @@ export function ManagePostDialog({
             listToolbar={
               <Input
                 value={search}
-                onChange={(event) => setSearch(event.target.value)}
+                onChange={(event) => handleSearchChange(event.target.value)}
                 placeholder="게시글 제목 검색"
               />
             }

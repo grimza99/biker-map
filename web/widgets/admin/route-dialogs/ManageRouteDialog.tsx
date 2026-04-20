@@ -58,12 +58,19 @@ export function ManageRouteDialog({
     }
   };
 
+  const handleOpenChange = (nextOpen: boolean) => {
+    if (!nextOpen) {
+      setSearch("");
+      setEditingRouteId(null);
+    }
+
+    setOpenModalId(nextOpen ? "route-manage" : null);
+  };
+
   return (
     <Dialog
       open={openModalId === "route-manage"}
-      onOpenChange={(nextOpen) =>
-        setOpenModalId(nextOpen ? "route-manage" : null)
-      }
+      onOpenChange={handleOpenChange}
     >
       <DialogTrigger asChild>
         <Button size="lg" variant="secondary">

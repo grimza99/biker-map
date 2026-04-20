@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useMemo, useState } from "react";
 
 import { AdminModalId } from "@/app/admin/page";
 import { ManagePlaceItem } from "@/features/admin";
@@ -51,9 +51,20 @@ export function ManagePlaceDialog({
     [placeDetailQuery.data?.data]
   );
 
-  useEffect(() => {
+  const handleSearchChange = (nextSearch: string) => {
+    setSearch(nextSearch);
     setPage(1);
-  }, [debouncedSearch]);
+  };
+
+  const handleOpenChange = (nextOpen: boolean) => {
+    if (!nextOpen) {
+      setSearch("");
+      setPage(1);
+      setEditingPlaceId(null);
+    }
+
+    setOpenModalId(nextOpen ? "place-manage" : null);
+  };
 
   const handleDeletePlace = async (placeId: string) => {
     if (!window.confirm("이 장소를 삭제하시겠습니까?")) {
@@ -74,9 +85,7 @@ export function ManagePlaceDialog({
   return (
     <Dialog
       open={openModalId === "place-manage"}
-      onOpenChange={(nextOpen) =>
-        setOpenModalId(nextOpen ? "place-manage" : null)
-      }
+      onOpenChange={handleOpenChange}
     >
       <DialogTrigger asChild>
         <Button size="lg" variant="secondary">
@@ -96,7 +105,7 @@ export function ManagePlaceDialog({
             listToolbar={
               <Input
                 value={search}
-                onChange={(event) => setSearch(event.target.value)}
+                onChange={(event) => handleSearchChange(event.target.value)}
                 placeholder="장소명 검색"
               />
             }
