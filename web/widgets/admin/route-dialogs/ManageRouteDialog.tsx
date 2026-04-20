@@ -14,7 +14,9 @@ import {
   DialogContent,
   DialogHeader,
   DialogTrigger,
+  Input,
 } from "@shared/ui";
+import { useDebouncedValue } from "@/shared";
 
 interface ManageRouteDialogProps {
   openModalId: AdminModalId | null;
@@ -26,8 +28,13 @@ export function ManageRouteDialog({
   setOpenModalId,
 }: ManageRouteDialogProps) {
   const [editingRouteId, setEditingRouteId] = useState<string | null>(null);
+  const [search, setSearch] = useState("");
+  const debouncedSearch = useDebouncedValue(search, 300);
 
-  const routesQuery = useRoutes({ limit: 50 });
+  const routesQuery = useRoutes({
+    search: debouncedSearch || undefined,
+    limit: 50,
+  });
   const routeDetailQuery = useRouteDetail(editingRouteId ?? "");
   const routes = routesQuery.data?.data.items ?? [];
 
@@ -51,12 +58,19 @@ export function ManageRouteDialog({
     }
   };
 
+  const handleOpenChange = (nextOpen: boolean) => {
+    if (!nextOpen) {
+      setSearch("");
+      setEditingRouteId(null);
+    }
+
+    setOpenModalId(nextOpen ? "route-manage" : null);
+  };
+
   return (
     <Dialog
       open={openModalId === "route-manage"}
-      onOpenChange={(nextOpen) =>
-        setOpenModalId(nextOpen ? "route-manage" : null)
-      }
+      onOpenChange={handleOpenChange}
     >
       <DialogTrigger asChild>
         <Button size="lg" variant="secondary">
@@ -73,6 +87,13 @@ export function ManageRouteDialog({
         <DialogBody className="grid h-full gap-5 pt-0">
           <ManageEntityDialogLayout
             listTitle="경로 목록"
+            listToolbar={
+              <Input
+                value={search}
+                onChange={(event) => setSearch(event.target.value)}
+                placeholder="경로명 검색"
+              />
+            }
             editorTitle="라우트 수정"
             editorDescription="수정할 라우트를 목록에서 선택하면 아래에 폼이 열립니다."
             isLoading={routesQuery.isLoading}

@@ -11,6 +11,7 @@ import {
 
 interface ManageEntityDialogLayoutProps {
   listTitle: ReactNode;
+  listToolbar?: ReactNode;
   editorTitle: ReactNode;
   editorDescription: ReactNode;
   isLoading?: boolean;
@@ -23,6 +24,7 @@ interface ManageEntityDialogLayoutProps {
 
 export function ManageEntityDialogLayout({
   listTitle,
+  listToolbar,
   editorTitle,
   editorDescription,
   isLoading = false,
@@ -37,6 +39,7 @@ export function ManageEntityDialogLayout({
       <div className="flex flex-col gap-2">
         <DefaultCardContainer className="flex min-h-[calc(100vh-25%)] flex-col gap-3 overflow-y-auto">
           <h3>{listTitle}</h3>
+          {listToolbar}
           {isLoading && <LoadingState label="목록을 불러오는 중" />}
           {!isLoading && isEmpty && <EmptyState title={emptyTitle} />}
           {listContent}
