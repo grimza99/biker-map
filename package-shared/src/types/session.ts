@@ -3,4 +3,5 @@ export type AppSession = {
   name: string;
   email: string;
   avatarUrl: string | null;
+  role: string;
 };

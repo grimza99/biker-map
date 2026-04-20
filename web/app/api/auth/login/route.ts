@@ -67,7 +67,10 @@ export async function POST(request: Request) {
   }
 
   const response = ok<AuthResponseData>({
-    session: mappedSession,
+    session: {
+      ...mappedSession,
+      role: profileStatus?.role || "member",
+    },
     accessToken: session.access_token,
   }) as NextResponse;
 

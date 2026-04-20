@@ -67,6 +67,11 @@ async function getApiSession(request: Request): Promise<AppSession | null> {
     if (profileStatus?.deletedAt) {
       return null;
     }
+
+    return {
+      ...mappedSession,
+      role: profileStatus?.role || "member",
+    };
   } catch {
     return null;
   }
