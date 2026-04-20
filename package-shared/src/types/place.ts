@@ -1,4 +1,4 @@
-export type PlaceCategory = "gas" | "repair" | "cafe" | "shop" | "rest";
+export type PlaceCategory = "all" | "gas" | "repair" | "cafe" | "shop" | "rest";
 
 export type PlaceViewport = {
   minLng: number;
