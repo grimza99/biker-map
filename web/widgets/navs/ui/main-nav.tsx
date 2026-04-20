@@ -10,13 +10,14 @@ import { NotificationBell } from "@widgets/notification-bell";
 const navItems = [
   { href: "/map", label: "지도" },
   { href: "/posts", label: "커뮤니티" },
-  { href: "/favorites", label: "즐겨찾기" },
+  // { href: "/favorites", label: "즐겨찾기" },
   { href: "/me", label: "내 정보" },
 ];
 
 export function MainNav() {
   const pathname = usePathname();
-  const { status } = useSession();
+  const { session, status } = useSession();
+  const isAdmin = session?.role === "admin";
 
   return (
     <div className="flex items-center gap-2">
@@ -39,6 +40,25 @@ export function MainNav() {
             </Button>
           );
         })}
+        {isAdmin ? (
+          <Button
+            variant="underline"
+            size="lg"
+            selected={pathname === "/admin" || pathname.startsWith("/admin/")}
+            className="text-accent"
+          >
+            <Link
+              href="/admin"
+              aria-current={
+                pathname === "/admin" || pathname.startsWith("/admin/")
+                  ? "page"
+                  : undefined
+              }
+            >
+              관리자
+            </Link>
+          </Button>
+        ) : null}
       </nav>
 
       {status !== "authenticated" ? <NotificationBell /> : null}
