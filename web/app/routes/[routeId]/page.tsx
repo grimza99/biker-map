@@ -3,6 +3,7 @@
 import { Divide, ExternalLink, Route as RouteIcon, Timer } from "lucide-react";
 import { useParams } from "next/navigation";
 
+import { RoutePathMap } from "@/entities/route";
 import { useRouteDetail } from "@/features/routes/model/use-route-detail";
 import {
   Chip,
@@ -105,6 +106,23 @@ export default function RouteDetailPage() {
           </a>
         </DefaultCardContainer>
       </div>
+      {route.path.length ? (
+        <RoutePathMap
+          path={route.path}
+          departure={
+            route.departureLat !== undefined && route.departureLng !== undefined
+              ? { lat: route.departureLat, lng: route.departureLng }
+              : undefined
+          }
+          destination={
+            route.destinationLat !== undefined &&
+            route.destinationLng !== undefined
+              ? { lat: route.destinationLat, lng: route.destinationLng }
+              : undefined
+          }
+          waypoints={route.waypoints}
+        />
+      ) : null}
       <MarkdownContent content={route.content} />
     </PageWrapper>
   );

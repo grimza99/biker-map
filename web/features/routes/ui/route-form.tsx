@@ -5,7 +5,6 @@ import {
   routeRegionOptions,
   type CreateRouteBody,
   type RouteDetail,
-  type RouteProvider,
   type RouteSourceType,
   type UpdateRouteBody,
 } from "@package-shared/index";
@@ -20,15 +19,24 @@ import {
 } from "@shared/ui";
 import { useCreateRouteMutate, useEditRouteMutate } from "../model/use-route";
 
-const providerOptions: Array<{ value: RouteProvider; label: string }> = [
-  { value: "naver", label: "네이버 지도" },
-  { value: "etc", label: "기타" },
-];
-
 const sourceTypeOptions: Array<{ value: RouteSourceType; label: string }> = [
   { value: "curated", label: "운영자 큐레이션" },
   { value: "user", label: "사용자 경로" },
 ];
+
+type WaypointDraft = {
+  id: string;
+  lat: string;
+  lng: string;
+};
+
+function createWaypointDraft(lat = "", lng = ""): WaypointDraft {
+  return {
+    id: `${Date.now()}-${Math.random().toString(36).slice(2)}`,
+    lat,
+    lng,
+  };
+}
 
 export function RouteForm({
   initialData,
@@ -47,13 +55,17 @@ export function RouteForm({
   const [departureRegion, setDepartureRegion] = useState<RouteRegion>("seoul");
   const [destinationRegion, setDestinationRegion] =
     useState<RouteRegion>("seoul");
-  const [provider, setProvider] = useState<RouteProvider>("naver");
   const [externalMapUrl, setExternalMapUrl] = useState("");
   const [thumbnailUrl, setThumbnailUrl] = useState("");
   const [distanceKm, setDistanceKm] = useState("");
   const [estimatedDurationMinutes, setEstimatedDurationMinutes] = useState("");
   const [tags, setTags] = useState("");
   const [sourceType, setSourceType] = useState<RouteSourceType>("curated");
+  const [departureLat, setDepartureLat] = useState("");
+  const [departureLng, setDepartureLng] = useState("");
+  const [destinationLat, setDestinationLat] = useState("");
+  const [destinationLng, setDestinationLng] = useState("");
+  const [waypoints, setWaypoints] = useState<WaypointDraft[]>([]);
   const isEditMode = Boolean(initialData);
 
   const { mutateAsync: createRoute, isPending: isCreatePending } =
@@ -67,13 +79,17 @@ export function RouteForm({
     setContent("");
     setDepartureRegion("seoul");
     setDestinationRegion("seoul");
-    setProvider("naver");
     setExternalMapUrl("");
     setThumbnailUrl("");
     setDistanceKm("");
     setEstimatedDurationMinutes("");
     setTags("");
     setSourceType("curated");
+    setDepartureLat("");
+    setDepartureLng("");
+    setDestinationLat("");
+    setDestinationLng("");
+    setWaypoints([]);
   };
 
   useEffect(() => {
@@ -87,7 +103,6 @@ export function RouteForm({
     setContent(initialData.content);
     setDepartureRegion(initialData.departureRegion ?? "seoul");
     setDestinationRegion(initialData.destinationRegion ?? "seoul");
-    setProvider(initialData.provider);
     setExternalMapUrl(initialData.externalMapUrl);
     setThumbnailUrl(initialData.thumbnailUrl ?? "");
     setDistanceKm(
@@ -100,6 +115,31 @@ export function RouteForm({
     );
     setTags(initialData.tags.join(", "));
     setSourceType(initialData.sourceType);
+    setDepartureLat(
+      initialData.departureLat !== undefined
+        ? String(initialData.departureLat)
+        : ""
+    );
+    setDepartureLng(
+      initialData.departureLng !== undefined
+        ? String(initialData.departureLng)
+        : ""
+    );
+    setDestinationLat(
+      initialData.destinationLat !== undefined
+        ? String(initialData.destinationLat)
+        : ""
+    );
+    setDestinationLng(
+      initialData.destinationLng !== undefined
+        ? String(initialData.destinationLng)
+        : ""
+    );
+    setWaypoints(
+      initialData.waypoints.map((waypoint) =>
+        createWaypointDraft(String(waypoint.lat), String(waypoint.lng))
+      )
+    );
   }, [initialData]);
 
   const handleCreateSubmit = async (payload: CreateRouteBody) => {
@@ -133,7 +173,7 @@ export function RouteForm({
           content,
           departureRegion,
           destinationRegion,
-          provider,
+          provider: "naver" as const,
           externalMapUrl: externalMapUrl.trim(),
           thumbnailUrl: thumbnailUrl.trim() || undefined,
           distanceKm: distanceKm ? Number(distanceKm) : undefined,
@@ -145,6 +185,15 @@ export function RouteForm({
             .map((item) => item.trim())
             .filter(Boolean),
           sourceType,
+          departureLat: Number(departureLat),
+          departureLng: Number(departureLng),
+          destinationLat: Number(destinationLat),
+          destinationLng: Number(destinationLng),
+          waypoints: waypoints.map((waypoint, index) => ({
+            sequence: index + 1,
+            lat: Number(waypoint.lat),
+            lng: Number(waypoint.lng),
+          })),
         };
         if (isEditMode) {
           handleEditSubmit(payload);
@@ -163,7 +212,7 @@ export function RouteForm({
       <Input
         label="소개"
         value={summary}
-        onChange={(event) => setSummary(event.target.value.trim)}
+        onChange={(event) => setSummary(event.target.value)}
         placeholder="리스트 카드에 보여줄 짧은 소개"
         required
       />
@@ -197,12 +246,126 @@ export function RouteForm({
           }
           options={sourceTypeOptions}
         />
-        <SelectInput
-          label="지도 제공자"
-          value={provider}
-          onValueChange={(nextValue) => setProvider(nextValue as RouteProvider)}
-          options={providerOptions}
+        <Input label="지도 제공자" value="네이버 지도" disabled />
+      </div>
+
+      <div className="grid gap-4 md:grid-cols-2">
+        <Input
+          label="출발지 위도"
+          type="number"
+          step="any"
+          value={departureLat}
+          onChange={(event) => setDepartureLat(event.target.value)}
+          placeholder="예: 37.5665"
+          required
         />
+        <Input
+          label="출발지 경도"
+          type="number"
+          step="any"
+          value={departureLng}
+          onChange={(event) => setDepartureLng(event.target.value)}
+          placeholder="예: 126.978"
+          required
+        />
+      </div>
+
+      <div className="grid gap-4 md:grid-cols-2">
+        <Input
+          label="도착지 위도"
+          type="number"
+          step="any"
+          value={destinationLat}
+          onChange={(event) => setDestinationLat(event.target.value)}
+          placeholder="예: 37.5512"
+          required
+        />
+        <Input
+          label="도착지 경도"
+          type="number"
+          step="any"
+          value={destinationLng}
+          onChange={(event) => setDestinationLng(event.target.value)}
+          placeholder="예: 127.073"
+          required
+        />
+      </div>
+
+      <div className="grid gap-3 rounded-3xl border border-border bg-panel-soft p-4">
+        <div className="flex items-center justify-between gap-3">
+          <div>
+            <p className="m-0 text-sm font-semibold text-text">경유지 좌표</p>
+            <p className="m-0 text-xs text-muted">
+              네이버 Directions 15 기준 최대 15개까지 등록됩니다.
+            </p>
+          </div>
+          <Button
+            type="button"
+            variant="secondary"
+            onClick={() =>
+              setWaypoints((currentWaypoints) => [
+                ...currentWaypoints,
+                createWaypointDraft(),
+              ])
+            }
+            disabled={waypoints.length >= 15}
+          >
+            경유지 추가
+          </Button>
+        </div>
+        {waypoints.map((waypoint, index) => (
+          <div
+            key={waypoint.id}
+            className="grid gap-2 md:grid-cols-[1fr_1fr_auto]"
+          >
+            <Input
+              label={`경유지 ${index + 1} 위도`}
+              type="number"
+              step="any"
+              value={waypoint.lat}
+              onChange={(event) =>
+                setWaypoints((currentWaypoints) =>
+                  currentWaypoints.map((currentWaypoint) =>
+                    currentWaypoint.id === waypoint.id
+                      ? { ...currentWaypoint, lat: event.target.value }
+                      : currentWaypoint
+                  )
+                )
+              }
+              required
+            />
+            <Input
+              label={`경유지 ${index + 1} 경도`}
+              type="number"
+              step="any"
+              value={waypoint.lng}
+              onChange={(event) =>
+                setWaypoints((currentWaypoints) =>
+                  currentWaypoints.map((currentWaypoint) =>
+                    currentWaypoint.id === waypoint.id
+                      ? { ...currentWaypoint, lng: event.target.value }
+                      : currentWaypoint
+                  )
+                )
+              }
+              required
+            />
+            <Button
+              type="button"
+              variant="ghost"
+              className="self-end"
+              onClick={() =>
+                setWaypoints((currentWaypoints) =>
+                  currentWaypoints.filter(
+                    (currentWaypoint) => currentWaypoint.id !== waypoint.id
+                  )
+                )
+              }
+            >
+              삭제
+            </Button>
+          </div>
+        ))}
       </div>
 
       <div className="grid gap-4 md:grid-cols-2">
