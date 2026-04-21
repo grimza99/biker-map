@@ -31,7 +31,7 @@ export async function GET(request: Request) {
     return unauthorized("탈퇴 처리된 계정입니다.");
   }
 
-  return ok(mapMe(session));
+  return ok(mapMe(session, profileStatus?.role || "member"));
 }
 
 export async function DELETE(request: Request) {

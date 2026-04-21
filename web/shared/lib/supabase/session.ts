@@ -1,7 +1,10 @@
 import type { AppSession } from "@package-shared/types/session";
 import type { Session } from "@supabase/supabase-js";
 
-export function mapSupabaseSession(session: Session | null): AppSession | null {
+export function mapSupabaseSession(
+  session: Session | null,
+  role = "member"
+): AppSession | null {
   const user = session?.user;
   if (!user) {
     return null;
@@ -22,5 +25,6 @@ export function mapSupabaseSession(session: Session | null): AppSession | null {
     name: metadataName || "",
     email: user.email || "",
     avatarUrl,
+    role,
   };
 }
