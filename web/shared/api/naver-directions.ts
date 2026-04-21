@@ -1,10 +1,19 @@
-import type { RouteCoordinate, RoutePathPoint } from "@package-shared/types/route";
+import type {
+  RouteCoordinate,
+  RoutePathPoint,
+} from "@package-shared/types/route";
+
+const NAVER_ROUTE_OPTION = "trafast";
 
 const NAVER_DIRECTIONS_URL =
   "https://maps.apigw.ntruss.com/map-direction-15/v1/driving";
 
 type NaverDirectionsResponse = {
+  code?: number;
+  message?: string;
   route?: {
+    trafast?: Array<NaverRoute>;
+    tracomfort?: Array<NaverRoute>;
     traoptimal?: Array<{
       summary?: {
         distance?: number;
@@ -12,7 +21,17 @@ type NaverDirectionsResponse = {
       };
       path?: Array<[number, number]>;
     }>;
+    traavoidtoll?: Array<NaverRoute>;
+    traavoidcaronly?: Array<NaverRoute>;
   };
+};
+
+type NaverRoute = {
+  summary?: {
+    distance?: number;
+    duration?: number;
+  };
+  path?: Array<[number, number]>;
 };
 
 export type CalculatedRoutePath = {
@@ -53,7 +72,7 @@ export async function calculateNaverRoutePath({
   const url = new URL(NAVER_DIRECTIONS_URL);
   url.searchParams.set("start", formatCoordinate(departure));
   url.searchParams.set("goal", formatCoordinate(destination));
-  url.searchParams.set("option", "trafast");
+  url.searchParams.set("option", NAVER_ROUTE_OPTION);
 
   if (waypoints.length) {
     url.searchParams.set("waypoints", waypoints.map(formatCoordinate).join("|"));
@@ -73,7 +92,15 @@ export async function calculateNaverRoutePath({
   }
 
   const payload = (await response.json()) as NaverDirectionsResponse;
-  const route = payload.route?.traoptimal?.[0];
+  if (payload.code !== undefined && payload.code !== 0) {
+    throw new Error(
+      payload.message
+        ? `네이버 Directions 15 경로 계산 실패: ${payload.message}`
+        : `네이버 Directions 15 경로 계산 실패(code: ${payload.code})`
+    );
+  }
+
+  const route = payload.route?.[NAVER_ROUTE_OPTION]?.[0];
   const path = (route?.path ?? []).map(([lng, lat]) => ({ lat, lng }));
 
   if (!path.length) {

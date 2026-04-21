@@ -1,6 +1,8 @@
 "use client";
 
 import {
+  API_PATHS,
+  type PlaceGeocodeResponseData,
   RouteRegion,
   routeRegionOptions,
   type CreateRouteBody,
@@ -17,6 +19,9 @@ import {
   MarkdownEditor,
   SelectInput,
 } from "@shared/ui";
+import { useDebouncedValue } from "@/shared";
+import { apiFetch } from "@shared/api/http";
+import { useSession } from "@features/session";
 import { useCreateRouteMutate, useEditRouteMutate } from "../model/use-route";
 
 const sourceTypeOptions: Array<{ value: RouteSourceType; label: string }> = [
@@ -26,16 +31,33 @@ const sourceTypeOptions: Array<{ value: RouteSourceType; label: string }> = [
 
 type WaypointDraft = {
   id: string;
+  address: string;
   lat: string;
   lng: string;
 };
 
-function createWaypointDraft(lat = "", lng = ""): WaypointDraft {
+function createWaypointDraft(
+  lat = "",
+  lng = "",
+  address = ""
+): WaypointDraft {
   return {
     id: `${Date.now()}-${Math.random().toString(36).slice(2)}`,
+    address,
     lat,
     lng,
   };
+}
+
+function formatCoordinate(lat: string, lng: string) {
+  const parsedLat = Number(lat);
+  const parsedLng = Number(lng);
+
+  if (!Number.isFinite(parsedLat) || !Number.isFinite(parsedLng)) {
+    return "좌표 미확인";
+  }
+
+  return `${parsedLat.toFixed(6)}, ${parsedLng.toFixed(6)}`;
 }
 
 export function RouteForm({
@@ -61,12 +83,26 @@ export function RouteForm({
   const [estimatedDurationMinutes, setEstimatedDurationMinutes] = useState("");
   const [tags, setTags] = useState("");
   const [sourceType, setSourceType] = useState<RouteSourceType>("curated");
+  const [departureAddress, setDepartureAddress] = useState("");
+  const [destinationAddress, setDestinationAddress] = useState("");
   const [departureLat, setDepartureLat] = useState("");
   const [departureLng, setDepartureLng] = useState("");
   const [destinationLat, setDestinationLat] = useState("");
   const [destinationLng, setDestinationLng] = useState("");
   const [waypoints, setWaypoints] = useState<WaypointDraft[]>([]);
+  const [geocodingKey, setGeocodingKey] = useState<string | null>(null);
+  const debouncedDepartureAddress = useDebouncedValue(departureAddress, 600);
+  const debouncedDestinationAddress = useDebouncedValue(
+    destinationAddress,
+    600
+  );
+  const debouncedWaypointAddresses = useDebouncedValue(
+    waypoints.map((waypoint) => `${waypoint.id}:${waypoint.address}`).join("|"),
+    600
+  );
   const isEditMode = Boolean(initialData);
+  const { session } = useSession();
+  const isAdmin = session?.role === "admin";
 
   const { mutateAsync: createRoute, isPending: isCreatePending } =
     useCreateRouteMutate();
@@ -85,6 +121,8 @@ export function RouteForm({
     setEstimatedDurationMinutes("");
     setTags("");
     setSourceType("curated");
+    setDepartureAddress("");
+    setDestinationAddress("");
     setDepartureLat("");
     setDepartureLng("");
     setDestinationLat("");
@@ -115,6 +153,8 @@ export function RouteForm({
     );
     setTags(initialData.tags.join(", "));
     setSourceType(initialData.sourceType);
+    setDepartureAddress("");
+    setDestinationAddress("");
     setDepartureLat(
       initialData.departureLat !== undefined
         ? String(initialData.departureLat)
@@ -141,6 +181,95 @@ export function RouteForm({
       )
     );
   }, [initialData]);
+
+  const geocodeAddress = (
+    address: string,
+    applyCoordinate: (coordinate: PlaceGeocodeResponseData) => void,
+    key: string
+  ) => {
+    const trimmedAddress = address.trim();
+    if (!trimmedAddress) {
+      return;
+    }
+
+    let cancelled = false;
+    setGeocodingKey(key);
+
+    void apiFetch<PlaceGeocodeResponseData>(
+      `${API_PATHS.places.geocode}?query=${encodeURIComponent(
+        trimmedAddress
+      )}`
+    )
+      .then((response) => {
+        if (!cancelled) {
+          applyCoordinate(response.data);
+        }
+      })
+      .catch((error) => {
+        if (!cancelled) {
+          console.error("Failed to geocode route address", error);
+        }
+      })
+      .finally(() => {
+        if (!cancelled) {
+          setGeocodingKey(null);
+        }
+      });
+
+    return () => {
+      cancelled = true;
+    };
+  };
+
+  useEffect(() => {
+    return geocodeAddress(
+      debouncedDepartureAddress,
+      ({ lat, lng }) => {
+        setDepartureLat(String(lat));
+        setDepartureLng(String(lng));
+      },
+      "departure"
+    );
+  }, [debouncedDepartureAddress]);
+
+  useEffect(() => {
+    return geocodeAddress(
+      debouncedDestinationAddress,
+      ({ lat, lng }) => {
+        setDestinationLat(String(lat));
+        setDestinationLng(String(lng));
+      },
+      "destination"
+    );
+  }, [debouncedDestinationAddress]);
+
+  useEffect(() => {
+    const cleanupList = waypoints
+      .filter((waypoint) => waypoint.address.trim())
+      .map((waypoint) =>
+        geocodeAddress(
+          waypoint.address,
+          ({ lat, lng }) => {
+            setWaypoints((currentWaypoints) =>
+              currentWaypoints.map((currentWaypoint) =>
+                currentWaypoint.id === waypoint.id
+                  ? {
+                      ...currentWaypoint,
+                      lat: String(lat),
+                      lng: String(lng),
+                    }
+                  : currentWaypoint
+              )
+            );
+          },
+          waypoint.id
+        )
+      );
+
+    return () => {
+      cleanupList.forEach((cleanup) => cleanup?.());
+    };
+  }, [debouncedWaypointAddresses]);
 
   const handleCreateSubmit = async (payload: CreateRouteBody) => {
     try {
@@ -249,123 +378,122 @@ export function RouteForm({
         <Input label="지도 제공자" value="네이버 지도" disabled />
       </div>
 
-      <div className="grid gap-4 md:grid-cols-2">
-        <Input
-          label="출발지 위도"
-          type="number"
-          step="any"
-          value={departureLat}
-          onChange={(event) => setDepartureLat(event.target.value)}
-          placeholder="예: 37.5665"
-          required
-        />
-        <Input
-          label="출발지 경도"
-          type="number"
-          step="any"
-          value={departureLng}
-          onChange={(event) => setDepartureLng(event.target.value)}
-          placeholder="예: 126.978"
-          required
-        />
-      </div>
-
-      <div className="grid gap-4 md:grid-cols-2">
-        <Input
-          label="도착지 위도"
-          type="number"
-          step="any"
-          value={destinationLat}
-          onChange={(event) => setDestinationLat(event.target.value)}
-          placeholder="예: 37.5512"
-          required
-        />
-        <Input
-          label="도착지 경도"
-          type="number"
-          step="any"
-          value={destinationLng}
-          onChange={(event) => setDestinationLng(event.target.value)}
-          placeholder="예: 127.073"
-          required
-        />
-      </div>
-
-      <div className="grid gap-3 rounded-3xl border border-border bg-panel-soft p-4">
-        <div className="flex items-center justify-between gap-3">
-          <div>
-            <p className="m-0 text-sm font-semibold text-text">경유지 좌표</p>
-            <p className="m-0 text-xs text-muted">
-              네이버 Directions 15 기준 최대 15개까지 등록됩니다.
-            </p>
-          </div>
-          <Button
-            type="button"
-            variant="secondary"
-            onClick={() =>
-              setWaypoints((currentWaypoints) => [
-                ...currentWaypoints,
-                createWaypointDraft(),
-              ])
-            }
-            disabled={waypoints.length >= 15}
-          >
-            경유지 추가
-          </Button>
+      <div className="grid gap-4 rounded-3xl border border-border bg-panel-soft p-4">
+        <div>
+          <p className="m-0 text-sm font-semibold text-text">경로 주소</p>
+          <p className="m-0 text-xs text-muted">
+            주소 입력이 끝나면 네이버 geocoding으로 좌표가 자동 저장됩니다.
+          </p>
         </div>
-        {waypoints.map((waypoint, index) => (
-          <div
-            key={waypoint.id}
-            className="grid gap-2 md:grid-cols-[1fr_1fr_auto]"
-          >
-            <Input
-              label={`경유지 ${index + 1} 위도`}
-              type="number"
-              step="any"
-              value={waypoint.lat}
-              onChange={(event) =>
-                setWaypoints((currentWaypoints) =>
-                  currentWaypoints.map((currentWaypoint) =>
-                    currentWaypoint.id === waypoint.id
-                      ? { ...currentWaypoint, lat: event.target.value }
-                      : currentWaypoint
-                  )
-                )
-              }
-              required
-            />
-            <Input
-              label={`경유지 ${index + 1} 경도`}
-              type="number"
-              step="any"
-              value={waypoint.lng}
-              onChange={(event) =>
-                setWaypoints((currentWaypoints) =>
-                  currentWaypoints.map((currentWaypoint) =>
-                    currentWaypoint.id === waypoint.id
-                      ? { ...currentWaypoint, lng: event.target.value }
-                      : currentWaypoint
-                  )
-                )
-              }
-              required
-            />
+
+        <Input
+          label="출발지 주소"
+          value={departureAddress}
+          onChange={(event) => setDepartureAddress(event.target.value)}
+          placeholder="예: 서울특별시 중구 세종대로 110"
+          rightIcon={
+            geocodingKey === "departure" ? (
+              <span className="text-xs text-muted">검색 중</span>
+            ) : undefined
+          }
+        />
+
+        <Input
+          label="도착지 주소"
+          value={destinationAddress}
+          onChange={(event) => setDestinationAddress(event.target.value)}
+          placeholder="예: 부산광역시 해운대구 우동"
+          rightIcon={
+            geocodingKey === "destination" ? (
+              <span className="text-xs text-muted">검색 중</span>
+            ) : undefined
+          }
+        />
+
+        <div className="grid gap-3">
+          <div className="flex items-center justify-between gap-3">
+            <div>
+              <p className="m-0 text-sm font-semibold text-text">경유지 주소</p>
+              <p className="m-0 text-xs text-muted">
+                네이버 Directions 15 기준 최대 15개까지 등록됩니다.
+              </p>
+            </div>
             <Button
               type="button"
-              variant="ghost"
-              className="self-end"
+              variant="secondary"
               onClick={() =>
-                setWaypoints((currentWaypoints) =>
-                  currentWaypoints.filter(
-                    (currentWaypoint) => currentWaypoint.id !== waypoint.id
-                  )
-                )
+                setWaypoints((currentWaypoints) => [
+                  ...currentWaypoints,
+                  createWaypointDraft(),
+                ])
               }
+              disabled={waypoints.length >= 15}
             >
-              삭제
+              경유지 추가
             </Button>
           </div>
-        ))}
+          {waypoints.map((waypoint, index) => (
+            <div
+              key={waypoint.id}
+              className="grid gap-2 md:grid-cols-[1fr_auto]"
+            >
+              <Input
+                label={`경유지 ${index + 1} 주소`}
+                value={waypoint.address}
+                onChange={(event) =>
+                  setWaypoints((currentWaypoints) =>
+                    currentWaypoints.map((currentWaypoint) =>
+                      currentWaypoint.id === waypoint.id
+                        ? {
+                            ...currentWaypoint,
+                            address: event.target.value,
+                          }
+                        : currentWaypoint
+                    )
+                  )
+                }
+                placeholder="예: 경기도 양평군 양서면"
+                rightIcon={
+                  geocodingKey === waypoint.id ? (
+                    <span className="text-xs text-muted">검색 중</span>
+                  ) : undefined
+                }
+              />
+              <Button
+                type="button"
+                variant="ghost"
+                className="self-end"
+                onClick={() =>
+                  setWaypoints((currentWaypoints) =>
+                    currentWaypoints.filter(
+                      (currentWaypoint) => currentWaypoint.id !== waypoint.id
+                    )
+                  )
+                }
+              >
+                삭제
+              </Button>
+            </div>
+          ))}
+        </div>
+
+        {isAdmin ? (
+          <div className="grid gap-2 rounded-2xl border border-border bg-background/40 p-3 text-xs text-muted">
+            <p className="m-0 font-semibold text-text">좌표 요약</p>
+            <p className="m-0">
+              출발지: {formatCoordinate(departureLat, departureLng)}
+            </p>
+            {waypoints.map((waypoint, index) => (
+              <p key={waypoint.id} className="m-0">
+                경유지 {index + 1}:{" "}
+                {formatCoordinate(waypoint.lat, waypoint.lng)}
+              </p>
+            ))}
+            <p className="m-0">
+              도착지: {formatCoordinate(destinationLat, destinationLng)}
+            </p>
+          </div>
+        ) : null}
       </div>
 
       <div className="grid gap-4 md:grid-cols-2">
