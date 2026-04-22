@@ -58,6 +58,7 @@ export async function GET(request: NextRequest) {
 
       if (
         query.departureRegion &&
+        query.departureRegion !== "all" &&
         item.departureRegion !== query.departureRegion
       ) {
         return false;
@@ -65,6 +66,7 @@ export async function GET(request: NextRequest) {
 
       if (
         query.destinationRegion &&
+        query.destinationRegion !== "all" &&
         item.destinationRegion !== query.destinationRegion
       ) {
         return false;
