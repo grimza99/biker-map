@@ -2,16 +2,19 @@
 
 import {
   API_PATHS,
-  type PlaceGeocodeResponseData,
   RouteRegion,
-  routeRegionOptions,
   type CreateRouteBody,
+  type PlaceGeocodeResponseData,
   type RouteDetail,
   type RouteSourceType,
   type UpdateRouteBody,
 } from "@package-shared/index";
 import { useEffect, useState } from "react";
 
+import { useDebouncedValue } from "@/shared";
+import { useSession } from "@features/session";
+import { addressRegionMap } from "@package-shared/model/route";
+import { apiFetch } from "@shared/api/http";
 import {
   Button,
   ImageInput,
@@ -19,9 +22,6 @@ import {
   MarkdownEditor,
   SelectInput,
 } from "@shared/ui";
-import { useDebouncedValue } from "@/shared";
-import { apiFetch } from "@shared/api/http";
-import { useSession } from "@features/session";
 import { useCreateRouteMutate, useEditRouteMutate } from "../model/use-route";
 
 const sourceTypeOptions: Array<{ value: RouteSourceType; label: string }> = [
@@ -36,11 +36,7 @@ type WaypointDraft = {
   lng: string;
 };
 
-function createWaypointDraft(
-  lat = "",
-  lng = "",
-  address = ""
-): WaypointDraft {
+function createWaypointDraft(lat = "", lng = "", address = ""): WaypointDraft {
   return {
     id: `${Date.now()}-${Math.random().toString(36).slice(2)}`,
     address,
@@ -58,6 +54,13 @@ function formatCoordinate(lat: string, lng: string) {
   }
 
   return `${parsedLat.toFixed(6)}, ${parsedLng.toFixed(6)}`;
+}
+
+function mapAddressToRouteRegion(address: string) {
+  const normalizedAddress = address.trim();
+  return addressRegionMap.find(({ prefix }) =>
+    normalizedAddress.startsWith(prefix)
+  )?.region;
 }
 
 export function RouteForm({
@@ -196,9 +199,7 @@ export function RouteForm({
     setGeocodingKey(key);
 
     void apiFetch<PlaceGeocodeResponseData>(
-      `${API_PATHS.places.geocode}?query=${encodeURIComponent(
-        trimmedAddress
-      )}`
+      `${API_PATHS.places.geocode}?query=${encodeURIComponent(trimmedAddress)}`
     )
       .then((response) => {
         if (!cancelled) {
@@ -224,9 +225,14 @@ export function RouteForm({
   useEffect(() => {
     return geocodeAddress(
       debouncedDepartureAddress,
-      ({ lat, lng }) => {
+
+      ({ address, lat, lng }) => {
         setDepartureLat(String(lat));
         setDepartureLng(String(lng));
+        const region = mapAddressToRouteRegion(address);
+        if (region) {
+          setDepartureRegion(region);
+        }
       },
       "departure"
     );
@@ -235,9 +241,13 @@ export function RouteForm({
   useEffect(() => {
     return geocodeAddress(
       debouncedDestinationAddress,
-      ({ lat, lng }) => {
+      ({ address, lat, lng }) => {
         setDestinationLat(String(lat));
         setDestinationLng(String(lng));
+        const region = mapAddressToRouteRegion(address);
+        if (region) {
+          setDestinationRegion(region);
+        }
       },
       "destination"
     );
@@ -346,26 +356,6 @@ export function RouteForm({
         required
       />
       <MarkdownEditor label="상세 소개" value={content} onChange={setContent} />
-
-      <div className="grid gap-4 md:grid-cols-2">
-        <SelectInput
-          label="출발 지역"
-          value={departureRegion}
-          onValueChange={(nextValue) =>
-            setDepartureRegion(nextValue as RouteRegion)
-          }
-          options={routeRegionOptions}
-        />
-        <SelectInput
-          label="도착 지역"
-          value={destinationRegion}
-          onValueChange={(nextValue) =>
-            setDestinationRegion(nextValue as RouteRegion)
-          }
-          options={routeRegionOptions}
-        />
-      </div>
-
       <div className="grid gap-4 md:grid-cols-2">
         <SelectInput
           label="출처"
@@ -381,9 +371,6 @@ export function RouteForm({
       <div className="grid gap-4 rounded-3xl border border-border bg-panel-soft p-4">
         <div>
           <p className="m-0 text-sm font-semibold text-text">경로 주소</p>
-          <p className="m-0 text-xs text-muted">
-            주소 입력이 끝나면 네이버 geocoding으로 좌표가 자동 저장됩니다.
-          </p>
         </div>
 
         <Input

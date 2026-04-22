@@ -34,3 +34,25 @@ export const regionLabel: Record<RouteRegion, string> = {
   sejong: "세종",
   jeju: "제주",
 };
+
+export const addressRegionMap: Array<{ prefix: string; region: RouteRegion }> =
+  [
+    { prefix: "서울특별시", region: "seoul" },
+    { prefix: "서울", region: "seoul" },
+    { prefix: "부산광역시", region: "busan" },
+    { prefix: "부산", region: "busan" },
+    { prefix: "대구광역시", region: "daegu" },
+    { prefix: "대구", region: "daegu" },
+    { prefix: "인천광역시", region: "incheon" },
+    { prefix: "인천", region: "incheon" },
+    { prefix: "광주광역시", region: "gwangju" },
+    { prefix: "광주", region: "gwangju" },
+    { prefix: "대전광역시", region: "daejeon" },
+    { prefix: "대전", region: "daejeon" },
+    { prefix: "울산광역시", region: "ulsan" },
+    { prefix: "울산", region: "ulsan" },
+    { prefix: "세종특별자치시", region: "sejong" },
+    { prefix: "세종", region: "sejong" },
+    { prefix: "제주특별자치도", region: "jeju" },
+    { prefix: "제주", region: "jeju" },
+  ];
