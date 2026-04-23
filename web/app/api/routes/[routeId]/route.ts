@@ -170,9 +170,7 @@ export async function PATCH(
 
   const { data: currentRoute, error: currentRouteError } = await supabase
     .from("routes")
-    .select(
-      "id, created_by, departure_lat, departure_lng, destination_lat, destination_lng"
-    )
+    .select("*")
     .eq("id", routeId)
     .maybeSingle();
 
@@ -304,12 +302,63 @@ export async function PATCH(
     updateInput.destination_lng = destinationLng;
     updateInput.directions_calculated_at = new Date().toISOString();
 
+    const routeRollbackInput = {
+      title: currentRoute.title,
+      summary: currentRoute.summary,
+      content: currentRoute.content,
+      departure_region: currentRoute.departure_region,
+      destination_region: currentRoute.destination_region,
+      provider: currentRoute.provider,
+      external_map_url: currentRoute.external_map_url,
+      thumbnail_url: currentRoute.thumbnail_url,
+      distance_km: currentRoute.distance_km,
+      estimated_duration_minutes: currentRoute.estimated_duration_minutes,
+      tags: currentRoute.tags,
+      source_type: currentRoute.source_type,
+      departure_lat: currentRoute.departure_lat,
+      departure_lng: currentRoute.departure_lng,
+      destination_lat: currentRoute.destination_lat,
+      destination_lng: currentRoute.destination_lng,
+      directions_calculated_at: currentRoute.directions_calculated_at,
+    };
+
+    const restoreRoute = async () => {
+      await supabase.from("routes").update(routeRollbackInput).eq("id", routeId);
+    };
+
+    const restoreWaypoints = async () => {
+      await supabase.from("route_waypoints").delete().eq("route_id", routeId);
+
+      if (currentWaypoints?.length) {
+        await supabase.from("route_waypoints").insert(
+          currentWaypoints.map((waypoint) => ({
+            route_id: routeId,
+            sequence: Number(waypoint.sequence),
+            lat: Number(waypoint.lat),
+            lng: Number(waypoint.lng),
+          }))
+        );
+      }
+    };
+
+    const { data, error } = await supabase
+      .from("routes")
+      .update(updateInput)
+      .eq("id", routeId)
+      .select("id, updated_at")
+      .single();
+
+    if (error) {
+      return internalServerError(error.message);
+    }
+
     const { error: deleteWaypointError } = await supabase
       .from("route_waypoints")
       .delete()
       .eq("route_id", routeId);
 
     if (deleteWaypointError) {
+      await restoreRoute();
       return internalServerError(deleteWaypointError.message);
     }
 
@@ -326,6 +375,8 @@ export async function PATCH(
         );
 
       if (insertWaypointError) {
+        await restoreRoute();
+        await restoreWaypoints();
         return internalServerError(insertWaypointError.message);
       }
     }
@@ -342,8 +393,15 @@ export async function PATCH(
       });
 
     if (upsertPathError) {
+      await restoreRoute();
+      await restoreWaypoints();
       return internalServerError(upsertPathError.message);
     }
+
+    return ok({
+      id: String(data.id),
+      updatedAt: String(data.updated_at),
+    });
   }
 
   const { data, error } = await supabase

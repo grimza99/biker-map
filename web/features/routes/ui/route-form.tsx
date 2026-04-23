@@ -21,6 +21,7 @@ import {
   Input,
   MarkdownEditor,
   SelectInput,
+  Toast,
 } from "@shared/ui";
 import { useCreateRouteMutate, useEditRouteMutate } from "../model/use-route";
 
@@ -46,14 +47,23 @@ function createWaypointDraft(lat = "", lng = "", address = ""): WaypointDraft {
 }
 
 function formatCoordinate(lat: string, lng: string) {
-  const parsedLat = Number(lat);
-  const parsedLng = Number(lng);
+  const parsedLat = parseCoordinateValue(lat);
+  const parsedLng = parseCoordinateValue(lng);
 
-  if (!Number.isFinite(parsedLat) || !Number.isFinite(parsedLng)) {
+  if (parsedLat === null || parsedLng === null) {
     return "좌표 미확인";
   }
 
   return `${parsedLat.toFixed(6)}, ${parsedLng.toFixed(6)}`;
+}
+
+function parseCoordinateValue(value: string) {
+  if (!value.trim()) {
+    return null;
+  }
+
+  const parsed = Number(value);
+  return Number.isFinite(parsed) ? parsed : null;
 }
 
 function mapAddressToRouteRegion(address: string) {
@@ -94,6 +104,7 @@ export function RouteForm({
   const [destinationLng, setDestinationLng] = useState("");
   const [waypoints, setWaypoints] = useState<WaypointDraft[]>([]);
   const [geocodingKey, setGeocodingKey] = useState<string | null>(null);
+  const [formErrorMessage, setFormErrorMessage] = useState<string | null>(null);
   const debouncedDepartureAddress = useDebouncedValue(departureAddress, 600);
   const debouncedDestinationAddress = useDebouncedValue(
     destinationAddress,
@@ -283,20 +294,28 @@ export function RouteForm({
 
   const handleCreateSubmit = async (payload: CreateRouteBody) => {
     try {
+      setFormErrorMessage(null);
       await createRoute(payload);
       resetForm();
       onSuccess?.();
-    } catch {
-      console.error("Failed to update route");
+    } catch (error) {
+      console.error("Failed to create route", error);
+      setFormErrorMessage(
+        error instanceof Error ? error.message : "경로 등록에 실패했습니다."
+      );
     }
   };
 
   const handleEditSubmit = async (payload: UpdateRouteBody) => {
     try {
+      setFormErrorMessage(null);
       await updateRoute(payload);
       onSuccess?.();
-    } catch {
-      console.error("Failed to update route");
+    } catch (error) {
+      console.error("Failed to update route", error);
+      setFormErrorMessage(
+        error instanceof Error ? error.message : "경로 수정에 실패했습니다."
+      );
     }
   };
 
@@ -305,6 +324,76 @@ export function RouteForm({
       className="grid gap-4"
       onSubmit={(event) => {
         event.preventDefault();
+        setFormErrorMessage(null);
+
+        const parsedDepartureLat = parseCoordinateValue(departureLat);
+        const parsedDepartureLng = parseCoordinateValue(departureLng);
+        const parsedDestinationLat = parseCoordinateValue(destinationLat);
+        const parsedDestinationLng = parseCoordinateValue(destinationLng);
+        const primaryCoordinates =
+          parsedDepartureLat !== null &&
+          parsedDepartureLng !== null &&
+          parsedDestinationLat !== null &&
+          parsedDestinationLng !== null
+            ? {
+                departureLat: parsedDepartureLat,
+                departureLng: parsedDepartureLng,
+                destinationLat: parsedDestinationLat,
+                destinationLng: parsedDestinationLng,
+              }
+            : null;
+        const hasPrimaryCoordinates =
+          parsedDepartureLat !== null ||
+          parsedDepartureLng !== null ||
+          parsedDestinationLat !== null ||
+          parsedDestinationLng !== null;
+
+        if (!isEditMode && !primaryCoordinates) {
+          setFormErrorMessage(
+            "출발지와 도착지 주소 검색이 끝난 뒤 좌표가 확인되면 등록할 수 있습니다."
+          );
+          return;
+        }
+
+        if (hasPrimaryCoordinates && !primaryCoordinates) {
+          setFormErrorMessage(
+            "출발지와 도착지 좌표가 모두 확인된 뒤 저장할 수 있습니다."
+          );
+          return;
+        }
+
+        const parsedWaypoints = waypoints.map((waypoint, index) => {
+          const lat = parseCoordinateValue(waypoint.lat);
+          const lng = parseCoordinateValue(waypoint.lng);
+          return {
+            sequence: index + 1,
+            lat,
+            lng,
+          };
+        });
+        const normalizedWaypoints: CreateRouteBody["waypoints"] = [];
+
+        if (
+          primaryCoordinates &&
+          parsedWaypoints.some(
+            (waypoint) => waypoint.lat === null || waypoint.lng === null
+          )
+        ) {
+          setFormErrorMessage(
+            "경유지 좌표가 모두 확인된 뒤 저장할 수 있습니다."
+          );
+          return;
+        }
+
+        parsedWaypoints.forEach((waypoint) => {
+          if (waypoint.lat !== null && waypoint.lng !== null) {
+            normalizedWaypoints.push({
+              sequence: waypoint.sequence,
+              lat: waypoint.lat,
+              lng: waypoint.lng,
+            });
+          }
+        });
 
         const payload = {
           title,
@@ -324,20 +413,28 @@ export function RouteForm({
             .map((item) => item.trim())
             .filter(Boolean),
           sourceType,
-          departureLat: Number(departureLat),
-          departureLng: Number(departureLng),
-          destinationLat: Number(destinationLat),
-          destinationLng: Number(destinationLng),
-          waypoints: waypoints.map((waypoint, index) => ({
-            sequence: index + 1,
-            lat: Number(waypoint.lat),
-            lng: Number(waypoint.lng),
-          })),
         };
+
         if (isEditMode) {
-          handleEditSubmit(payload);
+          handleEditSubmit({
+            ...payload,
+            ...(primaryCoordinates
+              ? {
+                  ...primaryCoordinates,
+                  waypoints: normalizedWaypoints,
+                }
+              : {}),
+          });
         } else {
-          handleCreateSubmit(payload);
+          if (!primaryCoordinates) {
+            return;
+          }
+
+          handleCreateSubmit({
+            ...payload,
+            ...primaryCoordinates,
+            waypoints: normalizedWaypoints,
+          });
         }
       }}
     >
@@ -520,6 +617,15 @@ export function RouteForm({
         onValueChange={(value) => setThumbnailUrl(value ? value[0] : "")}
         maxImages={1}
       />
+
+      {formErrorMessage && (
+        <Toast
+          tone="danger"
+          title="경로 저장 실패"
+          description={formErrorMessage}
+          onClose={() => setFormErrorMessage(null)}
+        />
+      )}
 
       <div className="flex items-center justify-end gap-2">
         {onCancel && (
