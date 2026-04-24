@@ -213,7 +213,6 @@ export function MarkdownEditor({
           }}
         />
       </div>
-
     </div>
   );
 }
