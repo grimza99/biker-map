@@ -2,9 +2,11 @@
 
 import { ErrorState } from "@/shared";
 import type { PlaceListItem } from "@package-shared/types/place";
+import type { RouteMapPathItem } from "@package-shared/types/route";
 import { useEffect, useMemo, useRef, useState } from "react";
 
 import { PlaceMarker } from "../model/PlaceMarker";
+import { RoutePolyline } from "../model/RoutePolyline";
 
 declare global {
   interface Window {
@@ -17,6 +19,7 @@ const SOUTH_KOREA_BOUNDS = {
   southWest: { lat: 34.0, lng: 125.5 },
   northEast: { lat: 37.75, lng: 130.9 },
 };
+const ROUTE_POLYLINE_MIN_ZOOM = 10;
 
 function buildNaverMapScriptUrl(clientId: string) {
   return `https://oapi.map.naver.com/openapi/v3/maps.js?ncpKeyId=${clientId}`;
@@ -70,14 +73,20 @@ function loadNaverMaps(clientId: string) {
 
 type NaverDynamicMapProps = {
   places: PlaceListItem[];
+  routes?: RouteMapPathItem[];
 };
 
-export function NaverDynamicMap({ places }: NaverDynamicMapProps) {
+export function NaverDynamicMap({
+  places,
+  routes = [],
+}: NaverDynamicMapProps) {
   const clientId = process.env.NEXT_PUBLIC_NAVER_MAP_CLIENT_ID;
   const mapElementRef = useRef<HTMLDivElement | null>(null);
   const mapRef = useRef<any>(null);
   const mapsApiRef = useRef<any>(null);
   const markersRef = useRef<PlaceMarker[]>([]);
+  const routePolylinesRef = useRef<RoutePolyline[]>([]);
+  const routePolylineVisibleRef = useRef(false);
   const [error, setError] = useState<string | null>(null);
   const [isLoaded, setIsLoaded] = useState(false);
 
@@ -88,6 +97,39 @@ export function NaverDynamicMap({ places }: NaverDynamicMapProps) {
       ),
     [places]
   );
+
+  const validRoutes = useMemo(
+    () =>
+      routes.filter(
+        (route) =>
+          route.path.filter(
+            (point) => Number.isFinite(point.lat) && Number.isFinite(point.lng)
+          ).length >= 2
+      ),
+    [routes]
+  );
+
+  function syncRouteVisibility() {
+    const map = mapRef.current;
+    if (!map) {
+      return;
+    }
+
+    const shouldShow = map.getZoom() >= ROUTE_POLYLINE_MIN_ZOOM;
+    if (routePolylineVisibleRef.current === shouldShow) {
+      return;
+    }
+
+    routePolylineVisibleRef.current = shouldShow;
+    routePolylinesRef.current.forEach((routePolyline) => {
+      if (shouldShow) {
+        routePolyline.attach();
+        return;
+      }
+
+      routePolyline.detach();
+    });
+  }
 
   useEffect(() => {
     if (!clientId) {
@@ -138,6 +180,9 @@ export function NaverDynamicMap({ places }: NaverDynamicMapProps) {
           });
 
           mapRef.current.fitBounds(defaultBounds);
+          maps.Event.addListener(mapRef.current, "zoom_changed", () => {
+            syncRouteVisibility();
+          });
         }
 
         setError(null);
@@ -171,6 +216,24 @@ export function NaverDynamicMap({ places }: NaverDynamicMapProps) {
       (place) => new PlaceMarker(maps, map, place)
     );
   }, [validPlaces]);
+
+  useEffect(() => {
+    const map = mapRef.current;
+    const maps = mapsApiRef.current;
+
+    if (!map || !maps) {
+      return;
+    }
+
+    routePolylinesRef.current.forEach((routePolyline) =>
+      routePolyline.detach()
+    );
+    routePolylinesRef.current = validRoutes.map(
+      (route) => new RoutePolyline(maps, map, route)
+    );
+    routePolylineVisibleRef.current = false;
+    syncRouteVisibility();
+  }, [validRoutes]);
 
   return (
     <div className="absolute inset-0 overflow-hidden bg-panel-soft">

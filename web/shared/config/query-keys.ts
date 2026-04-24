@@ -11,6 +11,7 @@ export const queryKeys = {
   routes: (params?: Record<string, string | number | undefined>) =>
     ["routes", params ?? {}] as const,
   route: (routeId: string) => ["routes", routeId] as const,
+  routeMapPaths: ["routes", "map-paths"] as const,
   favorites: ["favorites"] as const,
   posts: (params?: Record<string, string | number | undefined>) =>
     ["posts", params ?? {}] as const,

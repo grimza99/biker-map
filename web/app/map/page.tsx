@@ -1,6 +1,7 @@
 "use client";
 
 import { usePlaces } from "@features/places/model/use-places";
+import { useRouteMapPaths } from "@features/routes/model/use-route-map-paths";
 import type { PlaceCategory } from "@package-shared/types/place";
 import { ArrowLeftToLine } from "lucide-react";
 import { startTransition, useDeferredValue, useMemo, useState } from "react";
@@ -32,7 +33,9 @@ export default function MapPage() {
     [category, deferredSearch]
   );
   const { data, isLoading, isError, error } = usePlaces(filters);
+  const routeMapPathsQuery = useRouteMapPaths();
   const places = data?.data.items ?? [];
+  const routes = routeMapPathsQuery.data?.data.items ?? [];
 
   const handleChangeSearchInput = (input: string) => {
     setCategory(undefined);
@@ -41,7 +44,7 @@ export default function MapPage() {
 
   return (
     <div className="relative min-h-[calc(100vh-11rem)] h-full overflow-hidden ">
-      <NaverDynamicMap places={places} />
+      <NaverDynamicMap places={places} routes={routes} />
 
       <div className="pointer-events-none absolute inset-0">
         <div className="flex w-full h-full items-start justify-between gap-4 p-5 md:p-6">

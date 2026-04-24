@@ -19,6 +19,21 @@ export type RoutesQuery = {
   maxDistanceKm?: number;
 };
 
+export type RoutePathPoint = {
+  lat: number;
+  lng: number;
+};
+
+export type RouteMapPathItem = {
+  routeId: string;
+  title: string;
+  path: RoutePathPoint[];
+};
+
+export type RouteMapPathsResponseData = {
+  items: RouteMapPathItem[];
+};
+
 export type RouteListItem = {
   id: string;
   title: string;
