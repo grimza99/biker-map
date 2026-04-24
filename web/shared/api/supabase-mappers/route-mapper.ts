@@ -1,12 +1,15 @@
 import {
   RouteDetail,
   RouteListItem,
+  RoutePathPoint,
   RouteProvider,
   RouteRegion,
   RouteSourceType,
+  RouteWaypoint,
 } from "@package-shared/types/route";
 
 import {
+  getRecordArray,
   getRecordNumber,
   getRecordString,
   getRecordStringArray,
@@ -45,6 +48,53 @@ function toRouteRegion(value: string) {
     : undefined;
 }
 
+function toOptionalNumber(row: SupabaseRecord, paths: string[]) {
+  const value = getRecordNumber(row, paths, Number.NaN);
+  return Number.isFinite(value) ? value : undefined;
+}
+
+function mapRouteWaypoint(row: unknown): RouteWaypoint | null {
+  if (!row || typeof row !== "object") {
+    return null;
+  }
+
+  const record = row as SupabaseRecord;
+  const lat = getRecordNumber(record, ["lat"], Number.NaN);
+  const lng = getRecordNumber(record, ["lng"], Number.NaN);
+  const sequence = getRecordNumber(record, ["sequence"], Number.NaN);
+
+  if (
+    !Number.isFinite(lat) ||
+    !Number.isFinite(lng) ||
+    !Number.isFinite(sequence)
+  ) {
+    return null;
+  }
+
+  return {
+    id: getRecordString(record, ["id"], "") || undefined,
+    sequence,
+    lat,
+    lng,
+  };
+}
+
+function mapPathPoint(row: unknown): RoutePathPoint | null {
+  if (!row || typeof row !== "object") {
+    return null;
+  }
+
+  const record = row as SupabaseRecord;
+  const lat = getRecordNumber(record, ["lat"], Number.NaN);
+  const lng = getRecordNumber(record, ["lng"], Number.NaN);
+
+  if (!Number.isFinite(lat) || !Number.isFinite(lng)) {
+    return null;
+  }
+
+  return { lat, lng };
+}
+
 export function mapRouteListItem(row: SupabaseRecord): RouteListItem | null {
   const id = getRecordString(row, ["id"]);
   const title = getRecordString(row, ["title"]);
@@ -73,28 +123,33 @@ export function mapRouteListItem(row: SupabaseRecord): RouteListItem | null {
     externalMapUrl,
     thumbnailUrl:
       getRecordString(row, ["thumbnail_url", "thumbnailUrl"], "") || undefined,
-    distanceKm: (() => {
-      const value = getRecordNumber(
-        row,
-        ["distance_km", "distanceKm"],
-        Number.NaN
-      );
-      return Number.isFinite(value) ? value : undefined;
-    })(),
-    estimatedDurationMinutes: (() => {
-      const value = getRecordNumber(
-        row,
-        ["estimated_duration_minutes", "estimatedDurationMinutes"],
-        Number.NaN
-      );
-      return Number.isFinite(value) ? value : undefined;
-    })(),
+    distanceKm: toOptionalNumber(row, ["distance_km", "distanceKm"]),
+    estimatedDurationMinutes: toOptionalNumber(row, [
+      "estimated_duration_minutes",
+      "estimatedDurationMinutes",
+    ]),
     tags: getRecordStringArray(row, ["tags"]),
     sourceType: toRouteSourceType(
       getRecordString(row, ["source_type", "sourceType"], "curated")
     ),
     createdById:
       getRecordString(row, ["created_by", "createdById"], "") || undefined,
+    departureLat: toOptionalNumber(row, ["departure_lat", "departureLat"]),
+    departureLng: toOptionalNumber(row, ["departure_lng", "departureLng"]),
+    destinationLat: toOptionalNumber(row, [
+      "destination_lat",
+      "destinationLat",
+    ]),
+    destinationLng: toOptionalNumber(row, [
+      "destination_lng",
+      "destinationLng",
+    ]),
+    directionsCalculatedAt:
+      getRecordString(
+        row,
+        ["directions_calculated_at", "directionsCalculatedAt"],
+        ""
+      ) || undefined,
   };
 }
 
@@ -108,5 +163,12 @@ export function mapRouteDetail(row: SupabaseRecord): RouteDetail | null {
   return {
     ...item,
     content: getRecordString(row, ["content"], ""),
+    waypoints: getRecordArray(row, ["route_waypoints", "waypoints"])
+      .map(mapRouteWaypoint)
+      .filter((waypoint): waypoint is RouteWaypoint => Boolean(waypoint))
+      .sort((a, b) => a.sequence - b.sequence),
+    path: getRecordArray(row, ["route_paths.path", "routePath.path", "path"])
+      .map(mapPathPoint)
+      .filter((point): point is RoutePathPoint => Boolean(point)),
   };
 }

@@ -26,6 +26,7 @@ export {
 export { loadProfileNameMap } from "./supabase-profiles";
 export {
   getRecordBoolean,
+  getRecordArray,
   getRecordNumber,
   getRecordRelativeLabel,
   getRecordString,
@@ -33,5 +34,6 @@ export {
   paginateByCursor,
 } from "./supabase-record";
 export { parseBody, parseRequestBody } from "./validation";
+export { calculateNaverRoutePath } from "./naver-directions";
 export * from "./supabase";
 export * from "./supabase-mappers";

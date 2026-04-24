@@ -126,6 +126,11 @@ export function getRecordStringArray(record: SupabaseRecord, paths: string[]) {
   return [];
 }
 
+export function getRecordArray(record: SupabaseRecord, paths: string[]) {
+  const value = firstValue(record, paths);
+  return Array.isArray(value) ? value : [];
+}
+
 export function getRecordRelativeLabel(
   record: SupabaseRecord,
   paths: string[],

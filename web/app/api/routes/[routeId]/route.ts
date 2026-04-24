@@ -1,6 +1,7 @@
 import type { UpdateRouteBody } from "@package-shared/types/route";
 import {
   badRequest,
+  calculateNaverRoutePath,
   createSupabaseApiClient,
   forbidden,
   internalServerError,
@@ -29,7 +30,33 @@ export async function GET(
     return internalServerError(error.message);
   }
 
-  const route = data ? mapRouteDetail(data) : null;
+  const { data: waypoints, error: waypointsError } = await supabase
+    .from("route_waypoints")
+    .select("*")
+    .eq("route_id", routeId)
+    .order("sequence", { ascending: true });
+
+  if (waypointsError) {
+    return internalServerError(waypointsError.message);
+  }
+
+  const { data: routePath, error: routePathError } = await supabase
+    .from("route_paths")
+    .select("path")
+    .eq("route_id", routeId)
+    .maybeSingle();
+
+  if (routePathError) {
+    return internalServerError(routePathError.message);
+  }
+
+  const route = data
+    ? mapRouteDetail({
+        ...data,
+        route_waypoints: waypoints ?? [],
+        route_paths: routePath ?? null,
+      })
+    : null;
   if (!route) {
     return notFound("경로를 찾을 수 없습니다.");
   }
@@ -77,6 +104,20 @@ const updateRouteSchema = z
     estimatedDurationMinutes: z.number().int().optional(),
     tags: z.array(z.string()).optional(),
     sourceType: z.enum(["curated", "user"]).optional(),
+    departureLat: z.number().optional(),
+    departureLng: z.number().optional(),
+    destinationLat: z.number().optional(),
+    destinationLng: z.number().optional(),
+    waypoints: z
+      .array(
+        z.object({
+          sequence: z.number().int().positive(),
+          lat: z.number(),
+          lng: z.number(),
+        })
+      )
+      .max(15)
+      .optional(),
   })
   .refine(
     (value) =>
@@ -91,7 +132,12 @@ const updateRouteSchema = z
       value.distanceKm !== undefined ||
       value.estimatedDurationMinutes !== undefined ||
       value.tags !== undefined ||
-      value.sourceType !== undefined,
+      value.sourceType !== undefined ||
+      value.departureLat !== undefined ||
+      value.departureLng !== undefined ||
+      value.destinationLat !== undefined ||
+      value.destinationLng !== undefined ||
+      value.waypoints !== undefined,
     { message: "수정할 항목이 필요합니다." }
   );
 export async function PATCH(
@@ -124,7 +170,7 @@ export async function PATCH(
 
   const { data: currentRoute, error: currentRouteError } = await supabase
     .from("routes")
-    .select("id, created_by")
+    .select("*")
     .eq("id", routeId)
     .maybeSingle();
 
@@ -144,6 +190,12 @@ export async function PATCH(
   }
 
   const updateInput: Record<string, unknown> = {};
+  const shouldRecalculateDirections =
+    payload.departureLat !== undefined ||
+    payload.departureLng !== undefined ||
+    payload.destinationLat !== undefined ||
+    payload.destinationLng !== undefined ||
+    payload.waypoints !== undefined;
 
   if (payload.title !== undefined) updateInput.title = payload.title.trim();
   if (payload.summary !== undefined)
@@ -154,7 +206,7 @@ export async function PATCH(
     updateInput.departure_region = payload.departureRegion;
   if (payload.destinationRegion !== undefined)
     updateInput.destination_region = payload.destinationRegion;
-  if (payload.provider !== undefined) updateInput.provider = payload.provider;
+  if (payload.provider !== undefined) updateInput.provider = "naver";
   if (payload.externalMapUrl !== undefined)
     updateInput.external_map_url = payload.externalMapUrl;
   if (payload.thumbnailUrl !== undefined)
@@ -167,6 +219,190 @@ export async function PATCH(
   if (payload.tags !== undefined) updateInput.tags = payload.tags;
   if (payload.sourceType !== undefined)
     updateInput.source_type = payload.sourceType;
+
+  if (payload.departureLat !== undefined)
+    updateInput.departure_lat = payload.departureLat;
+  if (payload.departureLng !== undefined)
+    updateInput.departure_lng = payload.departureLng;
+  if (payload.destinationLat !== undefined)
+    updateInput.destination_lat = payload.destinationLat;
+  if (payload.destinationLng !== undefined)
+    updateInput.destination_lng = payload.destinationLng;
+
+  if (shouldRecalculateDirections) {
+    const { data: currentWaypoints, error: currentWaypointsError } =
+      await supabase
+        .from("route_waypoints")
+        .select("sequence, lat, lng")
+        .eq("route_id", routeId)
+        .order("sequence", { ascending: true });
+
+    if (currentWaypointsError) {
+      return internalServerError(currentWaypointsError.message);
+    }
+
+    const departureLat =
+      payload.departureLat ?? Number(currentRoute.departure_lat);
+    const departureLng =
+      payload.departureLng ?? Number(currentRoute.departure_lng);
+    const destinationLat =
+      payload.destinationLat ?? Number(currentRoute.destination_lat);
+    const destinationLng =
+      payload.destinationLng ?? Number(currentRoute.destination_lng);
+
+    if (
+      !Number.isFinite(departureLat) ||
+      !Number.isFinite(departureLng) ||
+      !Number.isFinite(destinationLat) ||
+      !Number.isFinite(destinationLng)
+    ) {
+      return badRequest("출발지와 도착지 좌표가 필요합니다.");
+    }
+
+    const nextWaypoints = (payload.waypoints ?? currentWaypoints ?? [])
+      .slice()
+      .sort((a, b) => Number(a.sequence) - Number(b.sequence))
+      .map((waypoint, index) => ({
+        sequence: index + 1,
+        lat: Number(waypoint.lat),
+        lng: Number(waypoint.lng),
+      }));
+
+    let calculatedRoute;
+    try {
+      calculatedRoute = await calculateNaverRoutePath({
+        departure: {
+          lat: departureLat,
+          lng: departureLng,
+        },
+        destination: {
+          lat: destinationLat,
+          lng: destinationLng,
+        },
+        waypoints: nextWaypoints.map((waypoint) => ({
+          lat: waypoint.lat,
+          lng: waypoint.lng,
+        })),
+      });
+    } catch (directionsError) {
+      return internalServerError(
+        directionsError instanceof Error
+          ? directionsError.message
+          : "경로 계산에 실패했습니다."
+      );
+    }
+
+    updateInput.provider = "naver";
+    updateInput.distance_km = calculatedRoute.distanceKm ?? null;
+    updateInput.estimated_duration_minutes =
+      calculatedRoute.estimatedDurationMinutes ?? null;
+    updateInput.departure_lat = departureLat;
+    updateInput.departure_lng = departureLng;
+    updateInput.destination_lat = destinationLat;
+    updateInput.destination_lng = destinationLng;
+    updateInput.directions_calculated_at = new Date().toISOString();
+
+    const routeRollbackInput = {
+      title: currentRoute.title,
+      summary: currentRoute.summary,
+      content: currentRoute.content,
+      departure_region: currentRoute.departure_region,
+      destination_region: currentRoute.destination_region,
+      provider: currentRoute.provider,
+      external_map_url: currentRoute.external_map_url,
+      thumbnail_url: currentRoute.thumbnail_url,
+      distance_km: currentRoute.distance_km,
+      estimated_duration_minutes: currentRoute.estimated_duration_minutes,
+      tags: currentRoute.tags,
+      source_type: currentRoute.source_type,
+      departure_lat: currentRoute.departure_lat,
+      departure_lng: currentRoute.departure_lng,
+      destination_lat: currentRoute.destination_lat,
+      destination_lng: currentRoute.destination_lng,
+      directions_calculated_at: currentRoute.directions_calculated_at,
+    };
+
+    const restoreRoute = async () => {
+      await supabase.from("routes").update(routeRollbackInput).eq("id", routeId);
+    };
+
+    const restoreWaypoints = async () => {
+      await supabase.from("route_waypoints").delete().eq("route_id", routeId);
+
+      if (currentWaypoints?.length) {
+        await supabase.from("route_waypoints").insert(
+          currentWaypoints.map((waypoint) => ({
+            route_id: routeId,
+            sequence: Number(waypoint.sequence),
+            lat: Number(waypoint.lat),
+            lng: Number(waypoint.lng),
+          }))
+        );
+      }
+    };
+
+    const { data, error } = await supabase
+      .from("routes")
+      .update(updateInput)
+      .eq("id", routeId)
+      .select("id, updated_at")
+      .single();
+
+    if (error) {
+      return internalServerError(error.message);
+    }
+
+    const { error: deleteWaypointError } = await supabase
+      .from("route_waypoints")
+      .delete()
+      .eq("route_id", routeId);
+
+    if (deleteWaypointError) {
+      await restoreRoute();
+      return internalServerError(deleteWaypointError.message);
+    }
+
+    if (nextWaypoints.length) {
+      const { error: insertWaypointError } = await supabase
+        .from("route_waypoints")
+        .insert(
+          nextWaypoints.map((waypoint) => ({
+            route_id: routeId,
+            sequence: waypoint.sequence,
+            lat: waypoint.lat,
+            lng: waypoint.lng,
+          }))
+        );
+
+      if (insertWaypointError) {
+        await restoreRoute();
+        await restoreWaypoints();
+        return internalServerError(insertWaypointError.message);
+      }
+    }
+
+    const { error: upsertPathError } = await supabase
+      .from("route_paths")
+      .upsert({
+        route_id: routeId,
+        path: calculatedRoute.path,
+        raw_summary: calculatedRoute.rawSummary ?? null,
+        raw_response: calculatedRoute.rawResponse,
+        calculated_at: new Date().toISOString(),
+        updated_at: new Date().toISOString(),
+      });
+
+    if (upsertPathError) {
+      await restoreRoute();
+      await restoreWaypoints();
+      return internalServerError(upsertPathError.message);
+    }
+
+    return ok({
+      id: String(data.id),
+      updatedAt: String(data.updated_at),
+    });
+  }
 
   const { data, error } = await supabase
     .from("routes")
