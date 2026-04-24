@@ -1,10 +1,6 @@
 "use client";
 
-import type {
-  RouteCoordinate,
-  RoutePathPoint,
-  RouteWaypoint,
-} from "@package-shared/types/route";
+import type { RoutePathPoint } from "@package-shared/types/route";
 import { useEffect, useMemo, useRef, useState } from "react";
 
 import { ErrorState } from "@shared/ui";
@@ -67,46 +63,26 @@ function loadNaverMaps(clientId: string) {
   });
 }
 
-function isValidCoordinate(coordinate?: Partial<RouteCoordinate>) {
-  return (
-    Number.isFinite(coordinate?.lat) && Number.isFinite(coordinate?.lng)
-  );
+function isValidCoordinate(coordinate?: Partial<RoutePathPoint>) {
+  return Number.isFinite(coordinate?.lat) && Number.isFinite(coordinate?.lng);
 }
 
 type RoutePathMapProps = {
   path: RoutePathPoint[];
-  departure?: RouteCoordinate;
-  destination?: RouteCoordinate;
-  waypoints?: RouteWaypoint[];
 };
 
-export function RoutePathMap({
-  path,
-  departure,
-  destination,
-  waypoints = [],
-}: RoutePathMapProps) {
+export function RoutePathMap({ path }: RoutePathMapProps) {
   const clientId = process.env.NEXT_PUBLIC_NAVER_MAP_CLIENT_ID;
   const mapElementRef = useRef<HTMLDivElement | null>(null);
   const mapRef = useRef<any>(null);
   const mapsApiRef = useRef<any>(null);
   const polylineRef = useRef<any>(null);
-  const markersRef = useRef<any[]>([]);
   const [error, setError] = useState<string | null>(null);
   const [isLoaded, setIsLoaded] = useState(false);
 
   const validPath = useMemo(
     () => path.filter((point) => isValidCoordinate(point)),
     [path]
-  );
-
-  const markerCoordinates = useMemo(
-    () =>
-      [departure, ...waypoints, destination].filter(
-        (coordinate): coordinate is RouteCoordinate =>
-          isValidCoordinate(coordinate)
-      ),
-    [departure, destination, waypoints]
   );
 
   useEffect(() => {
@@ -168,13 +144,15 @@ export function RoutePathMap({
     const map = mapRef.current;
     const maps = mapsApiRef.current;
 
-    if (!map || !maps || !validPath.length) {
+    if (!map || !maps) {
       return;
     }
 
     polylineRef.current?.setMap(null);
-    markersRef.current.forEach((marker) => marker.setMap(null));
-    markersRef.current = [];
+
+    if (!validPath.length) {
+      return;
+    }
 
     const naverPath = validPath.map(
       (point) => new maps.LatLng(point.lat, point.lng)
@@ -190,25 +168,17 @@ export function RoutePathMap({
       strokeLineJoin: "round",
     });
 
-    markersRef.current = markerCoordinates.map(
-      (coordinate) =>
-        new maps.Marker({
-          map,
-          position: new maps.LatLng(coordinate.lat, coordinate.lng),
-        })
-    );
-
     const bounds = naverPath.reduce((nextBounds, latLng) => {
       nextBounds.extend(latLng);
       return nextBounds;
     }, new maps.LatLngBounds(naverPath[0], naverPath[0]));
 
     map.fitBounds(bounds);
-  }, [markerCoordinates, validPath]);
+  }, [isLoaded, validPath]);
 
   return (
-    <div className="relative min-h-[360px] overflow-hidden rounded-[32px] border border-border bg-panel-soft">
-      <div ref={mapElementRef} className="absolute inset-0" />
+    <div className="relative h-[360px] overflow-hidden rounded-[32px] border border-border bg-panel-soft">
+      <div ref={mapElementRef} className="h-full w-full" />
       {!isLoaded && !error ? (
         <div className="absolute inset-0 bg-[radial-gradient(circle_at_20%_20%,rgba(229,87,47,0.18),transparent_26%),linear-gradient(180deg,rgba(23,26,30,0.96)_0%,rgba(17,19,21,0.99)_100%)]" />
       ) : null}

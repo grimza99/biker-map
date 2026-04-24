@@ -107,21 +107,7 @@ export default function RouteDetailPage() {
         </DefaultCardContainer>
       </div>
       {route.path.length ? (
-        <RoutePathMap
-          path={route.path}
-          departure={
-            route.departureLat !== undefined && route.departureLng !== undefined
-              ? { lat: route.departureLat, lng: route.departureLng }
-              : undefined
-          }
-          destination={
-            route.destinationLat !== undefined &&
-            route.destinationLng !== undefined
-              ? { lat: route.destinationLat, lng: route.destinationLng }
-              : undefined
-          }
-          waypoints={route.waypoints}
-        />
+        <RoutePathMap path={route.path} />
       ) : null}
       <MarkdownContent content={route.content} />
     </PageWrapper>
