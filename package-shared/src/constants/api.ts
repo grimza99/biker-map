@@ -29,6 +29,7 @@ export const API_PATHS = {
   routes: {
     list: `${BASE_URL}/routes`,
     detail: (routeId: string) => `${BASE_URL}/routes/${routeId}`,
+    mapPaths: `${BASE_URL}/map/routes`,
   },
   notifications: {
     list: `${BASE_URL}/notifications`,

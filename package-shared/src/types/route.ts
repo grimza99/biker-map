@@ -24,6 +24,15 @@ export type RouteCoordinate = {
   lng: number;
 };
 
+export type RouteMapPathItem = {
+  routeId: string;
+  title: string;
+  path: RoutePathPoint[];
+};
+
+export type RouteMapPathsResponseData = {
+  items: RouteMapPathItem[];
+};
 export type RouteWaypoint = RouteCoordinate & {
   id?: string;
   sequence: number;
