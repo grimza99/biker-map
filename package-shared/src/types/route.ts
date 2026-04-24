@@ -19,7 +19,6 @@ export type RoutesQuery = {
   maxDistanceKm?: number;
 };
 
-export type RoutePathPoint = {
 export type RouteCoordinate = {
   lat: number;
   lng: number;
