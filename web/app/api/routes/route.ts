@@ -5,6 +5,7 @@ import type {
 } from "@package-shared/types/route";
 import {
   badRequest,
+  calculateNaverRoutePath,
   createSupabaseApiClient,
   created,
   forbidden,
@@ -57,6 +58,7 @@ export async function GET(request: NextRequest) {
 
       if (
         query.departureRegion &&
+        query.departureRegion !== "all" &&
         item.departureRegion !== query.departureRegion
       ) {
         return false;
@@ -64,6 +66,7 @@ export async function GET(request: NextRequest) {
 
       if (
         query.destinationRegion &&
+        query.destinationRegion !== "all" &&
         item.destinationRegion !== query.destinationRegion
       ) {
         return false;
@@ -111,13 +114,27 @@ const createRouteSchema = z.object({
     "sejong",
     "jeju",
   ]),
-  provider: z.enum(["naver", "etc"]),
+  provider: z.enum(["naver", "etc"]).default("naver"),
   externalMapUrl: z.string().url(),
   thumbnailUrl: z.string().url().optional(),
   distanceKm: z.number().optional(),
   estimatedDurationMinutes: z.number().int().optional(),
   tags: z.array(z.string()),
   sourceType: z.enum(["curated", "user"]),
+  departureLat: z.number(),
+  departureLng: z.number(),
+  destinationLat: z.number(),
+  destinationLng: z.number(),
+  waypoints: z
+    .array(
+      z.object({
+        sequence: z.number().int().positive(),
+        lat: z.number(),
+        lng: z.number(),
+      })
+    )
+    .max(15)
+    .default([]),
 });
 
 export async function POST(request: Request) {
@@ -149,6 +166,33 @@ export async function POST(request: Request) {
     return forbidden("경로 생성은 운영자만 가능합니다.");
   }
 
+  let calculatedRoute;
+  try {
+    calculatedRoute = await calculateNaverRoutePath({
+      departure: {
+        lat: payload.departureLat,
+        lng: payload.departureLng,
+      },
+      destination: {
+        lat: payload.destinationLat,
+        lng: payload.destinationLng,
+      },
+      waypoints: (payload.waypoints ?? [])
+        .slice()
+        .sort((a, b) => a.sequence - b.sequence)
+        .map((waypoint) => ({
+          lat: waypoint.lat,
+          lng: waypoint.lng,
+        })),
+    });
+  } catch (directionsError) {
+    return internalServerError(
+      directionsError instanceof Error
+        ? directionsError.message
+        : "경로 계산에 실패했습니다."
+    );
+  }
+
   const { data, error } = await supabase
     .from("routes")
     .insert({
@@ -157,14 +201,22 @@ export async function POST(request: Request) {
       content: payload.content.trim(),
       departure_region: payload.departureRegion,
       destination_region: payload.destinationRegion,
-      provider: payload.provider,
+      provider: "naver",
       external_map_url: payload.externalMapUrl,
       thumbnail_url: payload.thumbnailUrl ?? null,
-      distance_km: payload.distanceKm ?? null,
-      estimated_duration_minutes: payload.estimatedDurationMinutes ?? null,
+      distance_km: calculatedRoute.distanceKm ?? payload.distanceKm ?? null,
+      estimated_duration_minutes:
+        calculatedRoute.estimatedDurationMinutes ??
+        payload.estimatedDurationMinutes ??
+        null,
       tags: payload.tags ?? [],
       source_type: payload.sourceType ?? "curated",
       created_by: session.userId,
+      departure_lat: payload.departureLat,
+      departure_lng: payload.departureLng,
+      destination_lat: payload.destinationLat,
+      destination_lng: payload.destinationLng,
+      directions_calculated_at: new Date().toISOString(),
     })
     .select("id, created_at")
     .single();
@@ -173,8 +225,42 @@ export async function POST(request: Request) {
     return internalServerError(error.message);
   }
 
+  const routeId = String(data.id);
+  const waypoints = (payload.waypoints ?? [])
+    .slice()
+    .sort((a, b) => a.sequence - b.sequence)
+    .map((waypoint, index) => ({
+      route_id: routeId,
+      sequence: index + 1,
+      lat: waypoint.lat,
+      lng: waypoint.lng,
+    }));
+
+  if (waypoints.length) {
+    const { error: waypointError } = await supabase
+      .from("route_waypoints")
+      .insert(waypoints);
+
+    if (waypointError) {
+      await supabase.from("routes").delete().eq("id", routeId);
+      return internalServerError(waypointError.message);
+    }
+  }
+
+  const { error: pathError } = await supabase.from("route_paths").insert({
+    route_id: routeId,
+    path: calculatedRoute.path,
+    raw_summary: calculatedRoute.rawSummary ?? null,
+    raw_response: calculatedRoute.rawResponse,
+  });
+
+  if (pathError) {
+    await supabase.from("routes").delete().eq("id", routeId);
+    return internalServerError(pathError.message);
+  }
+
   return created({
-    id: String(data.id),
+    id: routeId,
     createdAt: String(data.created_at),
   });
 }

@@ -20,6 +20,7 @@ export type RoutesQuery = {
 };
 
 export type RoutePathPoint = {
+export type RouteCoordinate = {
   lat: number;
   lng: number;
 };
@@ -33,6 +34,12 @@ export type RouteMapPathItem = {
 export type RouteMapPathsResponseData = {
   items: RouteMapPathItem[];
 };
+export type RouteWaypoint = RouteCoordinate & {
+  id?: string;
+  sequence: number;
+};
+
+export type RoutePathPoint = RouteCoordinate;
 
 export type RouteListItem = {
   id: string;
@@ -48,17 +55,40 @@ export type RouteListItem = {
   tags: string[];
   sourceType: RouteSourceType;
   createdById?: string;
+  departureLat?: number;
+  departureLng?: number;
+  destinationLat?: number;
+  destinationLng?: number;
+  directionsCalculatedAt?: string;
 };
 
 export type RouteDetail = RouteListItem & {
   content: string;
+  waypoints: RouteWaypoint[];
+  path: RoutePathPoint[];
 };
 
 export type RoutesListResponseData = {
   items: RouteListItem[];
 };
 
-export interface CreateRouteBody extends Omit<RouteDetail, "id"> {}
+export type CreateRouteBody = Omit<
+  RouteListItem,
+  | "id"
+  | "createdById"
+  | "directionsCalculatedAt"
+  | "departureLat"
+  | "departureLng"
+  | "destinationLat"
+  | "destinationLng"
+> & {
+  content: string;
+  departureLat: number;
+  departureLng: number;
+  destinationLat: number;
+  destinationLng: number;
+  waypoints: RouteWaypoint[];
+};
 
 export type CreateRouteResponseData = {
   id: string;
