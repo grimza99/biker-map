@@ -2,14 +2,14 @@
 
 import { usePlaces } from "@features/places/model/use-places";
 import { useRouteMapPaths } from "@features/routes/model/use-route-map-paths";
-import type { PlaceCategory } from "@package-shared/types/place";
 import { ArrowLeftToLine } from "lucide-react";
 import { startTransition, useDeferredValue, useMemo, useState } from "react";
 
 import {
   MapSidePanel,
+  mapCategoryOptions,
+  type MapCategoryFilter,
   NaverDynamicMap,
-  placeCategoryOptions,
 } from "@/entities/map";
 import {
   Button,
@@ -21,21 +21,24 @@ import {
 
 export default function MapPage() {
   const [searchInput, setSearchInput] = useState("");
-  const [category, setCategory] = useState<PlaceCategory | undefined>();
+  const [category, setCategory] = useState<MapCategoryFilter | undefined>();
   const deferredSearch = useDeferredValue(searchInput);
   const isStale = searchInput !== deferredSearch;
+  const placeCategory = category === "route" ? undefined : category;
   const filters = useMemo(
     () => ({
       search: deferredSearch,
-      category,
+      category: placeCategory,
       limit: 24,
     }),
-    [category, deferredSearch]
+    [deferredSearch, placeCategory]
   );
   const { data, isLoading, isError, error } = usePlaces(filters);
   const routeMapPathsQuery = useRouteMapPaths();
   const places = data?.data.items ?? [];
   const routes = routeMapPathsQuery.data?.data.items ?? [];
+  const visiblePlaces = category === "route" ? [] : places;
+  const visibleRoutes = category === "route" ? routes : [];
 
   const handleChangeSearchInput = (input: string) => {
     setCategory(undefined);
@@ -44,12 +47,12 @@ export default function MapPage() {
 
   return (
     <div className="relative min-h-[calc(100vh-11rem)] h-full overflow-hidden ">
-      <NaverDynamicMap places={places} routes={routes} />
+      <NaverDynamicMap places={visiblePlaces} routes={visibleRoutes} />
 
       <div className="pointer-events-none absolute inset-0">
         <div className="flex w-full h-full items-start justify-between gap-4 p-5 md:p-6">
           <div className="pointer-events-auto rounded-2xl flex flex-wrap gap-2 border border-border bg-panel/82 p-2 shadow-[0_18px_50px_rgba(5,6,7,0.24)] backdrop-blur-xl">
-            {placeCategoryOptions.map((filter) => {
+            {mapCategoryOptions.map((filter) => {
               const active = category === filter.value;
 
               return (
