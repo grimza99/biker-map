@@ -23,6 +23,8 @@ export default function Comment({ postId, comment }: CommentProps) {
           postId={postId}
           disabled={status !== "authenticated"}
           placeholder="답글을 입력하세요"
+          submitType="reply"
+          commentId={comment.id}
         />
       )}
       {comment.replies.length > 0 && (

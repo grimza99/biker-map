@@ -19,7 +19,7 @@ export default function CommentForm({
 }: CommentFormProps) {
   const [comment, setComment] = useState("");
   const createCommentMutation = useCreatePostComment(postId);
-  const createReplyMutation = useCreateCommentReply(commentId ?? "");
+  const createReplyMutation = useCreateCommentReply(postId, commentId ?? "");
   placeholder = placeholder ?? "댓글을 입력하세요";
 
   const handleSubmit = (event: SubmitEvent<HTMLFormElement>) => {
