@@ -10,7 +10,7 @@ import {
   loadProfileNameMap,
   ok,
   parseRequestBody,
-  syncPostCommentCount,
+  syncPostCommentCountBestEffort,
 } from "@shared/api";
 import { formatRelativeLabel } from "@shared/lib";
 import { requireApiSession } from "@shared/api/auth";
@@ -124,11 +124,7 @@ export async function POST(
     return internalServerError(error.message);
   }
 
-  try {
-    await syncPostCommentCount(postId);
-  } catch (countError) {
-    console.error("Failed to sync post comment count", countError);
-  }
+  await syncPostCommentCountBestEffort(postId);
 
   return created({
     id: String(data.id),

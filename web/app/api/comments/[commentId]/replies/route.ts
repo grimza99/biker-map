@@ -9,7 +9,7 @@ import {
   internalServerError,
   notFound,
   parseRequestBody,
-  syncCommentReplyCount,
+  syncCommentReplyCountBestEffort,
 } from "@shared/api";
 import { requireApiSession } from "@shared/api/auth";
 import { z } from "zod";
@@ -67,11 +67,7 @@ export async function POST(
     return internalServerError(error.message);
   }
 
-  try {
-    await syncCommentReplyCount(commentId);
-  } catch (countError) {
-    console.error("Failed to sync comment reply count", countError);
-  }
+  await syncCommentReplyCountBestEffort(commentId);
 
   return created<CommentReplyResponseData>({
     id: String(data.id),

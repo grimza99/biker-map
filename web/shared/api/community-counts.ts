@@ -45,6 +45,15 @@ export async function syncPostCommentCount(postId: string) {
   return nextCommentCount;
 }
 
+export async function syncPostCommentCountBestEffort(postId: string) {
+  try {
+    return await syncPostCommentCount(postId);
+  } catch (error) {
+    console.error("Failed to sync post comment count", error);
+    return null;
+  }
+}
+
 export async function syncCommentReplyCount(commentId: string) {
   const supabase = createSupabaseServiceClient();
 
@@ -70,4 +79,13 @@ export async function syncCommentReplyCount(commentId: string) {
   }
 
   return nextReplyCount;
+}
+
+export async function syncCommentReplyCountBestEffort(commentId: string) {
+  try {
+    return await syncCommentReplyCount(commentId);
+  } catch (error) {
+    console.error("Failed to sync comment reply count", error);
+    return null;
+  }
 }

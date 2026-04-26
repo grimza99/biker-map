@@ -11,7 +11,7 @@ import {
   notFound,
   ok,
   parseRequestBody,
-  syncPostCommentCount,
+  syncPostCommentCountBestEffort,
 } from "@shared/api";
 import { requireApiSession } from "@shared/api/auth";
 import { z } from "zod";
@@ -143,11 +143,7 @@ export async function DELETE(
   }
 
   if (!currentComment.parent_comment_id) {
-    try {
-      await syncPostCommentCount(String(currentComment.post_id));
-    } catch (countError) {
-      console.error("Failed to sync post comment count", countError);
-    }
+    await syncPostCommentCountBestEffort(String(currentComment.post_id));
   }
 
   return ok<DeleteCommentResponseData>({
