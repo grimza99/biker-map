@@ -6,6 +6,7 @@ export {
   updateSupabaseSession,
 } from "./middleware";
 export type { SupabaseMiddlewareCookies } from "./middleware";
+export { createSupabaseServiceClient } from "./service-client";
 export { createSupabaseServerClient } from "./server";
 export type { SupabaseCookieMethods, SupabaseServerClient } from "./server";
 export { mapSupabaseSession } from "./session";
