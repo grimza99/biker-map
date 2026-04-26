@@ -17,6 +17,7 @@ import {
   useEffect,
   useLayoutEffect,
   useMemo,
+  useRef,
   useState,
   type ReactNode,
 } from "react";
@@ -44,8 +45,11 @@ export function SessionProvider({
     initialSession.accessToken
   );
   const [status, setStatus] = useState<SessionState["status"]>(
-    initialSession.session ? "authenticated" : "anonymous"
+    initialSession.session && initialSession.accessToken
+      ? "authenticated"
+      : "loading"
   );
+  const hasAttemptedInitialRestoreRef = useRef(false);
 
   function updateSession(
     nextSession: AppSession | null,
@@ -110,9 +114,11 @@ export function SessionProvider({
   }, [accessToken]);
 
   useEffect(() => {
-    if (!initialSession.session || accessToken) {
+    if (accessToken || hasAttemptedInitialRestoreRef.current) {
       return;
     }
+
+    hasAttemptedInitialRestoreRef.current = true;
 
     let cancelled = false;
 
@@ -151,7 +157,7 @@ export function SessionProvider({
     return () => {
       cancelled = true;
     };
-  }, [accessToken, initialSession]);
+  }, [accessToken]);
 
   return (
     <SessionContext.Provider value={value}>{children}</SessionContext.Provider>
