@@ -1,7 +1,7 @@
 "use client";
 
 import type { ReactNode } from "react";
-import type { AppSession } from "@package-shared/types/session";
+import type { InitialSessionData } from "@package-shared/types/session";
 
 import { AppQueryProvider } from "./query-provider";
 import { SessionProvider } from "@features/session";
@@ -12,7 +12,7 @@ export function AppProviders({
   initialSession
 }: {
   children: ReactNode;
-  initialSession: AppSession | null;
+  initialSession: InitialSessionData;
 }) {
   return (
     <AppQueryProvider>

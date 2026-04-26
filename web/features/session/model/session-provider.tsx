@@ -6,7 +6,10 @@ import type {
   MeResponseData,
   RefreshResponseData,
 } from "@package-shared/types/auth";
-import type { AppSession } from "@package-shared/types/session";
+import type {
+  AppSession,
+  InitialSessionData,
+} from "@package-shared/types/session";
 import { apiFetch, setApiAccessToken } from "@shared/api/http";
 import {
   createContext,
@@ -33,12 +36,14 @@ export function SessionProvider({
   initialSession,
 }: {
   children: ReactNode;
-  initialSession: AppSession | null;
+  initialSession: InitialSessionData;
 }) {
-  const [session, setSession] = useState<AppSession | null>(initialSession);
-  const [accessToken, setAccessToken] = useState<string | null>(null);
+  const [session, setSession] = useState<AppSession | null>(initialSession.session);
+  const [accessToken, setAccessToken] = useState<string | null>(
+    initialSession.accessToken
+  );
   const [status, setStatus] = useState<SessionState["status"]>(
-    initialSession ? "authenticated" : "anonymous"
+    initialSession.session ? "authenticated" : "anonymous"
   );
 
   function updateSession(
@@ -100,7 +105,11 @@ export function SessionProvider({
   );
 
   useEffect(() => {
-    if (!initialSession || accessToken) {
+    setApiAccessToken(accessToken);
+  }, [accessToken]);
+
+  useEffect(() => {
+    if (!initialSession.session || accessToken) {
       return;
     }
 
