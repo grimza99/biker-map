@@ -1,4 +1,5 @@
-export { placeCategoryOptions } from "./model/map-filters";
+export { mapCategoryOptions, placeCategoryOptions } from "./model/map-filters";
+export type { MapCategoryFilter } from "./model/map-filters";
 export { PlaceMarker } from "./model/PlaceMarker";
 export { RoutePolyline } from "./model/RoutePolyline";
 export { PlaceDetailContent } from "./ui/PlaceDetailContent";

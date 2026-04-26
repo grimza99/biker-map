@@ -7,3 +7,10 @@ export const placeCategoryOptions: { label: string; value: PlaceCategory }[] = [
   { label: "샵", value: "shop" },
   { label: "휴게/쉼터", value: "rest" },
 ];
+
+export type MapCategoryFilter = PlaceCategory | "route";
+
+export const mapCategoryOptions: Array<{
+  label: string;
+  value: MapCategoryFilter;
+}> = [...placeCategoryOptions, { label: "라이딩 경로", value: "route" }];
