@@ -11,6 +11,7 @@ import {
   notFound,
   ok,
   parseRequestBody,
+  syncPostCommentCount,
 } from "@shared/api";
 import { requireApiSession } from "@shared/api/auth";
 import { z } from "zod";
@@ -43,7 +44,7 @@ export async function PATCH(
   const supabase = createSupabaseApiClient(request);
   const { data: currentComment, error: currentCommentError } = await supabase
     .from("comments")
-    .select("id, author_id")
+    .select("id, author_id, post_id, parent_comment_id")
     .eq("id", commentId)
     .maybeSingle();
 
@@ -103,7 +104,7 @@ export async function DELETE(
   const supabase = createSupabaseApiClient(request);
   const { data: currentComment, error: currentCommentError } = await supabase
     .from("comments")
-    .select("id, author_id")
+    .select("id, author_id, post_id, parent_comment_id")
     .eq("id", commentId)
     .maybeSingle();
 
@@ -139,6 +140,18 @@ export async function DELETE(
 
   if (error) {
     return internalServerError(error.message);
+  }
+
+  if (!currentComment.parent_comment_id) {
+    try {
+      await syncPostCommentCount(String(currentComment.post_id));
+    } catch (countError) {
+      return internalServerError(
+        countError instanceof Error
+          ? countError.message
+          : "댓글 수를 갱신하지 못했습니다."
+      );
+    }
   }
 
   return ok<DeleteCommentResponseData>({

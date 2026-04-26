@@ -9,6 +9,7 @@ import {
   internalServerError,
   notFound,
   parseRequestBody,
+  syncCommentReplyCount,
 } from "@shared/api";
 import { requireApiSession } from "@shared/api/auth";
 import { z } from "zod";
@@ -64,6 +65,16 @@ export async function POST(
 
   if (error) {
     return internalServerError(error.message);
+  }
+
+  try {
+    await syncCommentReplyCount(commentId);
+  } catch (countError) {
+    return internalServerError(
+      countError instanceof Error
+        ? countError.message
+        : "대댓글 수를 갱신하지 못했습니다."
+    );
   }
 
   return created<CommentReplyResponseData>({

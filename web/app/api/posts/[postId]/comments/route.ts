@@ -10,6 +10,7 @@ import {
   loadProfileNameMap,
   ok,
   parseRequestBody,
+  syncPostCommentCount,
 } from "@shared/api";
 import { formatRelativeLabel } from "@shared/lib";
 import { requireApiSession } from "@shared/api/auth";
@@ -121,6 +122,16 @@ export async function POST(
 
   if (error) {
     return internalServerError(error.message);
+  }
+
+  try {
+    await syncPostCommentCount(postId);
+  } catch (countError) {
+    return internalServerError(
+      countError instanceof Error
+        ? countError.message
+        : "댓글 수를 갱신하지 못했습니다."
+    );
   }
 
   return created({
