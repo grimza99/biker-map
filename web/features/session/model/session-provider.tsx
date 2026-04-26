@@ -15,6 +15,7 @@ import {
   createContext,
   useContext,
   useEffect,
+  useLayoutEffect,
   useMemo,
   useState,
   type ReactNode,
@@ -104,7 +105,7 @@ export function SessionProvider({
     [accessToken, session, status]
   );
 
-  useEffect(() => {
+  useLayoutEffect(() => {
     setApiAccessToken(accessToken);
   }, [accessToken]);
 
