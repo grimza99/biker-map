@@ -6,13 +6,18 @@ import type {
   MeResponseData,
   RefreshResponseData,
 } from "@package-shared/types/auth";
-import type { AppSession } from "@package-shared/types/session";
+import type {
+  AppSession,
+  InitialSessionData,
+} from "@package-shared/types/session";
 import { apiFetch, setApiAccessToken } from "@shared/api/http";
 import {
   createContext,
   useContext,
   useEffect,
+  useLayoutEffect,
   useMemo,
+  useRef,
   useState,
   type ReactNode,
 } from "react";
@@ -33,13 +38,18 @@ export function SessionProvider({
   initialSession,
 }: {
   children: ReactNode;
-  initialSession: AppSession | null;
+  initialSession: InitialSessionData;
 }) {
-  const [session, setSession] = useState<AppSession | null>(initialSession);
-  const [accessToken, setAccessToken] = useState<string | null>(null);
-  const [status, setStatus] = useState<SessionState["status"]>(
-    initialSession ? "authenticated" : "anonymous"
+  const [session, setSession] = useState<AppSession | null>(initialSession.session);
+  const [accessToken, setAccessToken] = useState<string | null>(
+    initialSession.accessToken
   );
+  const [status, setStatus] = useState<SessionState["status"]>(
+    initialSession.session && initialSession.accessToken
+      ? "authenticated"
+      : "loading"
+  );
+  const hasAttemptedInitialRestoreRef = useRef(false);
 
   function updateSession(
     nextSession: AppSession | null,
@@ -99,10 +109,16 @@ export function SessionProvider({
     [accessToken, session, status]
   );
 
+  useLayoutEffect(() => {
+    setApiAccessToken(accessToken);
+  }, [accessToken]);
+
   useEffect(() => {
-    if (!initialSession || accessToken) {
+    if (accessToken || hasAttemptedInitialRestoreRef.current) {
       return;
     }
+
+    hasAttemptedInitialRestoreRef.current = true;
 
     let cancelled = false;
 
@@ -141,7 +157,7 @@ export function SessionProvider({
     return () => {
       cancelled = true;
     };
-  }, [accessToken, initialSession]);
+  }, [accessToken]);
 
   return (
     <SessionContext.Provider value={value}>{children}</SessionContext.Provider>

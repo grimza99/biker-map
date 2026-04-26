@@ -1,9 +1,9 @@
 import { cookies } from "next/headers";
-import type { AppSession } from "@package-shared/types/session";
+import type { InitialSessionData } from "@package-shared/types/session";
 
 import { createSupabaseServerClient, mapSupabaseSession } from "@shared/lib/supabase";
 
-export async function getInitialSession(): Promise<AppSession | null> {
+export async function getInitialSession(): Promise<InitialSessionData> {
   const cookieStore = await cookies();
 
   const supabase = createSupabaseServerClient({
@@ -19,5 +19,8 @@ export async function getInitialSession(): Promise<AppSession | null> {
     data: { session }
   } = await supabase.auth.getSession();
 
-  return mapSupabaseSession(session);
+  return {
+    session: mapSupabaseSession(session),
+    accessToken: session?.access_token ?? null,
+  };
 }
