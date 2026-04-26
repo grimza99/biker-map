@@ -64,11 +64,7 @@ export async function GET(
   try {
     nextViewCount = (await incrementPostViewCount(postId)) ?? nextViewCount;
   } catch (countError) {
-    return internalServerError(
-      countError instanceof Error
-        ? countError.message
-        : "조회수를 갱신하지 못했습니다."
-    );
+    console.error("Failed to increment post view count", countError);
   }
 
   let authorMap: Map<string, string>;
@@ -85,7 +81,7 @@ export async function GET(
   }
 
   const post = currentPost
-      ? mapCommunityPostDetail({
+    ? mapCommunityPostDetail({
         ...currentPost,
         view_count: nextViewCount,
         author_name:

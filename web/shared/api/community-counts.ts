@@ -2,34 +2,19 @@ import { createSupabaseServiceClient } from "@shared/lib/supabase";
 
 export async function incrementPostViewCount(postId: string) {
   const supabase = createSupabaseServiceClient();
+  const { data, error } = await supabase.rpc("increment_post_view_count", {
+    target_post_id: postId,
+  });
 
-  const { data: post, error: postError } = await supabase
-    .from("posts")
-    .select("id, view_count")
-    .eq("id", postId)
-    .maybeSingle();
-
-  if (postError) {
-    throw new Error(postError.message);
+  if (error) {
+    throw new Error(error.message);
   }
 
-  if (!post) {
+  if (typeof data !== "number") {
     return null;
   }
 
-  const nextViewCount = Number(post.view_count ?? 0) + 1;
-  const { error: updateError } = await supabase
-    .from("posts")
-    .update({
-      view_count: nextViewCount,
-    })
-    .eq("id", postId);
-
-  if (updateError) {
-    throw new Error(updateError.message);
-  }
-
-  return nextViewCount;
+  return data;
 }
 
 export async function syncPostCommentCount(postId: string) {

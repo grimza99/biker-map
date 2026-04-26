@@ -142,11 +142,7 @@ export async function DELETE(
   try {
     await syncCommentReplyCount(String(currentReply.parent_comment_id));
   } catch (countError) {
-    return internalServerError(
-      countError instanceof Error
-        ? countError.message
-        : "대댓글 수를 갱신하지 못했습니다."
-    );
+    console.error("Failed to sync comment reply count", countError);
   }
 
   return ok<DeleteCommentResponseData>({

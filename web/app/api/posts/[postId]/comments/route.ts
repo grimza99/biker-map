@@ -127,11 +127,7 @@ export async function POST(
   try {
     await syncPostCommentCount(postId);
   } catch (countError) {
-    return internalServerError(
-      countError instanceof Error
-        ? countError.message
-        : "댓글 수를 갱신하지 못했습니다."
-    );
+    console.error("Failed to sync post comment count", countError);
   }
 
   return created({
