@@ -9,6 +9,7 @@ import {
   internalServerError,
   notFound,
   parseRequestBody,
+  syncCommentReplyCountBestEffort,
 } from "@shared/api";
 import { requireApiSession } from "@shared/api/auth";
 import { z } from "zod";
@@ -65,6 +66,8 @@ export async function POST(
   if (error) {
     return internalServerError(error.message);
   }
+
+  await syncCommentReplyCountBestEffort(commentId);
 
   return created<CommentReplyResponseData>({
     id: String(data.id),

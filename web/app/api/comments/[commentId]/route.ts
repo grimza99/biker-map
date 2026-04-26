@@ -11,6 +11,7 @@ import {
   notFound,
   ok,
   parseRequestBody,
+  syncPostCommentCountBestEffort,
 } from "@shared/api";
 import { requireApiSession } from "@shared/api/auth";
 import { z } from "zod";
@@ -43,7 +44,7 @@ export async function PATCH(
   const supabase = createSupabaseApiClient(request);
   const { data: currentComment, error: currentCommentError } = await supabase
     .from("comments")
-    .select("id, author_id")
+    .select("id, author_id, post_id, parent_comment_id")
     .eq("id", commentId)
     .maybeSingle();
 
@@ -103,7 +104,7 @@ export async function DELETE(
   const supabase = createSupabaseApiClient(request);
   const { data: currentComment, error: currentCommentError } = await supabase
     .from("comments")
-    .select("id, author_id")
+    .select("id, author_id, post_id, parent_comment_id")
     .eq("id", commentId)
     .maybeSingle();
 
@@ -139,6 +140,10 @@ export async function DELETE(
 
   if (error) {
     return internalServerError(error.message);
+  }
+
+  if (!currentComment.parent_comment_id) {
+    await syncPostCommentCountBestEffort(String(currentComment.post_id));
   }
 
   return ok<DeleteCommentResponseData>({

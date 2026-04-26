@@ -10,6 +10,7 @@ import {
   loadProfileNameMap,
   ok,
   parseRequestBody,
+  syncPostCommentCountBestEffort,
 } from "@shared/api";
 import { formatRelativeLabel } from "@shared/lib";
 import { requireApiSession } from "@shared/api/auth";
@@ -122,6 +123,8 @@ export async function POST(
   if (error) {
     return internalServerError(error.message);
   }
+
+  await syncPostCommentCountBestEffort(postId);
 
   return created({
     id: String(data.id),

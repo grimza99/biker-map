@@ -35,5 +35,12 @@ export {
 } from "./supabase-record";
 export { parseBody, parseRequestBody } from "./validation";
 export { calculateNaverRoutePath } from "./naver-directions";
+export {
+  incrementPostViewCount,
+  syncCommentReplyCountBestEffort,
+  syncCommentReplyCount,
+  syncPostCommentCountBestEffort,
+  syncPostCommentCount,
+} from "./community-counts";
 export * from "./supabase";
 export * from "./supabase-mappers";
