@@ -2,6 +2,7 @@
 
 import { usePlaces } from "@features/places/model/use-places";
 import { useRouteMapPaths } from "@features/routes/model/use-route-map-paths";
+import type { PlaceListItem } from "@package-shared/index";
 import type { PlaceCategory } from "@package-shared/types/place";
 import { ArrowLeftToLine } from "lucide-react";
 import { startTransition, useDeferredValue, useMemo, useState } from "react";
@@ -9,6 +10,7 @@ import { startTransition, useDeferredValue, useMemo, useState } from "react";
 import {
   MapSidePanel,
   NaverDynamicMap,
+  PlaceDetailSidePanel,
   placeCategoryOptions,
 } from "@/entities/map";
 import {
@@ -22,6 +24,8 @@ import {
 export default function MapPage() {
   const [searchInput, setSearchInput] = useState("");
   const [category, setCategory] = useState<PlaceCategory | undefined>();
+  const [isSidePanelOpen, setIsSidePanelOpen] = useState(false);
+  const [selectedPlace, setSelectedPlace] = useState<PlaceListItem | null>(null);
   const deferredSearch = useDeferredValue(searchInput);
   const isStale = searchInput !== deferredSearch;
   const filters = useMemo(
@@ -42,9 +46,23 @@ export default function MapPage() {
     setSearchInput(input);
   };
 
+  const handleOpenSearchPanel = () => {
+    setSelectedPlace(null);
+    setIsSidePanelOpen(true);
+  };
+
+  const handleClickPlaceMarker = (place: PlaceListItem) => {
+    setSelectedPlace(place);
+    setIsSidePanelOpen(true);
+  };
+
   return (
     <div className="relative min-h-[calc(100vh-11rem)] h-full overflow-hidden ">
-      <NaverDynamicMap places={places} routes={routes} />
+      <NaverDynamicMap
+        places={places}
+        routes={routes}
+        onClickPlaceMarker={handleClickPlaceMarker}
+      />
 
       <div className="pointer-events-none absolute inset-0">
         <div className="flex w-full h-full items-start justify-between gap-4 p-5 md:p-6">
@@ -72,25 +90,29 @@ export default function MapPage() {
           </div>
 
           <div className="pointer-events-auto">
-            <SidePanel>
+            <SidePanel open={isSidePanelOpen} onOpenChange={setIsSidePanelOpen}>
             <SidePanelTrigger asChild>
-              <Button variant="primary">
+              <Button variant="primary" onClick={handleOpenSearchPanel}>
                 <ArrowLeftToLine className="w-4 h-4 m-0" />
               </Button>
             </SidePanelTrigger>
             <SidePanelContent
-              title={<h2>검색</h2>}
+              title={<h2>{selectedPlace ? selectedPlace.name : "검색"}</h2>}
               overlayClassName="bg-transparent backdrop-blur-none"
             >
               <SidePanelBody>
-                <MapSidePanel
-                  places={places}
-                  onChangeSearchInput={handleChangeSearchInput}
-                  isLoading={isLoading}
-                  isError={isError}
-                  error={error}
-                  isStale={isStale}
-                />
+                {selectedPlace ? (
+                  <PlaceDetailSidePanel placeId={selectedPlace.id} />
+                ) : (
+                  <MapSidePanel
+                    places={places}
+                    onChangeSearchInput={handleChangeSearchInput}
+                    isLoading={isLoading}
+                    isError={isError}
+                    error={error}
+                    isStale={isStale}
+                  />
+                )}
               </SidePanelBody>
             </SidePanelContent>
             </SidePanel>

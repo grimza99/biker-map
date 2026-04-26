@@ -81,7 +81,8 @@ export class PlaceMarker {
   constructor(
     private readonly maps: NaverMaps,
     private readonly map: any,
-    private readonly place: PlaceListItem
+    private readonly place: PlaceListItem,
+    private readonly onClick?: (place: PlaceListItem) => void
   ) {
     this.marker = new this.maps.Marker({
       map: this.map,
@@ -95,7 +96,7 @@ export class PlaceMarker {
     });
 
     this.maps.Event.addListener(this.marker, "click", () => {
-      console.log(place);
+      this.onClick?.(place);
     });
   }
 
