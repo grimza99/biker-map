@@ -41,7 +41,6 @@ export default function MapPage() {
   const visibleRoutes = category === "route" ? routes : [];
 
   const handleChangeSearchInput = (input: string) => {
-    setCategory(undefined);
     setSearchInput(input);
   };
 
