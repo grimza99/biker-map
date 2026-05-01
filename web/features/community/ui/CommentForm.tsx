@@ -20,6 +20,8 @@ export default function CommentForm({
   const [comment, setComment] = useState("");
   const createCommentMutation = useCreatePostComment(postId);
   const createReplyMutation = useCreateCommentReply(postId, commentId ?? "");
+  const submitMutation =
+    submitType === "reply" ? createReplyMutation : createCommentMutation;
   placeholder = placeholder ?? "댓글을 입력하세요";
 
   const handleSubmit = (event: SubmitEvent<HTMLFormElement>) => {
@@ -43,19 +45,19 @@ export default function CommentForm({
         value={comment}
         onChange={(event) => setComment(event.target.value)}
         className="flex-1"
-        disabled={createCommentMutation.isPending || disabled}
+        disabled={submitMutation.isPending || disabled}
       />
       <Button
         type="submit"
         size="sm"
-        loading={createCommentMutation.isPending}
+        loading={submitMutation.isPending}
         disabled={!comment.trim()}
       >
         댓글 등록
       </Button>
-      {createCommentMutation.error instanceof ApiClientError ? (
+      {submitMutation.error instanceof ApiClientError ? (
         <p className="m-0 text-sm text-danger">
-          {createCommentMutation.error.message}
+          {submitMutation.error.message}
         </p>
       ) : null}
     </form>
