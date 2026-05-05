@@ -2,7 +2,8 @@
 
 import { usePlaces } from "@features/places/model/use-places";
 import { useRouteMapPaths } from "@features/routes/model/use-route-map-paths";
-import type { PlaceListItem } from "@package-shared/index";
+import { RouteCard } from "@/entities";
+import type { PlaceListItem, RouteMapPathItem } from "@package-shared/index";
 import { ArrowLeftToLine } from "lucide-react";
 import { startTransition, useDeferredValue, useMemo, useState } from "react";
 
@@ -26,6 +27,9 @@ export default function MapPage() {
   const [category, setCategory] = useState<MapCategoryFilter | undefined>();
   const [isSidePanelOpen, setIsSidePanelOpen] = useState(false);
   const [selectedPlace, setSelectedPlace] = useState<PlaceListItem | null>(
+    null
+  );
+  const [selectedRoute, setSelectedRoute] = useState<RouteMapPathItem | null>(
     null
   );
   const deferredSearch = useDeferredValue(searchInput);
@@ -55,11 +59,19 @@ export default function MapPage() {
 
   const handleOpenSearchPanel = () => {
     setSelectedPlace(null);
+    setSelectedRoute(null);
     setIsSidePanelOpen(true);
   };
 
   const handleClickPlaceMarker = (place: PlaceListItem) => {
     setSelectedPlace(place);
+    setSelectedRoute(null);
+    setIsSidePanelOpen(true);
+  };
+
+  const handleClickRoutePolyline = (route: RouteMapPathItem) => {
+    setSelectedPlace(null);
+    setSelectedRoute(route);
     setIsSidePanelOpen(true);
   };
 
@@ -69,6 +81,7 @@ export default function MapPage() {
         places={visiblePlaces}
         routes={visibleRoutes}
         onClickPlaceMarker={handleClickPlaceMarker}
+        onClickRoutePolyline={handleClickRoutePolyline}
       />
 
       <div className="pointer-events-none absolute inset-0">
@@ -104,12 +117,22 @@ export default function MapPage() {
                 </Button>
               </SidePanelTrigger>
               <SidePanelContent
-                title={<h2>{selectedPlace ? selectedPlace.name : "검색"}</h2>}
+                title={
+                  <h2>
+                    {selectedPlace
+                      ? selectedPlace.name
+                      : selectedRoute
+                      ? "추천 경로"
+                      : "검색"}
+                  </h2>
+                }
                 overlayClassName="bg-transparent backdrop-blur-none"
               >
                 <SidePanelBody>
                   {selectedPlace ? (
                     <PlaceDetailSidePanel placeId={selectedPlace.id} />
+                  ) : selectedRoute ? (
+                    <RouteCard route={selectedRoute} />
                   ) : (
                     <MapSidePanel
                       places={places}
