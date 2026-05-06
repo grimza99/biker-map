@@ -11,7 +11,6 @@ import { createElement } from "react";
 import { renderToStaticMarkup } from "react-dom/server";
 
 type NaverMaps = typeof window.naver.maps;
-
 const categoryMarkerMeta: Record<
   PlaceCategory,
   { label: string; icon: LucideIcon; color: string }

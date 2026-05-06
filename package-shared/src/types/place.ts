@@ -1,5 +1,6 @@
-export type PlaceCategory = "gas" | "repair" | "cafe" | "shop" | "rest";
+export type AllPlaceCategory = PlaceCategory | "all";
 
+export type PlaceCategory = "gas" | "repair" | "cafe" | "shop" | "rest";
 export type PlaceViewport = {
   minLng: number;
   minLat: number;
@@ -9,7 +10,7 @@ export type PlaceViewport = {
 
 export type PlacesQuery = {
   search?: string;
-  category?: PlaceCategory;
+  category?: AllPlaceCategory;
   viewport?: PlaceViewport;
   cursor?: string;
   limit?: number;

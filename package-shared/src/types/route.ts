@@ -24,9 +24,8 @@ export type RouteCoordinate = {
   lng: number;
 };
 
-export type RouteMapPathItem = {
+export type RouteMapPathItem = RouteListItem & {
   routeId: string;
-  title: string;
   path: RoutePathPoint[];
 };
 

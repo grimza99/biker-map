@@ -1,4 +1,4 @@
-import { PlaceCategory } from "@package-shared/index";
+import { AllPlaceCategory, PlaceCategory } from "@package-shared/index";
 
 export const placeCategoryOptions: { label: string; value: PlaceCategory }[] = [
   { label: "주유소", value: "gas" },
@@ -8,7 +8,7 @@ export const placeCategoryOptions: { label: string; value: PlaceCategory }[] = [
   { label: "휴게/쉼터", value: "rest" },
 ];
 
-export type MapCategoryFilter = PlaceCategory | "route";
+export type MapCategoryFilter = AllPlaceCategory | "route";
 
 export const mapCategoryOptions: Array<{
   label: string;
