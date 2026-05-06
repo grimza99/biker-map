@@ -100,7 +100,7 @@ export default function MapPage() {
                   onClick={() =>
                     startTransition(() =>
                       setCategory((current) =>
-                        current === filter.value ? undefined : filter.value
+                        current === filter.value ? "all" : filter.value
                       )
                     )
                   }
