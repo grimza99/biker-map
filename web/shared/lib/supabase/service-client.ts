@@ -7,7 +7,7 @@ export function createSupabaseServiceClient() {
 
   return createClient(
     env.NEXT_PUBLIC_SUPABASE_URL,
-    env.NEXT_PUBLIC_SUPABASE_SERVICE_ROLE_KEY,
+    env.SUPABASE_SERVICE_ROLE_KEY,
     {
       auth: {
         autoRefreshToken: false,
