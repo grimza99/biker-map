@@ -172,7 +172,7 @@ export function SidePanelContent({
   }
 
   return createPortal(
-    <div className="fixed inset-0 z-50 flex justify-end">
+    <div className="fixed inset-0 z-200 flex justify-end">
       <button
         type="button"
         aria-label="사이드 패널 닫기"
