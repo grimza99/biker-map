@@ -1,18 +1,18 @@
 "use client";
 
+import { RouteCard } from "@/entities";
 import { usePlaces } from "@features/places/model/use-places";
 import { useRouteMapPaths } from "@features/routes/model/use-route-map-paths";
-import { RouteCard } from "@/entities";
 import type { PlaceListItem, RouteMapPathItem } from "@package-shared/index";
 import { ArrowLeftToLine } from "lucide-react";
 import { startTransition, useDeferredValue, useMemo, useState } from "react";
 
 import {
   MapSidePanel,
-  mapCategoryOptions,
-  type MapCategoryFilter,
   NaverDynamicMap,
   PlaceDetailSidePanel,
+  mapCategoryOptions,
+  type MapCategoryFilter,
 } from "@/entities/map";
 import {
   Button,
@@ -24,7 +24,9 @@ import {
 
 export default function MapPage() {
   const [searchInput, setSearchInput] = useState("");
-  const [category, setCategory] = useState<MapCategoryFilter | undefined>();
+  const [category, setCategory] = useState<MapCategoryFilter | undefined>(
+    "all"
+  );
   const [isSidePanelOpen, setIsSidePanelOpen] = useState(false);
   const [selectedPlace, setSelectedPlace] = useState<PlaceListItem | null>(
     null
@@ -39,7 +41,7 @@ export default function MapPage() {
     () => ({
       search: deferredSearch,
       category: placeCategory,
-      limit: 24,
+      limit: 100,
     }),
     [deferredSearch, placeCategory]
   );
@@ -48,7 +50,8 @@ export default function MapPage() {
   const places = data?.data.items ?? [];
   const routes = routeMapPathsQuery.data?.data.items ?? [];
   const visiblePlaces = category === "route" ? [] : places;
-  const visibleRoutes = category === "route" ? routes : [];
+  const visibleRoutes =
+    category === "route" || category === "all" ? routes : [];
 
   const handleChangeSearchInput = (input: string) => {
     if (category !== "route") {
