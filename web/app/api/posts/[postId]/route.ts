@@ -6,7 +6,6 @@ import {
   badRequest,
   createSupabaseApiClient,
   forbidden,
-  incrementPostViewCount,
   internalServerError,
   loadProfileNameMap,
   mapCommunityPostDetail,
@@ -60,13 +59,6 @@ export async function GET(
     return notFound("게시글을 찾을 수 없습니다.");
   }
 
-  let nextViewCount = Number(currentPost.view_count ?? 0);
-  try {
-    nextViewCount = (await incrementPostViewCount(postId)) ?? nextViewCount;
-  } catch (countError) {
-    console.error("Failed to increment post view count", countError);
-  }
-
   let authorMap: Map<string, string>;
   try {
     authorMap = await loadProfileNameMap(supabase, [
@@ -83,7 +75,6 @@ export async function GET(
   const post = currentPost
     ? mapCommunityPostDetail({
         ...currentPost,
-        view_count: nextViewCount,
         author_name:
           authorMap.get(String(currentPost.author_id ?? "")) ?? "익명",
       })
