@@ -2,6 +2,8 @@
 
 import {
   API_PATHS,
+  type InboxNotification,
+  type NotificationSourceType,
   type NotificationsQuery,
   type NotificationsResponseData,
   type ReadAllNotificationsResponseData,
@@ -17,6 +19,10 @@ function buildNotificationsSearchParams(filters: NotificationsQuery) {
 
   if (filters.view) {
     searchParams.set("view", filters.view);
+  }
+
+  if (filters.sourceType) {
+    searchParams.set("sourceType", filters.sourceType);
   }
 
   if (filters.cursor) {
@@ -62,7 +68,7 @@ export function useReadAllNotifications(filters: NotificationsQuery) {
         queryKey: queryKeys.notifications(filters),
       });
       void queryClient.invalidateQueries({
-        queryKey: queryKeys.notifications(),
+        queryKey: queryKeys.notificationsRoot,
       });
     },
   });
@@ -81,8 +87,37 @@ export function useReadNotification() {
       ),
     onSuccess: () => {
       void queryClient.invalidateQueries({
-        queryKey: queryKeys.notifications(),
+        queryKey: queryKeys.notificationsRoot,
       });
     },
   });
+}
+
+export function prependNotification(
+  current: NotificationsResponseData | undefined,
+  nextItem: InboxNotification,
+  sourceType?: NotificationSourceType,
+  view?: NotificationsQuery["view"]
+) {
+  if (!current) {
+    return current;
+  }
+
+  if (sourceType && nextItem.sourceType !== sourceType) {
+    return current;
+  }
+
+  if (view === "unread" && !nextItem.unread) {
+    return current;
+  }
+
+  if (current.items.some((item) => item.id === nextItem.id)) {
+    return current;
+  }
+
+  return {
+    ...current,
+    items: [nextItem, ...current.items],
+    unreadCount: nextItem.unread ? current.unreadCount + 1 : current.unreadCount,
+  };
 }

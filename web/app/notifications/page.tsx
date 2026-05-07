@@ -2,6 +2,7 @@
 
 import type {
   InboxNotification,
+  NotificationSourceType,
   NotificationsView,
 } from "@package-shared/types/notification";
 import { cn } from "@shared/lib";
@@ -12,7 +13,7 @@ import {
   useNotifications,
   useReadAllNotifications,
 } from "@/features/notifications";
-import { notificationsfilterTabs } from "@package-shared/model";
+import { notificationSourceTabs, notificationsfilterTabs } from "@package-shared/model";
 import { buildCursor } from "@shared/api/request";
 import { Pagination } from "@shared/ui";
 import { CheckCheck } from "lucide-react";
@@ -20,15 +21,19 @@ import { useEffect, useMemo, useState } from "react";
 
 export default function NotificationsPage() {
   const [view, setView] = useState<NotificationsView>("all");
+  const [sourceType, setSourceType] = useState<NotificationSourceType | "all">(
+    "all"
+  );
   const [page, setPage] = useState(1);
   const pageSize = 10;
   const filters = useMemo(
     () => ({
       view,
+      sourceType: sourceType === "all" ? undefined : sourceType,
       limit: pageSize,
       cursor: buildCursor((page - 1) * pageSize),
     }),
-    [page, view]
+    [page, sourceType, view]
   );
   const { data, isLoading, isError, error } = useNotifications(filters);
   const { mutateAsync: readAll, isPending: isReadAllPending } =
@@ -41,7 +46,7 @@ export default function NotificationsPage() {
 
   useEffect(() => {
     setPage(1);
-  }, [view]);
+  }, [sourceType, view]);
 
   useEffect(() => {
     if (page > totalPages) {
@@ -84,6 +89,18 @@ export default function NotificationsPage() {
                 : "border border-border bg-panel-solid text-text"
             )}
             onClick={() => setView(tab.key)}
+          >
+            {tab.label}
+          </Button>
+        ))}
+      </div>
+
+      <div className="flex flex-wrap gap-3" aria-label="알림 출처 필터">
+        {notificationSourceTabs.map((tab) => (
+          <Button
+            key={tab.key}
+            variant={sourceType === tab.key ? "primary" : "secondary"}
+            onClick={() => setSourceType(tab.key)}
           >
             {tab.label}
           </Button>
