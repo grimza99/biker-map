@@ -11,11 +11,13 @@ export const supabasePublicEnvSchema = z.object({
 });
 
 export const supabaseServiceEnvSchema = supabasePublicEnvSchema.extend({
-  NEXT_PUBLIC_SUPABASE_SERVICE_ROLE_KEY: z.string().min(1),
+  SUPABASE_SERVICE_ROLE_KEY: z.string().min(1).optional(),
 });
 
 export type SupabasePublicEnv = z.infer<typeof supabasePublicEnvSchema>;
-export type SupabaseServerEnv = z.infer<typeof supabaseServiceEnvSchema>;
+export type SupabaseServerEnv = SupabasePublicEnv & {
+  SUPABASE_SERVICE_ROLE_KEY: string;
+};
 
 export const supabaseCookieOptions = {
   name: "biker-map-auth",
@@ -39,5 +41,17 @@ export function getSupabasePublicEnv(
 export function getSupabaseServerEnv(
   env: NodeJS.ProcessEnv = process.env
 ): SupabaseServerEnv {
-  return supabaseServiceEnvSchema.parse(env);
+  const parsed = supabaseServiceEnvSchema.parse(env);
+  const serviceRoleKey = parsed.SUPABASE_SERVICE_ROLE_KEY;
+
+  if (!serviceRoleKey) {
+    throw new Error("SUPABASE_SERVICE_ROLE_KEY가 설정되어 있지 않습니다.");
+  }
+
+  return {
+    NEXT_PUBLIC_SUPABASE_URL: parsed.NEXT_PUBLIC_SUPABASE_URL,
+    NEXT_PUBLIC_SUPABASE_PUBLISHABLE_DEFAULT_KEY:
+      parsed.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_DEFAULT_KEY,
+    SUPABASE_SERVICE_ROLE_KEY: serviceRoleKey,
+  };
 }
