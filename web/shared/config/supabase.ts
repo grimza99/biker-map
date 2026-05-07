@@ -32,16 +32,37 @@ export const refreshTokenCookieOptions = {
   maxAge: 60 * 60 * 24 * 30,
 } as const;
 
-export function getSupabasePublicEnv(
-  env: NodeJS.ProcessEnv = process.env
-): SupabasePublicEnv {
-  return supabasePublicEnvSchema.parse(env);
+const runtimeSupabasePublicEnv = {
+  NEXT_PUBLIC_SUPABASE_URL: process.env.NEXT_PUBLIC_SUPABASE_URL,
+  NEXT_PUBLIC_SUPABASE_PUBLISHABLE_DEFAULT_KEY:
+    process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_DEFAULT_KEY,
+};
+
+function pickSupabasePublicEnv(
+  env?: NodeJS.ProcessEnv
+): Record<keyof SupabasePublicEnv, string | undefined> {
+  if (!env) {
+    return runtimeSupabasePublicEnv;
+  }
+
+  return {
+    NEXT_PUBLIC_SUPABASE_URL: env.NEXT_PUBLIC_SUPABASE_URL,
+    NEXT_PUBLIC_SUPABASE_PUBLISHABLE_DEFAULT_KEY:
+      env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_DEFAULT_KEY,
+  };
+}
+
+export function getSupabasePublicEnv(env?: NodeJS.ProcessEnv): SupabasePublicEnv {
+  return supabasePublicEnvSchema.parse(pickSupabasePublicEnv(env));
 }
 
 export function getSupabaseServerEnv(
   env: NodeJS.ProcessEnv = process.env
 ): SupabaseServerEnv {
-  const parsed = supabaseServiceEnvSchema.parse(env);
+  const parsed = supabaseServiceEnvSchema.parse({
+    ...pickSupabasePublicEnv(env),
+    SUPABASE_SERVICE_ROLE_KEY: env.SUPABASE_SERVICE_ROLE_KEY,
+  });
   const serviceRoleKey = parsed.SUPABASE_SERVICE_ROLE_KEY;
 
   if (!serviceRoleKey) {
