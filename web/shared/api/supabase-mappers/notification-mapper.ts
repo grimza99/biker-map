@@ -33,7 +33,7 @@ function toNotificationSourceType(value: string, kind: NotificationKind) {
     return value as NotificationSourceType;
   }
 
-  return kind === "system" ? "system" : "post";
+  return kind === "system" ? "system" : null;
 }
 
 export function mapNotificationItem(
@@ -62,6 +62,10 @@ export function mapNotificationItem(
     getRecordString(row, ["source_type", "sourceType"], ""),
     kind
   );
+
+  if (!sourceType) {
+    return null;
+  }
 
   return {
     id,

@@ -56,10 +56,6 @@ export function NotificationBell() {
     };
   }, [isOpen]);
 
-  if (!hasNotifications && !unreadCount) {
-    return null;
-  }
-
   return (
     <div ref={menuRef} className="relative">
       <Button
@@ -102,29 +98,35 @@ export function NotificationBell() {
           </div>
 
           <div className="grid gap-3 px-4 py-4">
-            {groupedNotifications.map((item) => (
-              <article
-                key={item.id}
-                className={cn(
-                  "grid gap-2 rounded-[18px] border p-3 transition duration-150 ease-out",
-                  item.unread
-                    ? "border-active/40 bg-active/5"
-                    : "border-border bg-bg/40"
-                )}
-              >
-                <div className="flex items-start justify-between gap-3">
-                  <div className="grid gap-0.5">
-                    <h3 className="m-0 text-sm font-semibold tracking-[-0.02em] text-text">
-                      {item.title}
-                    </h3>
-                    <p className="m-0 text-xs leading-6 text-muted truncate">
-                      {item.message}
-                    </p>
+            {hasNotifications ? (
+              groupedNotifications.map((item) => (
+                <article
+                  key={item.id}
+                  className={cn(
+                    "grid gap-2 rounded-[18px] border p-3 transition duration-150 ease-out",
+                    item.unread
+                      ? "border-active/40 bg-active/5"
+                      : "border-border bg-bg/40"
+                  )}
+                >
+                  <div className="flex items-start justify-between gap-3">
+                    <div className="grid gap-0.5">
+                      <h3 className="m-0 text-sm font-semibold tracking-[-0.02em] text-text">
+                        {item.title}
+                      </h3>
+                      <p className="m-0 text-xs leading-6 text-muted truncate">
+                        {item.message}
+                      </p>
+                    </div>
                   </div>
-                </div>
-                <span className="text-xs text-muted">{item.timeLabel}</span>
-              </article>
-            ))}
+                  <span className="text-xs text-muted">{item.timeLabel}</span>
+                </article>
+              ))
+            ) : (
+              <div className="rounded-[18px] border border-border bg-bg/40 px-4 py-6 text-center text-sm text-muted">
+                아직 도착한 알림이 없습니다.
+              </div>
+            )}
           </div>
 
           <div className="border-t border-border px-4 py-2">
