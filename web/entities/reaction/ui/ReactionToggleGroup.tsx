@@ -5,19 +5,10 @@ import type { ReactNode } from "react";
 
 import { useToggleReaction } from "@features/reaction/model/use-toggle-reaction";
 import type {
-  ReactionSummary,
-  ReactionTargetType,
+  ReactionToggleGroupProps,
   ReactionType,
 } from "@package-shared/index";
 import { Button } from "@shared/ui";
-
-type ReactionToggleGroupProps = {
-  targetType: ReactionTargetType;
-  targetId: string;
-  reactions: ReactionSummary;
-  postId?: string;
-  disabled?: boolean;
-};
 
 type ReactionButtonProps = {
   icon: ReactNode;

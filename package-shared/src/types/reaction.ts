@@ -7,6 +7,14 @@ export type ReactionSummary = {
   myReaction: ReactionType | null;
 };
 
+export type ReactionToggleGroupProps = {
+  targetType: ReactionTargetType;
+  targetId: string;
+  reactions: ReactionSummary;
+  postId?: string;
+  disabled?: boolean;
+};
+
 export type CreateReactionBody = {
   targetType: ReactionTargetType;
   targetId: string;

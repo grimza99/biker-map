@@ -1,4 +1,5 @@
 export const queryKeys = {
+  postsRoot: ["posts"] as const,
   session: ["session"] as const,
   myPosts: (params?: Record<string, string | number | undefined>) =>
     ["me", "posts", params ?? {}] as const,

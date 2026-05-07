@@ -87,7 +87,7 @@ export function useToggleReaction({
       }),
     onMutate: async (reaction): Promise<ReactionMutationContext> => {
       await Promise.all([
-        queryClient.cancelQueries({ queryKey: ["posts"] }),
+        queryClient.cancelQueries({ queryKey: queryKeys.postsRoot }),
         postId
           ? queryClient.cancelQueries({ queryKey: queryKeys.post(postId) })
           : Promise.resolve(),
@@ -97,7 +97,7 @@ export function useToggleReaction({
       ]);
 
       const previousPosts = queryClient.getQueriesData<ApiResponse<PostsListResponseData>>({
-        queryKey: ["posts"],
+        queryKey: queryKeys.postsRoot,
       });
       const previousPostDetail = postId
         ? queryClient.getQueryData<ApiResponse<PostDetailResponseData>>(
@@ -111,7 +111,7 @@ export function useToggleReaction({
         : undefined;
 
       queryClient.setQueriesData<ApiResponse<PostsListResponseData>>(
-        { queryKey: ["posts"] },
+        { queryKey: queryKeys.postsRoot },
         (current) => {
           if (!current) {
             return current;
@@ -210,7 +210,7 @@ export function useToggleReaction({
     },
     onSettled: async () => {
       await Promise.all([
-        queryClient.invalidateQueries({ queryKey: ["posts"] }),
+        queryClient.invalidateQueries({ queryKey: queryKeys.postsRoot }),
         postId
           ? queryClient.invalidateQueries({ queryKey: queryKeys.post(postId) })
           : Promise.resolve(),

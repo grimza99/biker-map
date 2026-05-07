@@ -1,7 +1,6 @@
 import type {
   CreateReactionBody,
   CreateReactionResponseData,
-  ReactionType,
 } from "@package-shared/types/reaction";
 import {
   badRequest,
@@ -21,10 +20,6 @@ const createReactionSchema = z.object({
   reaction: z.enum(["like", "dislike"]),
 });
 
-function getOppositeReaction(reaction: ReactionType): ReactionType {
-  return reaction === "like" ? "dislike" : "like";
-}
-
 export async function POST(request: Request) {
   const session = await requireApiSession(request);
   if (session instanceof Response) {
@@ -39,70 +34,18 @@ export async function POST(request: Request) {
   }
 
   const supabase = createSupabaseApiClient(request);
-  const targetTable = payload.targetType === "post" ? "posts" : "comments";
-  const { data: target, error: targetError } = await supabase
-    .from(targetTable)
-    .select("id")
-    .eq("id", payload.targetId)
-    .maybeSingle();
+  const { error: toggleError } = await supabase.rpc("toggle_reaction", {
+    input_target_type: payload.targetType,
+    input_target_id: payload.targetId,
+    input_reaction: payload.reaction,
+  });
 
-  if (targetError) {
-    return internalServerError(targetError.message);
-  }
-
-  if (!target) {
-    return notFound("반응 대상을 찾을 수 없습니다.");
-  }
-
-  const { data: existingRows, error: existingError } = await supabase
-    .from("reactions")
-    .select("id, reaction")
-    .eq("user_id", session.userId)
-    .eq("target_type", payload.targetType)
-    .eq("target_id", payload.targetId);
-
-  if (existingError) {
-    return internalServerError(existingError.message);
-  }
-
-  const sameReaction = (existingRows ?? []).find(
-    (row) => row.reaction === payload.reaction
-  );
-  const oppositeReaction = (existingRows ?? []).find(
-    (row) => row.reaction === getOppositeReaction(payload.reaction)
-  );
-
-  if (sameReaction) {
-    const { error: deleteError } = await supabase
-      .from("reactions")
-      .delete()
-      .eq("id", sameReaction.id);
-
-    if (deleteError) {
-      return internalServerError(deleteError.message);
-    }
-  } else {
-    if (oppositeReaction) {
-      const { error: deleteError } = await supabase
-        .from("reactions")
-        .delete()
-        .eq("id", oppositeReaction.id);
-
-      if (deleteError) {
-        return internalServerError(deleteError.message);
-      }
+  if (toggleError) {
+    if (toggleError.message.includes("반응 대상을 찾을 수 없습니다.")) {
+      return notFound("반응 대상을 찾을 수 없습니다.");
     }
 
-    const { error: insertError } = await supabase.from("reactions").insert({
-      user_id: session.userId,
-      target_type: payload.targetType,
-      target_id: payload.targetId,
-      reaction: payload.reaction,
-    });
-
-    if (insertError) {
-      return internalServerError(insertError.message);
-    }
+    return internalServerError(toggleError.message);
   }
 
   const summary = await loadSingleReactionSummary(
