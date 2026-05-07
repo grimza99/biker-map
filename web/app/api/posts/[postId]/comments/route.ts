@@ -2,18 +2,20 @@ import type {
   CreatePostCommentBody,
   PostCommentsResponseData,
 } from "@package-shared/types/community";
+import type { ReactionSummary } from "@package-shared/types/reaction";
 import {
   badRequest,
   createSupabaseApiClient,
   created,
   internalServerError,
   loadProfileNameMap,
+  loadReactionSummaryMap,
   ok,
   parseRequestBody,
   syncPostCommentCountBestEffort,
 } from "@shared/api";
 import { formatRelativeLabel } from "@shared/lib";
-import { requireApiSession } from "@shared/api/auth";
+import { getSupabaseAuthSession, requireApiSession } from "@shared/api/auth";
 import { z } from "zod";
 
 const createCommentSchema = z.object({
@@ -27,6 +29,8 @@ export async function GET(
 ) {
   const { postId } = await params;
   const supabase = createSupabaseApiClient(request);
+  const authSession = await getSupabaseAuthSession(request);
+  const viewerUserId = authSession?.user.id ?? null;
 
   const { data, error } = await supabase
     .from("comments")
@@ -39,6 +43,7 @@ export async function GET(
   }
 
   const rows = data ?? [];
+  let reactionMap = new Map<string, ReactionSummary>();
   let authorMap: Map<string, string>;
   try {
     authorMap = await loadProfileNameMap(
@@ -50,6 +55,20 @@ export async function GET(
       profileError instanceof Error
         ? profileError.message
         : "댓글 작성자 정보를 불러오지 못했습니다."
+    );
+  }
+
+  try {
+    reactionMap = await loadReactionSummaryMap(
+      "comment",
+      rows.map((row) => String(row.id ?? "")),
+      viewerUserId
+    );
+  } catch (reactionError) {
+    return internalServerError(
+      reactionError instanceof Error
+        ? reactionError.message
+        : "댓글 반응 정보를 불러오지 못했습니다."
     );
   }
 
@@ -66,6 +85,11 @@ export async function GET(
     content: String(row.content ?? ""),
     timeLabel: formatRelativeLabel(String(row.created_at ?? new Date().toISOString())),
     replyCount: Number(row.reply_count ?? 0),
+    reactions: reactionMap.get(String(row.id ?? "")) ?? {
+      likeCount: 0,
+      dislikeCount: 0,
+      myReaction: null,
+    },
     replies: replies
       .filter((reply) => String(reply.parent_comment_id) === String(row.id))
       .map((reply) => ({
@@ -79,6 +103,11 @@ export async function GET(
         timeLabel: formatRelativeLabel(
           String(reply.created_at ?? new Date().toISOString())
         ),
+        reactions: reactionMap.get(String(reply.id ?? "")) ?? {
+          likeCount: 0,
+          dislikeCount: 0,
+          myReaction: null,
+        },
       })),
   }));
 

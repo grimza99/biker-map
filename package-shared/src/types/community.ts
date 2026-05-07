@@ -1,3 +1,5 @@
+import type { ReactionSummary } from "./reaction";
+
 export type CommunityCategorySlug = "notice" | "question" | "info" | "free";
 
 export type CommunityPost = {
@@ -9,6 +11,7 @@ export type CommunityPost = {
   timeLabel: string;
   commentCount: number;
   viewCount: number;
+  reactions: ReactionSummary;
   pinned?: boolean;
 };
 
@@ -34,6 +37,7 @@ export type CommunityPostDetail = {
   timeLabel: string;
   commentCount: number;
   viewCount: number;
+  reactions: ReactionSummary;
   pinned?: boolean;
   images?: string[];
 };
@@ -44,6 +48,7 @@ export type CommunityReply = {
   author: CommunityPostAuthor;
   content: string;
   timeLabel: string;
+  reactions: ReactionSummary;
 };
 
 export type CommunityComment = {
@@ -53,6 +58,7 @@ export type CommunityComment = {
   content: string;
   timeLabel: string;
   replyCount: number;
+  reactions: ReactionSummary;
   replies: CommunityReply[];
 };
 

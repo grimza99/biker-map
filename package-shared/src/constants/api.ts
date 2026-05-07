@@ -37,4 +37,7 @@ export const API_PATHS = {
     read: (notificationId: string) =>
       `${BASE_URL}/notifications/${notificationId}/read`,
   },
+  reactions: {
+    create: `${BASE_URL}/reactions`,
+  },
 };

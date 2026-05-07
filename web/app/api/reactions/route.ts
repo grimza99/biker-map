@@ -1,84 +1,64 @@
-import { notImplemented } from "@shared/api";
-// import { z } from "zod";
+import type {
+  CreateReactionBody,
+  CreateReactionResponseData,
+} from "@package-shared/types/reaction";
+import {
+  badRequest,
+  createSupabaseApiClient,
+  internalServerError,
+  loadSingleReactionSummary,
+  notFound,
+  ok,
+  parseRequestBody,
+} from "@shared/api";
+import { requireApiSession } from "@shared/api/auth";
+import { z } from "zod";
 
-// const createReactionSchema = z.object({
-//   targetType: z.enum(["post", "comment"]),
-//   targetId: z.string().min(1),
-//   reaction: z.literal("like"),
-// });
+const createReactionSchema = z.object({
+  targetType: z.enum(["post", "comment"]),
+  targetId: z.string().uuid(),
+  reaction: z.enum(["like", "dislike"]),
+});
 
 export async function POST(request: Request) {
-  return notImplemented("reaction은 MVP에서 제외되었습니다.");
+  const session = await requireApiSession(request);
+  if (session instanceof Response) {
+    return session;
+  }
 
-  // const session = await requireApiSession(request);
-  // if (session instanceof Response) {
-  //   return session;
-  // }
+  let payload: CreateReactionBody;
+  try {
+    payload = await parseRequestBody(request, createReactionSchema);
+  } catch {
+    return badRequest("반응 payload가 올바르지 않습니다.");
+  }
 
-  // let payload: CreateReactionBody;
-  // try {
-  //   payload = await parseRequestBody(request, createReactionSchema);
-  // } catch {
-  //   return badRequest("반응 payload가 올바르지 않습니다.");
-  // }
+  const supabase = createSupabaseApiClient(request);
+  const { error: toggleError } = await supabase.rpc("toggle_reaction", {
+    input_target_type: payload.targetType,
+    input_target_id: payload.targetId,
+    input_reaction: payload.reaction,
+  });
 
-  // const supabase = createSupabaseApiClient(request);
-  // const { data: existingReaction, error: existingError } = await supabase
-  //   .from("reactions")
-  //   .select("id")
-  //   .eq("user_id", session.userId)
-  //   .eq("target_type", payload.targetType)
-  //   .eq("target_id", payload.targetId)
-  //   .eq("reaction", payload.reaction)
-  //   .maybeSingle();
+  if (toggleError) {
+    if (toggleError.message.includes("반응 대상을 찾을 수 없습니다.")) {
+      return notFound("반응 대상을 찾을 수 없습니다.");
+    }
 
-  // if (existingError) {
-  //   return internalServerError(existingError.message);
-  // }
+    return internalServerError(toggleError.message);
+  }
 
-  // let reacted = true;
+  const summary = await loadSingleReactionSummary(
+    payload.targetType,
+    payload.targetId,
+    session.userId
+  );
 
-  // if (existingReaction) {
-  //   const { error: deleteError } = await supabase
-  //     .from("reactions")
-  //     .delete()
-  //     .eq("id", existingReaction.id);
-
-  //   if (deleteError) {
-  //     return internalServerError(deleteError.message);
-  //   }
-
-  //   reacted = false;
-  // } else {
-  //   const { error: insertError } = await supabase.from("reactions").insert({
-  //     user_id: session.userId,
-  //     target_type: payload.targetType,
-  //     target_id: payload.targetId,
-  //     reaction: payload.reaction,
-  //   });
-
-  //   if (insertError) {
-  //     return internalServerError(insertError.message);
-  //   }
-  // }
-
-  // const { count, error: countError } = await supabase
-  //   .from("reactions")
-  //   .select("id", { count: "exact", head: true })
-  //   .eq("target_type", payload.targetType)
-  //   .eq("target_id", payload.targetId)
-  //   .eq("reaction", payload.reaction);
-
-  // if (countError) {
-  //   return internalServerError(countError.message);
-  // }
-
-  // const response: CreateReactionResponseData = {
-  //   targetType: payload.targetType,
-  //   targetId: payload.targetId,
-  //   reactionCount: count ?? 0,
-  //   reacted,
-  // };
-
-  // return ok(response);
+  return ok<CreateReactionResponseData>({
+    targetType: payload.targetType,
+    targetId: payload.targetId,
+    likeCount: summary.likeCount,
+    dislikeCount: summary.dislikeCount,
+    myReaction: summary.myReaction,
+  });
 }
