@@ -1,5 +1,6 @@
 "use client";
 import { ApiClientError, formatDateByType } from "@/shared";
+import { CommunityEngagementBar } from "@/widgets";
 import { useParams, useRouter } from "next/navigation";
 import { useState } from "react";
 
@@ -29,6 +30,7 @@ import {
   Profile,
   useToast,
 } from "@shared/ui";
+import { MessageSquare } from "lucide-react";
 
 export default function PostDetailPage() {
   const params = useParams<{ postId: string }>();
@@ -187,6 +189,19 @@ export default function PostDetailPage() {
             ))}
           </div>
         )}
+        <CommunityEngagementBar
+          targetType="post"
+          targetId={post.id}
+          reactions={post.reactions}
+          postId={post.id}
+          disabled={status !== "authenticated"}
+          leadingSlot={
+            <span className="inline-flex items-center gap-1 text-sm text-muted">
+              <MessageSquare className="h-4 w-4" />
+              댓글 {post.commentCount}
+            </span>
+          }
+        />
       </div>
 
       <Divider />
