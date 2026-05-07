@@ -42,5 +42,9 @@ export {
   syncPostCommentCountBestEffort,
   syncPostCommentCount,
 } from "./community-counts";
+export {
+  loadReactionSummaryMap,
+  loadSingleReactionSummary,
+} from "./reactions";
 export * from "./supabase";
 export * from "./supabase-mappers";

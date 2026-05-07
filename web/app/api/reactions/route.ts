@@ -1,84 +1,121 @@
-import { notImplemented } from "@shared/api";
-// import { z } from "zod";
+import type {
+  CreateReactionBody,
+  CreateReactionResponseData,
+  ReactionType,
+} from "@package-shared/types/reaction";
+import {
+  badRequest,
+  createSupabaseApiClient,
+  internalServerError,
+  loadSingleReactionSummary,
+  notFound,
+  ok,
+  parseRequestBody,
+} from "@shared/api";
+import { requireApiSession } from "@shared/api/auth";
+import { z } from "zod";
 
-// const createReactionSchema = z.object({
-//   targetType: z.enum(["post", "comment"]),
-//   targetId: z.string().min(1),
-//   reaction: z.literal("like"),
-// });
+const createReactionSchema = z.object({
+  targetType: z.enum(["post", "comment"]),
+  targetId: z.string().uuid(),
+  reaction: z.enum(["like", "dislike"]),
+});
+
+function getOppositeReaction(reaction: ReactionType): ReactionType {
+  return reaction === "like" ? "dislike" : "like";
+}
 
 export async function POST(request: Request) {
-  return notImplemented("reaction은 MVP에서 제외되었습니다.");
+  const session = await requireApiSession(request);
+  if (session instanceof Response) {
+    return session;
+  }
 
-  // const session = await requireApiSession(request);
-  // if (session instanceof Response) {
-  //   return session;
-  // }
+  let payload: CreateReactionBody;
+  try {
+    payload = await parseRequestBody(request, createReactionSchema);
+  } catch {
+    return badRequest("반응 payload가 올바르지 않습니다.");
+  }
 
-  // let payload: CreateReactionBody;
-  // try {
-  //   payload = await parseRequestBody(request, createReactionSchema);
-  // } catch {
-  //   return badRequest("반응 payload가 올바르지 않습니다.");
-  // }
+  const supabase = createSupabaseApiClient(request);
+  const targetTable = payload.targetType === "post" ? "posts" : "comments";
+  const { data: target, error: targetError } = await supabase
+    .from(targetTable)
+    .select("id")
+    .eq("id", payload.targetId)
+    .maybeSingle();
 
-  // const supabase = createSupabaseApiClient(request);
-  // const { data: existingReaction, error: existingError } = await supabase
-  //   .from("reactions")
-  //   .select("id")
-  //   .eq("user_id", session.userId)
-  //   .eq("target_type", payload.targetType)
-  //   .eq("target_id", payload.targetId)
-  //   .eq("reaction", payload.reaction)
-  //   .maybeSingle();
+  if (targetError) {
+    return internalServerError(targetError.message);
+  }
 
-  // if (existingError) {
-  //   return internalServerError(existingError.message);
-  // }
+  if (!target) {
+    return notFound("반응 대상을 찾을 수 없습니다.");
+  }
 
-  // let reacted = true;
+  const { data: existingRows, error: existingError } = await supabase
+    .from("reactions")
+    .select("id, reaction")
+    .eq("user_id", session.userId)
+    .eq("target_type", payload.targetType)
+    .eq("target_id", payload.targetId);
 
-  // if (existingReaction) {
-  //   const { error: deleteError } = await supabase
-  //     .from("reactions")
-  //     .delete()
-  //     .eq("id", existingReaction.id);
+  if (existingError) {
+    return internalServerError(existingError.message);
+  }
 
-  //   if (deleteError) {
-  //     return internalServerError(deleteError.message);
-  //   }
+  const sameReaction = (existingRows ?? []).find(
+    (row) => row.reaction === payload.reaction
+  );
+  const oppositeReaction = (existingRows ?? []).find(
+    (row) => row.reaction === getOppositeReaction(payload.reaction)
+  );
 
-  //   reacted = false;
-  // } else {
-  //   const { error: insertError } = await supabase.from("reactions").insert({
-  //     user_id: session.userId,
-  //     target_type: payload.targetType,
-  //     target_id: payload.targetId,
-  //     reaction: payload.reaction,
-  //   });
+  if (sameReaction) {
+    const { error: deleteError } = await supabase
+      .from("reactions")
+      .delete()
+      .eq("id", sameReaction.id);
 
-  //   if (insertError) {
-  //     return internalServerError(insertError.message);
-  //   }
-  // }
+    if (deleteError) {
+      return internalServerError(deleteError.message);
+    }
+  } else {
+    if (oppositeReaction) {
+      const { error: deleteError } = await supabase
+        .from("reactions")
+        .delete()
+        .eq("id", oppositeReaction.id);
 
-  // const { count, error: countError } = await supabase
-  //   .from("reactions")
-  //   .select("id", { count: "exact", head: true })
-  //   .eq("target_type", payload.targetType)
-  //   .eq("target_id", payload.targetId)
-  //   .eq("reaction", payload.reaction);
+      if (deleteError) {
+        return internalServerError(deleteError.message);
+      }
+    }
 
-  // if (countError) {
-  //   return internalServerError(countError.message);
-  // }
+    const { error: insertError } = await supabase.from("reactions").insert({
+      user_id: session.userId,
+      target_type: payload.targetType,
+      target_id: payload.targetId,
+      reaction: payload.reaction,
+    });
 
-  // const response: CreateReactionResponseData = {
-  //   targetType: payload.targetType,
-  //   targetId: payload.targetId,
-  //   reactionCount: count ?? 0,
-  //   reacted,
-  // };
+    if (insertError) {
+      return internalServerError(insertError.message);
+    }
+  }
 
-  // return ok(response);
+  const summary = await loadSingleReactionSummary(
+    payload.targetType,
+    payload.targetId,
+    session.userId
+  );
+
+  return ok<CreateReactionResponseData>({
+    targetType: payload.targetType,
+    targetId: payload.targetId,
+    likeCount: summary.likeCount,
+    dislikeCount: summary.dislikeCount,
+    myReaction: summary.myReaction,
+  });
 }
