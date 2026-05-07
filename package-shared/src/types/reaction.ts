@@ -1,5 +1,11 @@
 export type ReactionTargetType = "post" | "comment";
-export type ReactionType = "like";
+export type ReactionType = "like" | "dislike";
+
+export type ReactionSummary = {
+  likeCount: number;
+  dislikeCount: number;
+  myReaction: ReactionType | null;
+};
 
 export type CreateReactionBody = {
   targetType: ReactionTargetType;
@@ -10,6 +16,7 @@ export type CreateReactionBody = {
 export type CreateReactionResponseData = {
   targetType: ReactionTargetType;
   targetId: string;
-  reactionCount: number;
-  reacted: boolean;
+  likeCount: number;
+  dislikeCount: number;
+  myReaction: ReactionType | null;
 };
