@@ -26,7 +26,6 @@ type ReactionButtonProps = {
   selected: boolean;
   onClick: () => void;
   disabled?: boolean;
-  loading?: boolean;
 };
 
 function ReactionButton({
@@ -36,7 +35,6 @@ function ReactionButton({
   selected,
   onClick,
   disabled,
-  loading,
 }: ReactionButtonProps) {
   return (
     <Button
@@ -44,7 +42,6 @@ function ReactionButton({
       variant="ghost"
       selected={selected}
       disabled={disabled}
-      loading={loading}
       className="h-8 gap-1.5 px-2.5 text-xs text-muted"
       onClick={onClick}
     >
@@ -79,8 +76,7 @@ export function ReactionToggleGroup({
         label="좋아요"
         count={reactions.likeCount}
         selected={reactions.myReaction === "like"}
-        disabled={disabled}
-        loading={toggleReaction.isPending}
+        disabled={disabled || toggleReaction.isPending}
         onClick={() => handleToggle("like")}
       />
       <ReactionButton
@@ -88,8 +84,7 @@ export function ReactionToggleGroup({
         label="싫어요"
         count={reactions.dislikeCount}
         selected={reactions.myReaction === "dislike"}
-        disabled={disabled}
-        loading={toggleReaction.isPending}
+        disabled={disabled || toggleReaction.isPending}
         onClick={() => handleToggle("dislike")}
       />
     </div>
