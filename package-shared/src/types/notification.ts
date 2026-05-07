@@ -1,4 +1,5 @@
 export type NotificationKind = "comment" | "reply" | "reaction" | "system";
+export type NotificationSourceType = "post" | "comment" | "system";
 
 export interface NotificationItem {
   id: string;
@@ -10,17 +11,21 @@ export interface NotificationItem {
 export type InboxNotification = {
   id: string;
   kind: NotificationKind;
+  sourceType: NotificationSourceType;
   title: string;
   message: string;
   timeLabel: string;
   unread: boolean;
   url: string;
+  sourcePostId?: string;
+  sourceCommentId?: string;
 };
 
 export type NotificationsView = "all" | "unread";
 
 export type NotificationsQuery = {
   view?: NotificationsView;
+  sourceType?: NotificationSourceType;
   cursor?: string;
   limit?: number;
 };

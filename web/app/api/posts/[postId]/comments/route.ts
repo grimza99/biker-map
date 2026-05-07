@@ -5,6 +5,7 @@ import type {
 import type { ReactionSummary } from "@package-shared/types/reaction";
 import {
   badRequest,
+  createNotification,
   createSupabaseApiClient,
   created,
   internalServerError,
@@ -138,6 +139,19 @@ export async function POST(
   }
 
   const supabase = createSupabaseApiClient(request);
+  const { data: post, error: postError } = await supabase
+    .from("posts")
+    .select("id, author_id, title")
+    .eq("id", postId)
+    .maybeSingle();
+
+  if (postError) {
+    return internalServerError(postError.message);
+  }
+
+  if (!post) {
+    return badRequest("게시글을 찾을 수 없습니다.");
+  }
 
   const { data, error } = await supabase
     .from("comments")
@@ -154,6 +168,22 @@ export async function POST(
   }
 
   await syncPostCommentCountBestEffort(postId);
+
+  if (String(post.author_id ?? "") !== session.userId) {
+    try {
+      await createNotification({
+        userId: String(post.author_id),
+        kind: "comment",
+        sourceType: "post",
+        sourcePostId: postId,
+        title: "내 글에 새 댓글이 달렸습니다",
+        message: `${session.name}님이 '${String(post.title ?? "게시글")}' 글에 댓글을 남겼습니다.`,
+        url: `/posts/${postId}`,
+      });
+    } catch (notificationError) {
+      console.error("Failed to create post comment notification", notificationError);
+    }
+  }
 
   return created({
     id: String(data.id),
