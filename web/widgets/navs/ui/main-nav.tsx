@@ -62,7 +62,7 @@ export function MainNav() {
         ) : null}
       </nav>
 
-      {status !== "authenticated" ? <NotificationBell /> : null}
+      {status === "authenticated" ? <NotificationBell /> : null}
     </div>
   );
 }

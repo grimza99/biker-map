@@ -1,39 +1,34 @@
 "use client";
 
-import { NotificationItem } from "@package-shared/types/notification";
 import { Bell, CheckCheck, Circle } from "lucide-react";
 import Link from "next/link";
 import { useEffect, useMemo, useRef, useState } from "react";
 
+import { useNotifications, useReadAllNotifications } from "@/features/notifications";
 import { cn } from "@shared/lib";
 import { Button } from "@shared/ui";
 
-const initialNotifications: NotificationItem[] = [
-  {
-    id: "n-001",
-    title: "새 댓글이 달렸습니다",
-    message: "민준님이 '장거리 주행 루트' 글에 댓글을 남겼습니다.",
-    unread: true,
-    timeLabel: "3분 전",
-  },
-  {
-    id: "n-003",
-    title: "즐겨찾기한 장소가 업데이트되었습니다",
-    message: "북악 스카이웨이 주변 카페 정보가 새로 반영되었습니다.",
-    unread: false,
-    timeLabel: "1시간 전",
-  },
-];
+const bellFilters = {
+  view: "all" as const,
+  limit: 5,
+};
 
 export function NotificationBell() {
   const [isOpen, setIsOpen] = useState(false);
-  const [notifications, setNotifications] = useState(initialNotifications);
   const menuRef = useRef<HTMLDivElement | null>(null);
+  const notificationsQuery = useNotifications(bellFilters);
+  const { mutateAsync: readAll, isPending: isReadAllPending } =
+    useReadAllNotifications(bellFilters);
 
-  const unreadCount = useMemo(
-    () => notifications.filter((item) => item.unread).length,
-    [notifications]
-  );
+  const notifications = notificationsQuery.data?.data.items ?? [];
+  const unreadCount = notificationsQuery.data?.data.unreadCount ?? 0;
+  const hasNotifications = notifications.length > 0;
+
+  const groupedNotifications = useMemo(() => {
+    const unread = notifications.filter((item) => item.unread);
+    const read = notifications.filter((item) => !item.unread);
+    return [...unread, ...read];
+  }, [notifications]);
 
   useEffect(() => {
     if (!isOpen) {
@@ -61,13 +56,7 @@ export function NotificationBell() {
     };
   }, [isOpen]);
 
-  function markAllAsRead() {
-    setNotifications((current) =>
-      current.map((item) => ({ ...item, unread: false }))
-    );
-  }
-
-  if (!notifications.length) {
+  if (!hasNotifications && !unreadCount) {
     return null;
   }
 
@@ -79,17 +68,17 @@ export function NotificationBell() {
         selected={isOpen}
         aria-haspopup="menu"
         aria-expanded={isOpen}
-        aria-label={"알림"}
+        aria-label="알림"
         onClick={() => setIsOpen((current) => !current)}
         className={cn("relative text-text hover:text-accent")}
       >
         <Bell className="h-4.5 w-4.5" />
         {unreadCount > 0 ? (
-          <Circle className=" absolute right-2 top-2 h-2.5 w-2.5 fill-accent text-accent" />
+          <Circle className="absolute right-2 top-2 h-2.5 w-2.5 fill-accent text-accent" />
         ) : null}
       </Button>
 
-      {isOpen && (
+      {isOpen ? (
         <div
           role="menu"
           aria-label="알림"
@@ -103,8 +92,8 @@ export function NotificationBell() {
               type="button"
               variant="ghost"
               size="sm"
-              onClick={markAllAsRead}
-              disabled={unreadCount === 0}
+              onClick={() => readAll()}
+              disabled={unreadCount === 0 || isReadAllPending}
               className="px-3 text-xs"
             >
               <CheckCheck className="h-3.5 w-3.5" />
@@ -113,7 +102,7 @@ export function NotificationBell() {
           </div>
 
           <div className="grid gap-3 px-4 py-4">
-            {notifications.map((item) => (
+            {groupedNotifications.map((item) => (
               <article
                 key={item.id}
                 className={cn(
@@ -146,7 +135,7 @@ export function NotificationBell() {
             </Button>
           </div>
         </div>
-      )}
+      ) : null}
     </div>
   );
 }
