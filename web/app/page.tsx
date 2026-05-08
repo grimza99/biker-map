@@ -57,7 +57,11 @@ const footerLinks = [
 function LandingButtonRow() {
   return (
     <div className="flex flex-wrap gap-3">
-      <Button size="lg" className="shadow-[0_10px_28px_rgba(229,87,47,0.28)]">
+      <Button
+        asChild
+        size="lg"
+        className="shadow-[0_10px_28px_rgba(229,87,47,0.28)]"
+      >
         <Link href="/map" className="inline-flex items-center gap-2">
           지도 보기
           <Compass className="h-4 w-4" />

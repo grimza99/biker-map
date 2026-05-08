@@ -32,7 +32,7 @@ export default function ContactPage() {
         </div>
 
         <div className="flex flex-wrap gap-3">
-          <Button size="lg">
+          <Button asChild size="lg">
             <a href="mailto:gbtmxlf0808@gmail.com">메일 보내기</a>
           </Button>
         </div>
