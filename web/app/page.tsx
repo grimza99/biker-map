@@ -2,6 +2,7 @@ import { Compass, MapPinned, MessageSquareMore, Route } from "lucide-react";
 import Link from "next/link";
 
 import { Button, DefaultCardContainer } from "@shared/ui";
+import Image from "next/image";
 
 const featureItems = [
   {
@@ -71,7 +72,7 @@ function LandingButtonRow() {
 
 function HeroMockup() {
   return (
-    <div className="relative w-full max-w-[560px]">
+    <div className="relative w-full max-w-140">
       <div className="absolute -left-4 -top-4 z-20 rounded-[18px] border border-border bg-panel/90 px-4 py-3 shadow-[0_18px_40px_rgba(0,0,0,0.28)] backdrop-blur-xl">
         <div className="flex items-center gap-3">
           <div className="flex h-9 w-9 items-center justify-center rounded-full bg-active/20 text-active">
@@ -93,16 +94,16 @@ function HeroMockup() {
         <div className="absolute -right-8 top-16 h-40 w-40 rounded-full bg-active/10 blur-3xl" />
 
         <div className="relative overflow-hidden rounded-[18px] border border-border bg-panel-solid">
-          <div
-            className="h-[420px] bg-cover bg-center"
-            style={{
-              backgroundImage:
-                "url('https://www.figma.com/api/mcp/asset/9bb79723-380c-46cf-b1c3-e91f27ff50b4')",
-            }}
-          />
+          <div className="h-105">
+            <Image
+              src="/img/landing-page-top-img.png"
+              alt="landing-page-top-img"
+              fill
+              className="object-cover z-100"
+            />
+          </div>
 
           <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,rgba(255,255,255,0.18),transparent_62%)] opacity-60" />
-          <div className="absolute left-[54%] top-[48%] h-4 w-4 -translate-x-1/2 -translate-y-1/2 rounded-md border-2 border-white bg-accent shadow-[0_0_18px_rgba(229,87,47,0.5)]" />
 
           <div className="absolute bottom-4 left-4 right-4">
             <DefaultCardContainer className="gap-3 rounded-[20px] border-border bg-panel/94 p-4">
