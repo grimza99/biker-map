@@ -3,14 +3,14 @@ import { PageWrapper } from "@shared/ui";
 export default function TermsPage() {
   return (
     <PageWrapper
-      className="mx-auto max-w-[960px] p-5 md:p-7"
+      className="mx-auto max-w-240 p-5 md:p-7"
       innerClassName="gap-8"
       pageTitle="이용약관"
     >
       <section className="grid gap-4 text-muted">
         <p>
-          바이커맵은 바이커를 위한 장소, 경로, 커뮤니티 정보를 제공하는 서비스입니다.
-          본 약관은 서비스 이용과 관련한 기본 조건을 정의합니다.
+          바이커맵은 바이커를 위한 장소, 경로, 커뮤니티 정보를 제공하는
+          서비스입니다. 본 약관은 서비스 이용과 관련한 기본 조건을 정의합니다.
         </p>
         <p>
           서비스 내 게시글, 댓글, 경로, 장소 정보는 운영 정책에 따라 수정 또는
@@ -22,16 +22,16 @@ export default function TermsPage() {
       <section className="grid gap-3">
         <h2 className="text-text">1. 서비스 제공 범위</h2>
         <p className="text-muted">
-          바이커맵은 장소 탐색, 경로 열람, 커뮤니티 작성 및 계정 기능을 제공합니다.
-          일부 기능은 외부 지도 서비스와 연동될 수 있습니다.
+          바이커맵은 장소 탐색, 경로 열람, 커뮤니티 작성 및 계정 기능을
+          제공합니다. 일부 기능은 외부 지도 서비스와 연동될 수 있습니다.
         </p>
       </section>
 
       <section className="grid gap-3">
         <h2 className="text-text">2. 이용자 책임</h2>
         <p className="text-muted">
-          이용자는 본인이 작성한 콘텐츠에 대한 책임을 지며, 타인의 권리를 침해하거나
-          허위 정보를 등록해서는 안 됩니다.
+          이용자는 본인이 작성한 콘텐츠에 대한 책임을 지며, 타인의 권리를
+          침해하거나 허위 정보를 등록해서는 안 됩니다.
         </p>
       </section>
 
