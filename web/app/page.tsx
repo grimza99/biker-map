@@ -1,11 +1,5 @@
+import { Compass, MapPinned, MessageSquareMore, Route } from "lucide-react";
 import Link from "next/link";
-import {
-  ArrowRight,
-  Compass,
-  MapPinned,
-  MessageSquareMore,
-  Route,
-} from "lucide-react";
 
 import { Button, DefaultCardContainer } from "@shared/ui";
 
@@ -37,12 +31,14 @@ const workflowItems = [
   {
     step: "1",
     title: "장소 탐색",
-    description: "투어 목적지와 경로 중간 지점을 바이커 기준으로 먼저 찾습니다.",
+    description:
+      "투어 목적지와 경로 중간 지점을 바이커 기준으로 먼저 찾습니다.",
   },
   {
     step: "2",
     title: "경로 확인",
-    description: "큐레이션 경로와 주변 성지를 함께 보며 이동 흐름을 정리합니다.",
+    description:
+      "큐레이션 경로와 주변 성지를 함께 보며 이동 흐름을 정리합니다.",
   },
   {
     step: "3",
@@ -51,7 +47,11 @@ const workflowItems = [
   },
 ];
 
-const footerLinks = ["이용약관", "개인정보처리방침", "문의하기"];
+const footerLinks = [
+  { label: "이용약관", href: "/policy/terms" },
+  { label: "개인정보처리방침", href: "/policy/privacy" },
+  { label: "문의하기", href: "/policy/contact" },
+];
 
 function LandingButtonRow() {
   return (
@@ -113,7 +113,9 @@ function HeroMockup() {
                     <h3 className="text-[15px] font-semibold leading-6 text-text">
                       라이더 카페 · 카페 바이커맵
                     </h3>
-                    <p className="text-sm leading-6 text-muted">강원 춘천시 남산면</p>
+                    <p className="text-sm leading-6 text-muted">
+                      강원 춘천시 남산면
+                    </p>
                   </div>
                   <div className="flex flex-wrap gap-2">
                     <span className="rounded-md bg-accent/10 px-2 py-1 text-[11px] font-medium text-accent">
@@ -135,20 +137,17 @@ function HeroMockup() {
 
 export default function HomePage() {
   return (
-    <div className="grid gap-24 pb-14 pt-6 md:gap-28 md:pt-10">
+    <div className="flex flex-col items-center gap-24 pb-14 pt-6 md:gap-28 md:pt-10">
       <section className="grid gap-12 lg:grid-cols-[minmax(0,1fr)_minmax(420px,560px)] lg:items-center">
         <div className="grid gap-6">
-          <div className="grid gap-4">
-            <small className="text-[11px] font-semibold uppercase tracking-[0.16em] text-active">
-              Rider-first navigation
-            </small>
-            <h1 className="max-w-[11ch] text-[clamp(2.8rem,6vw,4.1rem)] font-bold leading-[0.98] tracking-[-0.05em] text-text">
+          <div className="grid w-full gap-4">
+            <h1 className="text-[clamp(2.8rem,6vw,4.1rem)] font-bold leading-[0.98] tracking-[-0.05em] text-text">
               바이커를 위한 장소와 경로를 한 곳에서
             </h1>
-            <p className="max-w-[34rem] text-base leading-8 text-muted">
-              바이커만을 위한 장소 정보부터 운영자가 직접 선정한 드라이브 경로까지,
-              실제 주행에 필요한 정보를 한 화면에서 빠르게 찾고 바로 이동할 수
-              있습니다.
+            <p className="text-base leading-8 text-muted">
+              바이커만을 위한 장소 정보부터 운영자가 직접 선정한 드라이브
+              경로까지, 실제 주행에 필요한 정보를 한 화면에서 빠르게 찾고 바로
+              이동할 수 있습니다.
             </p>
           </div>
 
@@ -160,33 +159,32 @@ export default function HomePage() {
 
       <section className="grid gap-10">
         <div className="grid gap-2 text-center">
-          <small className="text-[11px] font-semibold uppercase tracking-[0.16em] text-active">
-            Features
-          </small>
           <h2 className="text-[clamp(1.9rem,4vw,2.35rem)] font-bold tracking-[-0.04em] text-text">
             바이커를 위한 필수 기능
           </h2>
         </div>
 
         <div className="grid gap-6 md:grid-cols-3">
-          {featureItems.map(({ title, description, icon: Icon, accentClassName }) => (
-            <DefaultCardContainer
-              key={title}
-              className="gap-5 rounded-[24px] border-border bg-panel/88 p-8"
-            >
-              <div
-                className={`flex h-12 w-12 items-center justify-center rounded-xl ${accentClassName}`}
+          {featureItems.map(
+            ({ title, description, icon: Icon, accentClassName }) => (
+              <DefaultCardContainer
+                key={title}
+                className="gap-5 rounded-3xl border-border bg-panel/88 p-8"
               >
-                <Icon className="h-5 w-5" />
-              </div>
-              <div className="grid gap-3">
-                <h3 className="text-[1.1rem] font-semibold tracking-[-0.02em] text-text">
-                  {title}
-                </h3>
-                <p className="text-sm leading-7 text-muted">{description}</p>
-              </div>
-            </DefaultCardContainer>
-          ))}
+                <div
+                  className={`flex h-12 w-12 items-center justify-center rounded-xl ${accentClassName}`}
+                >
+                  <Icon className="h-5 w-5" />
+                </div>
+                <div className="grid gap-3">
+                  <h3 className="text-[1.1rem] font-semibold tracking-[-0.02em] text-text">
+                    {title}
+                  </h3>
+                  <p className="text-sm leading-7 text-muted">{description}</p>
+                </div>
+              </DefaultCardContainer>
+            )
+          )}
         </div>
       </section>
 
@@ -205,8 +203,10 @@ export default function HomePage() {
                   {item.step}
                 </div>
                 <div className="grid gap-1">
-                  <h3 className="text-base font-semibold text-text">{item.title}</h3>
-                  <p className="max-w-[12rem] text-sm leading-6 text-muted">
+                  <h3 className="text-base font-semibold text-text">
+                    {item.title}
+                  </h3>
+                  <p className="max-w-48 text-sm leading-6 text-muted">
                     {item.description}
                   </p>
                 </div>
@@ -247,8 +247,14 @@ export default function HomePage() {
             <span className="font-semibold">바이커맵</span>
           </div>
           <div className="flex flex-wrap items-center justify-center gap-6">
-            {footerLinks.map((label) => (
-              <span key={label}>{label}</span>
+            {footerLinks.map((item) => (
+              <Link
+                key={item.href}
+                href={item.href}
+                className="transition-colors hover:text-text"
+              >
+                {item.label}
+              </Link>
             ))}
           </div>
           <div className="text-center md:text-right">
