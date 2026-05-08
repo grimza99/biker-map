@@ -10,7 +10,11 @@ import type {
   AppSession,
   InitialSessionData,
 } from "@package-shared/types/session";
-import { apiFetch, setApiAccessToken } from "@shared/api/http";
+import {
+  apiFetch,
+  setApiAccessToken,
+  subscribeApiAccessToken,
+} from "@shared/api/http";
 import {
   createContext,
   useContext,
@@ -112,6 +116,18 @@ export function SessionProvider({
   useLayoutEffect(() => {
     setApiAccessToken(accessToken);
   }, [accessToken]);
+
+  useEffect(() => {
+    return subscribeApiAccessToken((nextAccessToken) => {
+      setAccessToken((currentAccessToken) => {
+        if (currentAccessToken === nextAccessToken) {
+          return currentAccessToken;
+        }
+
+        return nextAccessToken;
+      });
+    });
+  }, []);
 
   useEffect(() => {
     if (accessToken || hasAttemptedInitialRestoreRef.current) {

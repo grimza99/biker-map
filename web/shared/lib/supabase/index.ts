@@ -10,3 +10,4 @@ export { createSupabaseServiceClient } from "./service-client";
 export { createSupabaseServerClient } from "./server";
 export type { SupabaseCookieMethods, SupabaseServerClient } from "./server";
 export { mapSupabaseSession } from "./session";
+export { createSupabaseRealtimeClient } from "./realtime-client";

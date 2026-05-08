@@ -1,39 +1,35 @@
 "use client";
 
-import { NotificationItem } from "@package-shared/types/notification";
 import { Bell, CheckCheck, Circle } from "lucide-react";
 import Link from "next/link";
 import { useEffect, useMemo, useRef, useState } from "react";
 
+import { useNotifications, useReadAllNotifications } from "@/features/notifications";
 import { cn } from "@shared/lib";
 import { Button } from "@shared/ui";
 
-const initialNotifications: NotificationItem[] = [
-  {
-    id: "n-001",
-    title: "새 댓글이 달렸습니다",
-    message: "민준님이 '장거리 주행 루트' 글에 댓글을 남겼습니다.",
-    unread: true,
-    timeLabel: "3분 전",
-  },
-  {
-    id: "n-003",
-    title: "즐겨찾기한 장소가 업데이트되었습니다",
-    message: "북악 스카이웨이 주변 카페 정보가 새로 반영되었습니다.",
-    unread: false,
-    timeLabel: "1시간 전",
-  },
-];
+const bellFilters = {
+  view: "all" as const,
+  limit: 5,
+};
 
 export function NotificationBell() {
   const [isOpen, setIsOpen] = useState(false);
-  const [notifications, setNotifications] = useState(initialNotifications);
   const menuRef = useRef<HTMLDivElement | null>(null);
+  const notificationsQuery = useNotifications(bellFilters);
+  const { mutateAsync: readAll, isPending: isReadAllPending } =
+    useReadAllNotifications(bellFilters);
 
-  const unreadCount = useMemo(
-    () => notifications.filter((item) => item.unread).length,
-    [notifications]
-  );
+  const notifications = notificationsQuery.data?.data.items ?? [];
+  const unreadCount = notificationsQuery.data?.data.unreadCount ?? 0;
+  const hasNotifications = notifications.length > 0;
+
+  const groupedNotifications = useMemo(() => {
+    const unread = notifications.filter((item) => item.unread);
+    const read = notifications.filter((item) => !item.unread);
+    return [...unread, ...read];
+  }, [notifications]);
+  const hasUnreadNotifications = unreadCount > 0;
 
   useEffect(() => {
     if (!isOpen) {
@@ -61,35 +57,29 @@ export function NotificationBell() {
     };
   }, [isOpen]);
 
-  function markAllAsRead() {
-    setNotifications((current) =>
-      current.map((item) => ({ ...item, unread: false }))
-    );
-  }
-
-  if (!notifications.length) {
-    return null;
-  }
-
   return (
     <div ref={menuRef} className="relative">
       <Button
         variant="secondary"
         size="icon"
-        selected={isOpen}
+        selected={isOpen || hasUnreadNotifications}
         aria-haspopup="menu"
         aria-expanded={isOpen}
-        aria-label={"알림"}
+        aria-label="알림"
         onClick={() => setIsOpen((current) => !current)}
-        className={cn("relative text-text hover:text-accent")}
+        className={cn(
+          "relative text-text hover:text-accent",
+          hasUnreadNotifications &&
+            "border-accent/70 bg-accent/8 text-accent shadow-[0_0_0_1px_rgba(229,87,47,0.18)]"
+        )}
       >
         <Bell className="h-4.5 w-4.5" />
-        {unreadCount > 0 ? (
-          <Circle className=" absolute right-2 top-2 h-2.5 w-2.5 fill-accent text-accent" />
+        {hasUnreadNotifications ? (
+          <Circle className="absolute right-2 top-2 h-2.5 w-2.5 fill-accent text-accent shadow-[0_0_10px_rgba(229,87,47,0.55)]" />
         ) : null}
       </Button>
 
-      {isOpen && (
+      {isOpen ? (
         <div
           role="menu"
           aria-label="알림"
@@ -103,8 +93,8 @@ export function NotificationBell() {
               type="button"
               variant="ghost"
               size="sm"
-              onClick={markAllAsRead}
-              disabled={unreadCount === 0}
+              onClick={() => readAll()}
+              disabled={unreadCount === 0 || isReadAllPending}
               className="px-3 text-xs"
             >
               <CheckCheck className="h-3.5 w-3.5" />
@@ -113,29 +103,37 @@ export function NotificationBell() {
           </div>
 
           <div className="grid gap-3 px-4 py-4">
-            {notifications.map((item) => (
-              <article
-                key={item.id}
-                className={cn(
-                  "grid gap-2 rounded-[18px] border p-3 transition duration-150 ease-out",
-                  item.unread
-                    ? "border-active/40 bg-active/5"
-                    : "border-border bg-bg/40"
-                )}
-              >
-                <div className="flex items-start justify-between gap-3">
-                  <div className="grid gap-0.5">
-                    <h3 className="m-0 text-sm font-semibold tracking-[-0.02em] text-text">
-                      {item.title}
-                    </h3>
-                    <p className="m-0 text-xs leading-6 text-muted truncate">
-                      {item.message}
-                    </p>
+            {hasNotifications ? (
+              groupedNotifications.map((item) => (
+                <Link
+                  key={item.id}
+                  href={item.url}
+                  onClick={() => setIsOpen(false)}
+                  className={cn(
+                    "grid gap-2 rounded-[18px] border p-3 transition duration-150 ease-out hover:border-accent/40 hover:bg-panel-soft/70",
+                    item.unread
+                      ? "border-active/40 bg-active/5"
+                      : "border-border bg-bg/40"
+                  )}
+                >
+                  <div className="flex items-start justify-between gap-3">
+                    <div className="grid gap-0.5">
+                      <h3 className="m-0 text-sm font-semibold tracking-[-0.02em] text-text">
+                        {item.title}
+                      </h3>
+                      <p className="m-0 text-xs leading-6 text-muted truncate">
+                        {item.message}
+                      </p>
+                    </div>
                   </div>
-                </div>
-                <span className="text-xs text-muted">{item.timeLabel}</span>
-              </article>
-            ))}
+                  <span className="text-xs text-muted">{item.timeLabel}</span>
+                </Link>
+              ))
+            ) : (
+              <div className="rounded-[18px] border border-border bg-bg/40 px-4 py-6 text-center text-sm text-muted">
+                아직 도착한 알림이 없습니다.
+              </div>
+            )}
           </div>
 
           <div className="border-t border-border px-4 py-2">
@@ -146,7 +144,7 @@ export function NotificationBell() {
             </Button>
           </div>
         </div>
-      )}
+      ) : null}
     </div>
   );
 }

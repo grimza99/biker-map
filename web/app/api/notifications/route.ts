@@ -1,4 +1,5 @@
 import type {
+  NotificationSourceType,
   NotificationsQuery,
   NotificationsView,
 } from "@package-shared/types/notification";
@@ -15,6 +16,11 @@ import type { NextRequest } from "next/server";
 import { requireApiSession } from "@shared/api/auth";
 
 const notificationViews = new Set<NotificationsView>(["all", "unread"]);
+const notificationSourceTypes = new Set<NotificationSourceType>([
+  "post",
+  "comment",
+  "system",
+]);
 
 export async function GET(request: NextRequest) {
   const session = await requireApiSession(request);
@@ -28,6 +34,13 @@ export async function GET(request: NextRequest) {
       const view = getStringParam(searchParams, "view");
       return view && notificationViews.has(view as NotificationsView)
         ? (view as NotificationsView)
+        : undefined;
+    })(),
+    sourceType: (() => {
+      const sourceType = getStringParam(searchParams, "sourceType");
+      return sourceType &&
+        notificationSourceTypes.has(sourceType as NotificationSourceType)
+        ? (sourceType as NotificationSourceType)
         : undefined;
     })(),
     cursor: getStringParam(searchParams, "cursor"),
@@ -50,6 +63,10 @@ export async function GET(request: NextRequest) {
     .filter((item): item is NonNullable<typeof item> => Boolean(item));
 
   const items = baseItems.filter((item) => {
+    if (query.sourceType && item.sourceType !== query.sourceType) {
+      return false;
+    }
+
     if (query.view === "unread") {
       return item.unread;
     }

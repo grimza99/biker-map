@@ -19,6 +19,7 @@ export const queryKeys = {
   post: (postId: string) => ["posts", postId] as const,
   comments: (postId: string) => ["comments", postId],
   reactions: ["reactions"] as const,
+  notificationsRoot: ["notifications"] as const,
   notifications: (params?: Record<string, string | number | undefined>) =>
     ["notifications", params ?? {}] as const,
 };

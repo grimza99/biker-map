@@ -27,6 +27,21 @@ type ReactionMutationContext = {
   previousComments?: ApiResponse<PostCommentsResponseData> | undefined;
 };
 
+function isPostsListResponse(
+  value: ApiResponse<PostsListResponseData> | ApiResponse<PostDetailResponseData> | undefined
+): value is ApiResponse<PostsListResponseData> {
+  return Array.isArray((value as ApiResponse<PostsListResponseData> | undefined)?.data?.items);
+}
+
+function isPostsListQueryKey(queryKey: readonly unknown[]) {
+  return (
+    queryKey[0] === queryKeys.postsRoot[0] &&
+    queryKey.length > 1 &&
+    typeof queryKey[1] === "object" &&
+    queryKey[1] !== null
+  );
+}
+
 function getNextReactionSummary(
   current: ReactionSummary,
   reaction: ReactionType
@@ -87,7 +102,9 @@ export function useToggleReaction({
       }),
     onMutate: async (reaction): Promise<ReactionMutationContext> => {
       await Promise.all([
-        queryClient.cancelQueries({ queryKey: queryKeys.postsRoot }),
+        queryClient.cancelQueries({
+          predicate: (query) => isPostsListQueryKey(query.queryKey),
+        }),
         postId
           ? queryClient.cancelQueries({ queryKey: queryKeys.post(postId) })
           : Promise.resolve(),
@@ -96,9 +113,18 @@ export function useToggleReaction({
           : Promise.resolve(),
       ]);
 
-      const previousPosts = queryClient.getQueriesData<ApiResponse<PostsListResponseData>>({
-        queryKey: queryKeys.postsRoot,
-      });
+      const previousPosts = queryClient
+        .getQueriesData<
+          ApiResponse<PostsListResponseData> | ApiResponse<PostDetailResponseData>
+        >({
+          queryKey: queryKeys.postsRoot,
+        })
+        .filter(
+          (
+            entry
+          ): entry is [readonly unknown[], ApiResponse<PostsListResponseData> | undefined] =>
+            isPostsListQueryKey(entry[0]) && isPostsListResponse(entry[1])
+        );
       const previousPostDetail = postId
         ? queryClient.getQueryData<ApiResponse<PostDetailResponseData>>(
             queryKeys.post(postId)
@@ -111,9 +137,11 @@ export function useToggleReaction({
         : undefined;
 
       queryClient.setQueriesData<ApiResponse<PostsListResponseData>>(
-        { queryKey: queryKeys.postsRoot },
+        {
+          predicate: (query) => isPostsListQueryKey(query.queryKey),
+        },
         (current) => {
-          if (!current) {
+          if (!isPostsListResponse(current)) {
             return current;
           }
 
@@ -210,7 +238,9 @@ export function useToggleReaction({
     },
     onSettled: async () => {
       await Promise.all([
-        queryClient.invalidateQueries({ queryKey: queryKeys.postsRoot }),
+        queryClient.invalidateQueries({
+          predicate: (query) => isPostsListQueryKey(query.queryKey),
+        }),
         postId
           ? queryClient.invalidateQueries({ queryKey: queryKeys.post(postId) })
           : Promise.resolve(),
