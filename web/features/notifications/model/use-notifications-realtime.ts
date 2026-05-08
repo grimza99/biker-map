@@ -2,12 +2,15 @@
 
 import { useEffect, useRef } from "react";
 import { useQueryClient } from "@tanstack/react-query";
+import type { ApiResponse } from "@package-shared/types/api";
+import type { NotificationsResponseData } from "@package-shared/types/notification";
 
 import { useSession } from "@features/session";
 import { queryKeys } from "@shared/config/query-keys";
 import { createSupabaseRealtimeClient } from "@shared/lib/supabase";
 import { useToast } from "@shared/ui";
 import { mapNotificationItem } from "@shared/api/supabase-mappers/notification-mapper";
+import { prependNotification } from "./use-notifications";
 
 export function useNotificationsRealtime() {
   const queryClient = useQueryClient();
@@ -38,6 +41,54 @@ export function useNotificationsRealtime() {
         (payload) => {
           const item = mapNotificationItem(payload.new as Record<string, unknown>);
           if (item) {
+            const notificationQueries =
+              queryClient.getQueriesData<ApiResponse<NotificationsResponseData>>({
+                queryKey: queryKeys.notificationsRoot,
+              });
+
+            for (const [queryKey, current] of notificationQueries) {
+              if (!current) {
+                continue;
+              }
+
+              const queryParams = queryKey[1];
+              const filters =
+                typeof queryParams === "object" && queryParams !== null
+                  ? (queryParams as {
+                      sourceType?: NotificationsResponseData["items"][number]["sourceType"];
+                      view?: "all" | "unread";
+                      limit?: number;
+                    })
+                  : undefined;
+
+              const nextData = prependNotification(
+                current.data,
+                item,
+                filters?.sourceType,
+                filters?.view
+              );
+
+              if (!nextData || nextData === current.data) {
+                continue;
+              }
+
+              const trimmedItems =
+                filters?.limit && nextData.items.length > filters.limit
+                  ? nextData.items.slice(0, filters.limit)
+                  : nextData.items;
+
+              queryClient.setQueryData<ApiResponse<NotificationsResponseData>>(
+                queryKey,
+                {
+                  ...current,
+                  data: {
+                    ...nextData,
+                    items: trimmedItems,
+                  },
+                }
+              );
+            }
+
             showToast({
               tone: "info",
               title: item.title,

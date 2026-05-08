@@ -29,6 +29,7 @@ export function NotificationBell() {
     const read = notifications.filter((item) => !item.unread);
     return [...unread, ...read];
   }, [notifications]);
+  const hasUnreadNotifications = unreadCount > 0;
 
   useEffect(() => {
     if (!isOpen) {
@@ -61,16 +62,20 @@ export function NotificationBell() {
       <Button
         variant="secondary"
         size="icon"
-        selected={isOpen}
+        selected={isOpen || hasUnreadNotifications}
         aria-haspopup="menu"
         aria-expanded={isOpen}
         aria-label="알림"
         onClick={() => setIsOpen((current) => !current)}
-        className={cn("relative text-text hover:text-accent")}
+        className={cn(
+          "relative text-text hover:text-accent",
+          hasUnreadNotifications &&
+            "border-accent/70 bg-accent/8 text-accent shadow-[0_0_0_1px_rgba(229,87,47,0.18)]"
+        )}
       >
         <Bell className="h-4.5 w-4.5" />
-        {unreadCount > 0 ? (
-          <Circle className="absolute right-2 top-2 h-2.5 w-2.5 fill-accent text-accent" />
+        {hasUnreadNotifications ? (
+          <Circle className="absolute right-2 top-2 h-2.5 w-2.5 fill-accent text-accent shadow-[0_0_10px_rgba(229,87,47,0.55)]" />
         ) : null}
       </Button>
 
@@ -100,10 +105,12 @@ export function NotificationBell() {
           <div className="grid gap-3 px-4 py-4">
             {hasNotifications ? (
               groupedNotifications.map((item) => (
-                <article
+                <Link
                   key={item.id}
+                  href={item.url}
+                  onClick={() => setIsOpen(false)}
                   className={cn(
-                    "grid gap-2 rounded-[18px] border p-3 transition duration-150 ease-out",
+                    "grid gap-2 rounded-[18px] border p-3 transition duration-150 ease-out hover:border-accent/40 hover:bg-panel-soft/70",
                     item.unread
                       ? "border-active/40 bg-active/5"
                       : "border-border bg-bg/40"
@@ -120,7 +127,7 @@ export function NotificationBell() {
                     </div>
                   </div>
                   <span className="text-xs text-muted">{item.timeLabel}</span>
-                </article>
+                </Link>
               ))
             ) : (
               <div className="rounded-[18px] border border-border bg-bg/40 px-4 py-6 text-center text-sm text-muted">
