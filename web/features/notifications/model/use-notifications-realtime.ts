@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect } from "react";
+import { useEffect, useRef } from "react";
 import { useQueryClient } from "@tanstack/react-query";
 
 import { useSession } from "@features/session";
@@ -13,6 +13,9 @@ export function useNotificationsRealtime() {
   const queryClient = useQueryClient();
   const { session, accessToken, status } = useSession();
   const { showToast } = useToast();
+  const updateInvalidateTimerRef = useRef<ReturnType<typeof setTimeout> | null>(
+    null
+  );
 
   useEffect(() => {
     if (status !== "authenticated" || !session?.userId || !accessToken) {
@@ -56,14 +59,26 @@ export function useNotificationsRealtime() {
           filter: `user_id=eq.${session.userId}`,
         },
         () => {
-          void queryClient.invalidateQueries({
-            queryKey: queryKeys.notificationsRoot,
-          });
+          if (updateInvalidateTimerRef.current) {
+            clearTimeout(updateInvalidateTimerRef.current);
+          }
+
+          updateInvalidateTimerRef.current = setTimeout(() => {
+            void queryClient.invalidateQueries({
+              queryKey: queryKeys.notificationsRoot,
+            });
+            updateInvalidateTimerRef.current = null;
+          }, 150);
         }
       )
       .subscribe();
 
     return () => {
+      if (updateInvalidateTimerRef.current) {
+        clearTimeout(updateInvalidateTimerRef.current);
+        updateInvalidateTimerRef.current = null;
+      }
+
       void supabase.removeChannel(channel);
     };
   }, [accessToken, queryClient, session?.userId, showToast, status]);

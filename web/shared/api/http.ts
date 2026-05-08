@@ -20,9 +20,24 @@ export class ApiClientError extends Error {
 
 let accessToken: string | null = null;
 let refreshPromise: Promise<string | null> | null = null;
+const accessTokenListeners = new Set<(accessToken: string | null) => void>();
 
 export function setApiAccessToken(nextAccessToken: string | null) {
   accessToken = nextAccessToken;
+
+  for (const listener of accessTokenListeners) {
+    listener(nextAccessToken);
+  }
+}
+
+export function subscribeApiAccessToken(
+  listener: (accessToken: string | null) => void
+) {
+  accessTokenListeners.add(listener);
+
+  return () => {
+    accessTokenListeners.delete(listener);
+  };
 }
 
 async function refreshAccessToken() {
