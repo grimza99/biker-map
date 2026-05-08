@@ -10,7 +10,11 @@ import { queryKeys } from "@shared/config/query-keys";
 import { createSupabaseRealtimeClient } from "@shared/lib/supabase";
 import { useToast } from "@shared/ui";
 import { mapNotificationItem } from "@shared/api/supabase-mappers/notification-mapper";
-import { prependNotification } from "./use-notifications";
+import {
+  createEmptyNotificationsResponse,
+  notificationBellFilters,
+  prependNotification,
+} from "./use-notifications";
 
 export function useNotificationsRealtime() {
   const queryClient = useQueryClient();
@@ -41,6 +45,31 @@ export function useNotificationsRealtime() {
         (payload) => {
           const item = mapNotificationItem(payload.new as Record<string, unknown>);
           if (item) {
+            const bellQueryKey = queryKeys.notifications(notificationBellFilters);
+            const currentBell = queryClient.getQueryData<
+              ApiResponse<NotificationsResponseData>
+            >(bellQueryKey);
+            const nextBellData = prependNotification(
+              currentBell?.data,
+              item,
+              undefined,
+              notificationBellFilters.view
+            );
+
+            queryClient.setQueryData<ApiResponse<NotificationsResponseData>>(
+              bellQueryKey,
+              {
+                data: {
+                  ...(nextBellData ?? createEmptyNotificationsResponse()),
+                  items: (nextBellData ?? createEmptyNotificationsResponse()).items.slice(
+                    0,
+                    notificationBellFilters.limit
+                  ),
+                },
+                meta: currentBell?.meta,
+              }
+            );
+
             const notificationQueries =
               queryClient.getQueriesData<ApiResponse<NotificationsResponseData>>({
                 queryKey: queryKeys.notificationsRoot,
@@ -95,10 +124,6 @@ export function useNotificationsRealtime() {
               description: item.message,
             });
           }
-
-          void queryClient.invalidateQueries({
-            queryKey: queryKeys.notificationsRoot,
-          });
         }
       )
       .on(

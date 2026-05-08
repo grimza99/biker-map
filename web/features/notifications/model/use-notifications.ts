@@ -14,6 +14,11 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { apiFetch } from "@shared/api/http";
 import { queryKeys } from "@shared/config/query-keys";
 
+export const notificationBellFilters = {
+  view: "all" as const,
+  limit: 5,
+};
+
 function buildNotificationsSearchParams(filters: NotificationsQuery) {
   const searchParams = new URLSearchParams();
 
@@ -93,31 +98,36 @@ export function useReadNotification() {
   });
 }
 
+export function createEmptyNotificationsResponse(): NotificationsResponseData {
+  return {
+    items: [],
+    unreadCount: 0,
+  };
+}
+
 export function prependNotification(
   current: NotificationsResponseData | undefined,
   nextItem: InboxNotification,
   sourceType?: NotificationSourceType,
   view?: NotificationsQuery["view"]
 ) {
-  if (!current) {
-    return current;
-  }
+  const base = current ?? createEmptyNotificationsResponse();
 
   if (sourceType && nextItem.sourceType !== sourceType) {
-    return current;
+    return current ?? base;
   }
 
   if (view === "unread" && !nextItem.unread) {
-    return current;
+    return current ?? base;
   }
 
-  if (current.items.some((item) => item.id === nextItem.id)) {
-    return current;
+  if (base.items.some((item) => item.id === nextItem.id)) {
+    return current ?? base;
   }
 
   return {
-    ...current,
-    items: [nextItem, ...current.items],
-    unreadCount: nextItem.unread ? current.unreadCount + 1 : current.unreadCount,
+    ...base,
+    items: [nextItem, ...base.items],
+    unreadCount: nextItem.unread ? base.unreadCount + 1 : base.unreadCount,
   };
 }
