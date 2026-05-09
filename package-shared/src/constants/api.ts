@@ -40,4 +40,8 @@ export const API_PATHS = {
   reactions: {
     create: `${BASE_URL}/reactions`,
   },
+  favorites: {
+    list: `${BASE_URL}/favorites`,
+    detail: (favoriteId: string) => `${BASE_URL}/favorites/${favoriteId}`,
+  },
 };
