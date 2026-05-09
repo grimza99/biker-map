@@ -13,6 +13,8 @@ export type CommunityPost = {
   viewCount: number;
   reactions: ReactionSummary;
   pinned?: boolean;
+  favoriteId?: string;
+  favorited?: boolean;
 };
 
 export type CommunityPostsQuery = {
@@ -40,6 +42,8 @@ export type CommunityPostDetail = {
   reactions: ReactionSummary;
   pinned?: boolean;
   images?: string[];
+  favoriteId?: string;
+  favorited?: boolean;
 };
 
 export type CommunityReply = {
