@@ -1,4 +1,4 @@
-import { Button, DefaultCardContainer, PageWrapper } from "@shared/ui";
+import { DefaultCardContainer, PageWrapper } from "@shared/ui";
 
 export default function ContactPage() {
   return (
@@ -32,9 +32,12 @@ export default function ContactPage() {
         </div>
 
         <div className="flex flex-wrap gap-3">
-          <Button asChild size="lg">
-            <a href="mailto:gbtmxlf0808@gmail.com">메일 보내기</a>
-          </Button>
+          <a
+            href="mailto:gbtmxlf0808@gmail.com"
+            className="inline-flex h-12 items-center justify-center rounded-full border border-accent bg-accent px-5 text-base font-medium tracking-[-0.01em] text-text shadow-[var(--shadow-accent)] transition duration-150 ease-out hover:border-accent-light hover:bg-accent-light active:translate-y-px"
+          >
+            메일 보내기
+          </a>
         </div>
       </DefaultCardContainer>
     </PageWrapper>

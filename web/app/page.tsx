@@ -1,8 +1,8 @@
 import { Compass, MapPinned, MessageSquareMore, Route } from "lucide-react";
 import Link from "next/link";
 
-import { Button, DefaultCardContainer } from "@shared/ui";
 import Image from "next/image";
+import { DefaultCardContainer } from "@shared/ui";
 
 const featureItems = [
   {
@@ -57,19 +57,20 @@ const footerLinks = [
 function LandingButtonRow() {
   return (
     <div className="flex flex-wrap gap-3">
-      <Button
-        asChild
-        size="lg"
+      <Link
+        href="/map"
         className="shadow-[0_10px_28px_rgba(229,87,47,0.28)]"
       >
-        <Link href="/map" className="inline-flex items-center gap-2">
+        <span className="inline-flex h-12 items-center justify-center gap-2 rounded-full border border-accent bg-accent px-5 text-base font-medium tracking-[-0.01em] text-text transition duration-150 ease-out hover:border-accent-light hover:bg-accent-light active:translate-y-px">
           지도 보기
           <Compass className="h-4 w-4" />
-        </Link>
-      </Button>
-      <Button variant="secondary" size="lg">
-        <Link href="/posts">커뮤니티 보기</Link>
-      </Button>
+        </span>
+      </Link>
+      <Link href="/posts">
+        <span className="inline-flex h-12 items-center justify-center rounded-full border border-border bg-panel-solid px-5 text-base font-medium tracking-[-0.01em] text-text transition duration-150 ease-out hover:border-accent hover:bg-panel-soft active:translate-y-px">
+          커뮤니티 보기
+        </span>
+      </Link>
     </div>
   );
 }
