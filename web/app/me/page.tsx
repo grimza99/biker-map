@@ -4,6 +4,7 @@ import { useRouter } from "next/navigation";
 import { useState } from "react";
 
 import {
+  MyFavoritesSection,
   MyInfoSection,
   MyPostsSection,
   MyRoutesSection,
@@ -23,7 +24,9 @@ import {
 
 export default function MePage() {
   const router = useRouter();
-  const [tab, setTab] = useState<"info" | "my-posts" | "my-routes">("info");
+  const [tab, setTab] = useState<
+    "info" | "my-posts" | "my-routes" | "favorites"
+  >("info");
   const sessionState = useSession();
   const meQuery = useMe(sessionState.status === "authenticated");
   const deleteAccountMutation = useDeleteAccount();
@@ -51,14 +54,18 @@ export default function MePage() {
 
   const session = me.session;
 
-  const getSection = (tab: "info" | "my-posts" | "my-routes") => {
-    switch (tab) {
+  const getSection = (
+    currentTab: "info" | "my-posts" | "my-routes" | "favorites"
+  ) => {
+    switch (currentTab) {
       case "info":
         return <MyInfoSection session={session} />;
       case "my-posts":
         return <MyPostsSection />;
       case "my-routes":
         return <MyRoutesSection />;
+      case "favorites":
+        return <MyFavoritesSection />;
     }
   };
   return (
@@ -91,6 +98,14 @@ export default function MePage() {
             onClick={() => setTab("my-routes")}
           >
             내 경로
+          </Button>
+          <Button
+            asChild
+            variant="ghost"
+            selected={tab === "favorites"}
+            onClick={() => setTab("favorites")}
+          >
+            내가 좋아요 한 글
           </Button>
           <Button
             variant="ghost"
