@@ -10,6 +10,7 @@ export const API_PATHS = {
     profile: `${BASE_URL}/me`,
     posts: `${BASE_URL}/me/posts`,
     routes: `${BASE_URL}/me/routes`,
+    favorites: `${BASE_URL}/me/favorites`,
   },
   community: {
     posts: `${BASE_URL}/posts`,
