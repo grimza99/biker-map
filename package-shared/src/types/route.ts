@@ -58,6 +58,8 @@ export type RouteListItem = {
   destinationLat?: number;
   destinationLng?: number;
   directionsCalculatedAt?: string;
+  favoriteId?: string;
+  favorited?: boolean;
 };
 
 export type RouteDetail = RouteListItem & {

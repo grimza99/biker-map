@@ -46,6 +46,7 @@ export {
   loadReactionSummaryMap,
   loadSingleReactionSummary,
 } from "./reactions";
+export { loadFavoriteState } from "./favorites";
 export { createNotification, createNotifications } from "./notification-writer";
 export * from "./supabase";
 export * from "./supabase-mappers";

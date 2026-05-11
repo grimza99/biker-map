@@ -99,6 +99,9 @@ export function mapCommunityPostItem(
     viewCount: getRecordNumber(row, ["view_count", "viewCount"], 0),
     reactions: toReactionSummary(row),
     pinned: getRecordBoolean(row, ["pinned"], false) || undefined,
+    favoriteId:
+      getRecordString(row, ["favorite_id", "favoriteId"], "") || undefined,
+    favorited: getRecordBoolean(row, ["favorited"], false) || undefined,
   };
 }
 
@@ -127,5 +130,7 @@ export function mapCommunityPostDetail(
     reactions: item.reactions,
     pinned: item.pinned,
     images: getRecordStringArray(row, ["images"]),
+    favoriteId: item.favoriteId,
+    favorited: item.favorited,
   };
 }

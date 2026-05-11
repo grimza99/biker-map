@@ -6,6 +6,7 @@ import { useState } from "react";
 
 import Comment from "@/entities/community/ui/Comment";
 import { useCommunityPostComments } from "@/features/community/model/use-comments";
+import { FavoriteHeartButton } from "@/features/favorites/ui/FavoriteHeartButton";
 
 import {
   useDeleteCommunityPost,
@@ -76,81 +77,89 @@ export default function PostDetailPage() {
       <div className="flex flex-col gap-3 w-full">
         <div className="flex items-start justify-between gap-3">
           <Chip label={post.category} />
-          {isOwner && (
-            <div className="flex items-center gap-2">
-              <Dialog open={isEditOpen} onOpenChange={setIsEditOpen}>
+          <div className="flex items-center gap-2">
+            <FavoriteHeartButton
+              targetType="post"
+              targetId={post.id}
+              favorited={post.favorited}
+              favoriteId={post.favoriteId}
+            />
+            {isOwner && (
+              <>
+                <Dialog open={isEditOpen} onOpenChange={setIsEditOpen}>
+                  <Button
+                    size="sm"
+                    variant="secondary"
+                    onClick={() => setIsEditOpen(true)}
+                  >
+                    게시글 수정
+                  </Button>
+                  <DialogContent size="lg" className="border border-border">
+                    <DialogHeader
+                      title={
+                        <span className="text-lg font-semibold text-text">
+                          게시글 수정
+                        </span>
+                      }
+                    />
+                    <DialogBody className="pt-0">
+                      <CommunityPostForm
+                        submitLabel="수정하기"
+                        initialValues={{
+                          category: post.category,
+                          title: post.title,
+                          content: post.content,
+                          images: post.images ?? [],
+                        }}
+                        onSubmit={(payload) =>
+                          updatePostMutation.mutateAsync({
+                            category: payload.category,
+                            title: payload.title,
+                            content: payload.content,
+                            images: payload.images,
+                          })
+                        }
+                        onSuccess={() => {
+                          setIsEditOpen(false);
+                        }}
+                        onCancel={() => setIsEditOpen(false)}
+                      />
+                    </DialogBody>
+                  </DialogContent>
+                </Dialog>
                 <Button
                   size="sm"
-                  variant="secondary"
-                  onClick={() => setIsEditOpen(true)}
-                >
-                  게시글 수정
-                </Button>
-                <DialogContent size="lg" className="border border-border">
-                  <DialogHeader
-                    title={
-                      <span className="text-lg font-semibold text-text">
-                        게시글 수정
-                      </span>
+                  variant="ghost"
+                  loading={deletePostMutation.isPending}
+                  onClick={async () => {
+                    const confirmed =
+                      window.confirm("이 게시글을 삭제하시겠습니까?");
+                    if (!confirmed) {
+                      return;
                     }
-                  />
-                  <DialogBody className="pt-0">
-                    <CommunityPostForm
-                      submitLabel="수정하기"
-                      initialValues={{
-                        category: post.category,
-                        title: post.title,
-                        content: post.content,
-                        images: post.images ?? [],
-                      }}
-                      onSubmit={(payload) =>
-                        updatePostMutation.mutateAsync({
-                          category: payload.category,
-                          title: payload.title,
-                          content: payload.content,
-                          images: payload.images,
-                        })
-                      }
-                      onSuccess={() => {
-                        setIsEditOpen(false);
-                      }}
-                      onCancel={() => setIsEditOpen(false)}
-                    />
-                  </DialogBody>
-                </DialogContent>
-              </Dialog>
-              <Button
-                size="sm"
-                variant="ghost"
-                loading={deletePostMutation.isPending}
-                onClick={async () => {
-                  const confirmed =
-                    window.confirm("이 게시글을 삭제하시겠습니까?");
-                  if (!confirmed) {
-                    return;
-                  }
 
-                  try {
-                    await deletePostMutation.mutateAsync(undefined);
-                    router.replace("/posts");
-                  } catch (error) {
-                    showToast({
-                      tone: "danger",
-                      title: "게시글을 삭제하지 못했습니다.",
-                      description:
-                        error instanceof ApiClientError
-                          ? error.message
-                          : error instanceof Error
-                          ? error.message
-                          : "게시글을 삭제하지 못했습니다.",
-                    });
-                  }
-                }}
-              >
-                게시글 삭제
-              </Button>
-            </div>
-          )}
+                    try {
+                      await deletePostMutation.mutateAsync(undefined);
+                      router.replace("/posts");
+                    } catch (error) {
+                      showToast({
+                        tone: "danger",
+                        title: "게시글을 삭제하지 못했습니다.",
+                        description:
+                          error instanceof ApiClientError
+                            ? error.message
+                            : error instanceof Error
+                            ? error.message
+                            : "게시글을 삭제하지 못했습니다.",
+                      });
+                    }
+                  }}
+                >
+                  게시글 삭제
+                </Button>
+              </>
+            )}
+          </div>
         </div>
         <h1 className="m-0 text-[clamp(28px,4vw,42px)] font-semibold tracking-[-0.04em] text-text">
           {post.title}

@@ -4,6 +4,7 @@ import { Divide, ExternalLink, Route as RouteIcon, Timer } from "lucide-react";
 import { useParams } from "next/navigation";
 
 import { RoutePathMap } from "@/entities/route";
+import { FavoriteHeartButton } from "@/features/favorites/ui/FavoriteHeartButton";
 import { useRouteDetail } from "@/features/routes/model/use-route-detail";
 import {
   Chip,
@@ -52,13 +53,21 @@ export default function RouteDetailPage() {
   return (
     <PageWrapper className="p-6" innerClassName="gap-5">
       <div className="grid gap-3">
-        <div className="flex flex-wrap items-center gap-2">
-          <Chip label={sourceTypeLabel[route.sourceType]} />
-          <Chip
-            label={
-              providerLabel[route.provider as keyof typeof providerLabel] ??
-              "알 수 없음"
-            }
+        <div className="flex flex-wrap items-center justify-between gap-3">
+          <div className="flex flex-wrap items-center gap-2">
+            <Chip label={sourceTypeLabel[route.sourceType]} />
+            <Chip
+              label={
+                providerLabel[route.provider as keyof typeof providerLabel] ??
+                "알 수 없음"
+              }
+            />
+          </div>
+          <FavoriteHeartButton
+            targetType="route"
+            targetId={route.id}
+            favorited={route.favorited}
+            favoriteId={route.favoriteId}
           />
         </div>
         <h1 className="m-0 text-[clamp(28px,4vw,42px)] font-semibold tracking-[-0.04em] text-text">
