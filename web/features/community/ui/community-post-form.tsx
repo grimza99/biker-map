@@ -11,6 +11,7 @@ import {
   type UpdatePostResponseData,
 } from "@package-shared/index";
 
+import { uploadImage } from "@/features/image";
 import { ApiClientError } from "@shared/api/http";
 import {
   Button,
@@ -173,6 +174,10 @@ export function CommunityPostForm({
         label="이미지 업로드"
         value={images}
         onValueChange={(urls) => setImages(urls ?? [])}
+        onUpload={async (file) => {
+          const uploaded = await uploadImage(file);
+          return uploaded.url;
+        }}
       />
 
       <div className="flex items-center justify-end gap-2">
