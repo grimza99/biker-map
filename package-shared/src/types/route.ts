@@ -93,7 +93,9 @@ export type CreateRouteResponseData = {
   createdAt: string;
 };
 
-export type UpdateRouteBody = Partial<CreateRouteBody>;
+export type UpdateRouteBody = Partial<Omit<CreateRouteBody, "thumbnailUrl">> & {
+  thumbnailUrl?: string | null;
+};
 
 export type UpdateRouteResponseData = {
   id: string;

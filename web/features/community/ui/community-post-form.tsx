@@ -66,6 +66,7 @@ export function CommunityPostForm({
   const [title, setTitle] = useState(initialValues?.title ?? "");
   const [content, setContent] = useState(initialValues?.content ?? "");
   const [images, setImages] = useState(initialValues?.images ?? []);
+  const [isImageUploading, setIsImageUploading] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const { showToast } = useToast();
 
@@ -132,6 +133,14 @@ export function CommunityPostForm({
       className={className ?? "grid gap-4"}
       onSubmit={(event) => {
         event.preventDefault();
+        if (isImageUploading) {
+          showToast({
+            tone: "danger",
+            title: "이미지 업로드 진행 중",
+            description: "이미지 업로드가 끝난 뒤 저장할 수 있습니다.",
+          });
+          return;
+        }
 
         const payload: CreatePostBody | UpdatePostBody = {
           category,
@@ -174,10 +183,12 @@ export function CommunityPostForm({
         label="이미지 업로드"
         value={images}
         onValueChange={(urls) => setImages(urls ?? [])}
+        onUploadingChange={setIsImageUploading}
         onUpload={async (file) => {
           const uploaded = await uploadImage(file);
           return uploaded.url;
         }}
+        disabled={isSubmitting || createPostMutation.isPending}
       />
 
       <div className="flex items-center justify-end gap-2">
@@ -188,7 +199,10 @@ export function CommunityPostForm({
         )}
         <Button
           type="submit"
-          loading={isSubmitting || createPostMutation.isPending}
+          loading={
+            isImageUploading || isSubmitting || createPostMutation.isPending
+          }
+          disabled={isImageUploading}
         >
           {submitLabel}
         </Button>

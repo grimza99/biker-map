@@ -397,9 +397,8 @@ export function RouteForm({
         });
 
         const trimmedContent = content.trim();
-        const thumbnailUrl =
-          extractFirstMarkdownImageUrl(trimmedContent) ||
-          (isEditMode ? initialData?.thumbnailUrl : undefined);
+        const extractedThumbnailUrl =
+          extractFirstMarkdownImageUrl(trimmedContent);
 
         const payload = {
           title: title.trim(),
@@ -409,7 +408,6 @@ export function RouteForm({
           destinationRegion,
           provider: "naver" as const,
           externalMapUrl: externalMapUrl.trim(),
-          thumbnailUrl,
           distanceKm: distanceKm ? Number(distanceKm) : undefined,
           estimatedDurationMinutes: estimatedDurationMinutes
             ? Number(estimatedDurationMinutes)
@@ -424,6 +422,7 @@ export function RouteForm({
         if (isEditMode) {
           handleEditSubmit({
             ...payload,
+            thumbnailUrl: extractedThumbnailUrl ?? null,
             ...(primaryCoordinates
               ? {
                   ...primaryCoordinates,
@@ -438,6 +437,7 @@ export function RouteForm({
 
           handleCreateSubmit({
             ...payload,
+            thumbnailUrl: extractedThumbnailUrl ?? undefined,
             ...primaryCoordinates,
             waypoints: normalizedWaypoints,
           });
