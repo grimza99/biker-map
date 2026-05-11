@@ -39,6 +39,7 @@ export type ImageInputProps = FieldBaseProps & {
   defaultValue?: string | string[] | null;
   onValueChange?: (url: string[] | null) => void;
   onUpload?: (file: File) => Promise<string>;
+  onUploadingChange?: (isUploading: boolean) => void;
   accept?: string;
   disabled?: boolean;
   previewAlt?: string;
@@ -57,6 +58,7 @@ export function ImageInput({
   defaultValue = null,
   onValueChange,
   onUpload,
+  onUploadingChange,
   accept = "image/*",
   disabled,
   previewAlt = "선택한 이미지 미리보기",
@@ -198,6 +200,7 @@ export function ImageInput({
 
             try {
               setIsUploading(true);
+              onUploadingChange?.(true);
               const uploadedUrls: string[] = [];
 
               for (const file of acceptedFiles) {
@@ -214,6 +217,7 @@ export function ImageInput({
               );
             } finally {
               setIsUploading(false);
+              onUploadingChange?.(false);
               event.target.value = "";
             }
           }}

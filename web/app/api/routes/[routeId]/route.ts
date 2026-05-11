@@ -6,20 +6,23 @@ import {
   createSupabaseApiClient,
   forbidden,
   internalServerError,
+  loadFavoriteState,
   mapRouteDetail,
   notFound,
   ok,
   parseRequestBody,
 } from "@shared/api";
-import { requireApiSession } from "@shared/api/auth";
+import { getSupabaseAuthSession, requireApiSession } from "@shared/api/auth";
 import { z } from "zod";
 
 export async function GET(
-  _request: Request,
+  request: Request,
   { params }: { params: Promise<{ routeId: string }> }
 ) {
   const { routeId } = await params;
-  const supabase = createSupabaseApiClient(_request);
+  const supabase = createSupabaseApiClient(request);
+  const authSession = await getSupabaseAuthSession(request);
+  const viewerUserId = authSession?.user.id ?? null;
 
   const { data, error } = await supabase
     .from("routes")
@@ -51,11 +54,31 @@ export async function GET(
     return internalServerError(routePathError.message);
   }
 
+  let favoriteState: { favorited: boolean; favoriteId?: string } = {
+    favorited: false,
+  };
+  try {
+    favoriteState = await loadFavoriteState(
+      supabase,
+      "route",
+      routeId,
+      viewerUserId
+    );
+  } catch (favoriteError) {
+    return internalServerError(
+      favoriteError instanceof Error
+        ? favoriteError.message
+        : "경로 즐겨찾기 정보를 불러오지 못했습니다."
+    );
+  }
+
   const route = data
     ? mapRouteDetail({
         ...data,
         route_waypoints: waypoints ?? [],
         route_paths: routePath ?? null,
+        favorite_id: favoriteState.favoriteId,
+        favorited: favoriteState.favorited,
       })
     : null;
   if (!route) {
@@ -100,7 +123,7 @@ const updateRouteSchema = z
       .optional(),
     provider: z.enum(["naver", "etc"]).optional(),
     externalMapUrl: z.string().url().optional(),
-    thumbnailUrl: z.string().url().optional(),
+    thumbnailUrl: z.string().url().nullable().optional(),
     distanceKm: z.number().optional(),
     estimatedDurationMinutes: z.number().int().optional(),
     tags: z.array(z.string()).optional(),

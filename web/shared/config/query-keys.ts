@@ -1,10 +1,13 @@
 export const queryKeys = {
   postsRoot: ["posts"] as const,
   session: ["session"] as const,
+  meFavoritesRoot: ["me", "favorites"] as const,
   myPosts: (params?: Record<string, string | number | undefined>) =>
     ["me", "posts", params ?? {}] as const,
   myRoutes: (params?: Record<string, string | number | undefined>) =>
     ["me", "routes", params ?? {}] as const,
+  myFavoritePosts: ["me", "favorites", "post"] as const,
+  myFavoriteRoutes: ["me", "favorites", "route"] as const,
   users: ["users"] as const,
   places: (params?: Record<string, unknown>) =>
     ["places", params ?? {}] as const,

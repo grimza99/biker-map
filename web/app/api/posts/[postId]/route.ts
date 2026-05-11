@@ -8,6 +8,7 @@ import {
   createSupabaseApiClient,
   forbidden,
   internalServerError,
+  loadFavoriteState,
   loadProfileNameMap,
   loadSingleReactionSummary,
   mapCommunityPostDetail,
@@ -91,12 +92,32 @@ export async function GET(
     );
   }
 
+  let favoriteState: { favorited: boolean; favoriteId?: string } = {
+    favorited: false,
+  };
+  try {
+    favoriteState = await loadFavoriteState(
+      supabase,
+      "post",
+      postId,
+      viewerUserId
+    );
+  } catch (favoriteError) {
+    return internalServerError(
+      favoriteError instanceof Error
+        ? favoriteError.message
+        : "게시글 즐겨찾기 정보를 불러오지 못했습니다."
+    );
+  }
+
   const post = currentPost
     ? mapCommunityPostDetail({
         ...currentPost,
         author_name:
           authorMap.get(String(currentPost.author_id ?? "")) ?? "익명",
         reactions: reactionSummary,
+        favorite_id: favoriteState.favoriteId,
+        favorited: favoriteState.favorited,
       })
     : null;
   if (!post) {

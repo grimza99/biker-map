@@ -10,6 +10,7 @@ import {
 
 import {
   getRecordArray,
+  getRecordBoolean,
   getRecordNumber,
   getRecordString,
   getRecordStringArray,
@@ -150,6 +151,9 @@ export function mapRouteListItem(row: SupabaseRecord): RouteListItem | null {
         ["directions_calculated_at", "directionsCalculatedAt"],
         ""
       ) || undefined,
+    favoriteId:
+      getRecordString(row, ["favorite_id", "favoriteId"], "") || undefined,
+    favorited: getRecordBoolean(row, ["favorited"], false) || undefined,
   };
 }
 

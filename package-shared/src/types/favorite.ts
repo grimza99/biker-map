@@ -1,4 +1,4 @@
-export type FavoriteTargetType = "place" | "route";
+export type FavoriteTargetType = "post" | "route";
 
 export type FavoritesQuery = {
   type?: FavoriteTargetType;
