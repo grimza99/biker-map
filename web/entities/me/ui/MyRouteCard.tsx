@@ -9,12 +9,13 @@ interface MyRouteCardProps {
 }
 export function MyRouteCard({ route, onEdit }: MyRouteCardProps) {
   const deleteRouteMutation = useDeleteRouteMutate();
+  const sourceTypeLabel = route.sourceType === "user" ? "내 경로" : "큐레이션";
   return (
     <DefaultCardContainer className="flex flex-col md:flex-row justify-between gap-4 md:gap-5">
       <div className="flex flex-col gap-4">
         <div className="flex flex-col gap-2">
           <div className="flex flex-wrap items-center gap-2">
-            <Chip label="큐레이션" />
+            <Chip label={sourceTypeLabel} />
             {route.tags.length > 0 && (
               <>
                 {route.tags.map((tag) => (

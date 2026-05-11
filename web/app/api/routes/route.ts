@@ -39,6 +39,7 @@ export async function GET(request: NextRequest) {
   const { data, error } = await supabase
     .from("routes")
     .select("*")
+    .eq("source_type", "curated")
     .order("created_at", { ascending: false });
 
   if (error) {
@@ -92,28 +93,32 @@ const createRouteSchema = z.object({
   title: z.string().min(1),
   summary: z.string().min(1),
   content: z.string().min(1),
-  departureRegion: z.enum([
-    "seoul",
-    "busan",
-    "daegu",
-    "incheon",
-    "gwangju",
-    "daejeon",
-    "ulsan",
-    "sejong",
-    "jeju",
-  ]),
-  destinationRegion: z.enum([
-    "seoul",
-    "busan",
-    "daegu",
-    "incheon",
-    "gwangju",
-    "daejeon",
-    "ulsan",
-    "sejong",
-    "jeju",
-  ]),
+  departureRegion: z
+    .enum([
+      "seoul",
+      "busan",
+      "daegu",
+      "incheon",
+      "gwangju",
+      "daejeon",
+      "ulsan",
+      "sejong",
+      "jeju",
+    ])
+    .optional(),
+  destinationRegion: z
+    .enum([
+      "seoul",
+      "busan",
+      "daegu",
+      "incheon",
+      "gwangju",
+      "daejeon",
+      "ulsan",
+      "sejong",
+      "jeju",
+    ])
+    .optional(),
   provider: z.enum(["naver", "etc"]).default("naver"),
   externalMapUrl: z.string().url(),
   thumbnailUrl: z.string().url().optional(),
@@ -162,8 +167,10 @@ export async function POST(request: Request) {
     return internalServerError(profileError.message);
   }
 
-  if (profile?.role !== "admin") {
-    return forbidden("경로 생성은 운영자만 가능합니다.");
+  const isAdmin = profile?.role === "admin";
+
+  if (!isAdmin && payload.sourceType !== "user") {
+    return forbidden("큐레이션 경로 생성은 운영자만 가능합니다.");
   }
 
   let calculatedRoute;
@@ -199,8 +206,8 @@ export async function POST(request: Request) {
       title: payload.title.trim(),
       summary: payload.summary.trim(),
       content: payload.content.trim(),
-      departure_region: payload.departureRegion,
-      destination_region: payload.destinationRegion,
+      departure_region: payload.departureRegion ?? null,
+      destination_region: payload.destinationRegion ?? null,
       provider: "naver",
       external_map_url: payload.externalMapUrl,
       thumbnail_url: payload.thumbnailUrl ?? null,
@@ -210,7 +217,7 @@ export async function POST(request: Request) {
         payload.estimatedDurationMinutes ??
         null,
       tags: payload.tags ?? [],
-      source_type: payload.sourceType ?? "curated",
+      source_type: isAdmin ? payload.sourceType ?? "curated" : "user",
       created_by: session.userId,
       departure_lat: payload.departureLat,
       departure_lng: payload.departureLng,
