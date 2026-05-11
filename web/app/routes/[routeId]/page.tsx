@@ -116,7 +116,7 @@ export default function RouteDetailPage() {
         </DefaultCardContainer>
       </div>
       {route.path.length ? (
-        <RoutePathMap path={route.path} />
+        <RoutePathMap routeId={route.id} path={route.path} />
       ) : null}
       <MarkdownContent content={route.content} />
     </PageWrapper>
