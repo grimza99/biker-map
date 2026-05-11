@@ -36,6 +36,13 @@ export function forbidden(message = "권한이 없습니다.") {
   return errorResponse(403, "FORBIDDEN", message);
 }
 
+export function tooManyRequests(
+  message = "요청 한도를 초과했습니다.",
+  details?: Record<string, unknown>
+) {
+  return errorResponse(429, "RATE_LIMIT_EXCEEDED", message, details);
+}
+
 export function internalServerError(message = "서버 오류가 발생했습니다.") {
   return errorResponse(500, "INTERNAL_SERVER_ERROR", message);
 }

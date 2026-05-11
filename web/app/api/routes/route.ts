@@ -3,6 +3,7 @@ import type {
   RouteRegion,
   RoutesQuery,
 } from "@package-shared/types/route";
+import { USER_ROUTE_DAILY_CREATE_LIMIT } from "@package-shared/constants";
 import {
   badRequest,
   buildNaverRouteUrl,
@@ -16,10 +17,33 @@ import {
   mapRouteListItem,
   ok,
   paginateByCursor,
+  tooManyRequests,
 } from "@shared/api";
 import { requireApiSession } from "@shared/api/auth";
 import type { NextRequest } from "next/server";
 import { z } from "zod";
+
+function getKstDayRange(baseDate = new Date()) {
+  const kstOffsetMs = 9 * 60 * 60 * 1000;
+  const kstDate = new Date(baseDate.getTime() + kstOffsetMs);
+  const start = new Date(
+    Date.UTC(
+      kstDate.getUTCFullYear(),
+      kstDate.getUTCMonth(),
+      kstDate.getUTCDate(),
+      -9,
+      0,
+      0,
+      0
+    )
+  );
+  const end = new Date(start.getTime() + 24 * 60 * 60 * 1000);
+
+  return {
+    start,
+    end,
+  };
+}
 
 /**----------------------------------------get route list ------------------------------------------- */
 
@@ -172,6 +196,31 @@ export async function POST(request: Request) {
 
   if (!isAdmin && payload.sourceType !== "user") {
     return forbidden("큐레이션 경로 생성은 운영자만 가능합니다.");
+  }
+
+  if (!isAdmin) {
+    const { start, end } = getKstDayRange();
+    const { count, error: usageError } = await supabase
+      .from("routes")
+      .select("id", { count: "exact", head: true })
+      .eq("created_by", session.userId)
+      .eq("source_type", "user")
+      .gte("created_at", start.toISOString())
+      .lt("created_at", end.toISOString());
+
+    if (usageError) {
+      return internalServerError(usageError.message);
+    }
+
+    if ((count ?? 0) >= USER_ROUTE_DAILY_CREATE_LIMIT) {
+      return tooManyRequests(
+        `사용자 경로는 하루 ${USER_ROUTE_DAILY_CREATE_LIMIT}개까지 생성할 수 있습니다.`,
+        {
+          limit: USER_ROUTE_DAILY_CREATE_LIMIT,
+          scope: "daily-user-route-create",
+        }
+      );
+    }
   }
 
   let calculatedRoute;
