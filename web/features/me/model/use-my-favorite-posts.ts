@@ -8,7 +8,7 @@ import { queryKeys } from "@shared/config/query-keys";
 
 export function useMyFavoritePosts(enabled = true) {
   return useQuery({
-    queryKey: ["me", "favorites", "post"] as const,
+    queryKey: queryKeys.myFavoritePosts,
     queryFn: async () =>
       apiFetch<PostsListResponseData>(`${API_PATHS.me.favorites}?type=post`),
     enabled,
