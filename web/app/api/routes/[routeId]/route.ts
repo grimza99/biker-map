@@ -122,7 +122,7 @@ const updateRouteSchema = z
       .optional(),
     provider: z.enum(["naver", "etc"]).optional(),
     externalMapUrl: z.string().url().optional(),
-    thumbnailUrl: z.string().url().optional(),
+    thumbnailUrl: z.string().url().nullable().optional(),
     distanceKm: z.number().optional(),
     estimatedDurationMinutes: z.number().int().optional(),
     tags: z.array(z.string()).optional(),
