@@ -70,7 +70,6 @@ export function UserRouteForm({
 }) {
   const [title, setTitle] = useState("");
   const [memo, setMemo] = useState("");
-  const [externalMapUrl, setExternalMapUrl] = useState("");
   const [departureAddress, setDepartureAddress] = useState("");
   const [destinationAddress, setDestinationAddress] = useState("");
   const [departureLat, setDepartureLat] = useState("");
@@ -100,7 +99,6 @@ export function UserRouteForm({
     if (!initialData) {
       setTitle("");
       setMemo("");
-      setExternalMapUrl("");
       setDepartureAddress("");
       setDestinationAddress("");
       setDepartureLat("");
@@ -113,7 +111,6 @@ export function UserRouteForm({
 
     setTitle(initialData.title);
     setMemo(initialData.content);
-    setExternalMapUrl(initialData.externalMapUrl);
     setDepartureAddress("");
     setDestinationAddress("");
     setDepartureLat(
@@ -274,7 +271,6 @@ export function UserRouteForm({
           title: title.trim(),
           summary,
           content: memo.trim() || summary,
-          externalMapUrl: externalMapUrl.trim(),
           provider: "naver" as const,
           sourceType: "user" as const,
           departureRegion: mapAddressToRouteRegion(departureAddress),
@@ -414,13 +410,13 @@ export function UserRouteForm({
           </div>
         ))}
       </div>
-      <Input
-        label="경로 링크"
-        value={externalMapUrl}
-        onChange={(event) => setExternalMapUrl(event.target.value)}
-        placeholder="네이버/카카오/구글 지도 링크"
-        required
-      />
+      <div className="rounded-3xl border border-border bg-panel-soft p-4">
+        <p className="m-0 text-sm font-semibold text-text">외부 경로 링크</p>
+        <p className="mt-1 text-xs text-muted">
+          입력한 출발지, 경유지, 도착지 좌표를 기준으로 네이버 경로 링크가
+          자동 생성됩니다.
+        </p>
+      </div>
       <Textarea
         label="메모"
         value={memo}
