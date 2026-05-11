@@ -21,6 +21,7 @@ export {
   notFound,
   notImplemented,
   ok,
+  tooManyRequests,
   unauthorized,
 } from "./response";
 export { loadProfileNameMap } from "./supabase-profiles";
@@ -35,6 +36,7 @@ export {
 } from "./supabase-record";
 export { parseBody, parseRequestBody } from "./validation";
 export { calculateNaverRoutePath } from "./naver-directions";
+export { buildNaverRouteUrl } from "./naver-map-url";
 export {
   incrementPostViewCount,
   syncCommentReplyCountBestEffort,

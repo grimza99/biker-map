@@ -76,6 +76,7 @@ export type CreateRouteBody = Omit<
   RouteListItem,
   | "id"
   | "createdById"
+  | "externalMapUrl"
   | "directionsCalculatedAt"
   | "departureLat"
   | "departureLng"
@@ -83,6 +84,7 @@ export type CreateRouteBody = Omit<
   | "destinationLng"
 > & {
   content: string;
+  externalMapUrl?: string;
   departureLat: number;
   departureLng: number;
   destinationLat: number;

@@ -3,8 +3,10 @@ import type {
   RouteRegion,
   RoutesQuery,
 } from "@package-shared/types/route";
+import { USER_ROUTE_DAILY_CREATE_LIMIT } from "@package-shared/constants";
 import {
   badRequest,
+  buildNaverRouteUrl,
   calculateNaverRoutePath,
   createSupabaseApiClient,
   created,
@@ -15,10 +17,33 @@ import {
   mapRouteListItem,
   ok,
   paginateByCursor,
+  tooManyRequests,
 } from "@shared/api";
 import { requireApiSession } from "@shared/api/auth";
 import type { NextRequest } from "next/server";
 import { z } from "zod";
+
+function getKstDayRange(baseDate = new Date()) {
+  const kstOffsetMs = 9 * 60 * 60 * 1000;
+  const kstDate = new Date(baseDate.getTime() + kstOffsetMs);
+  const start = new Date(
+    Date.UTC(
+      kstDate.getUTCFullYear(),
+      kstDate.getUTCMonth(),
+      kstDate.getUTCDate(),
+      -9,
+      0,
+      0,
+      0
+    )
+  );
+  const end = new Date(start.getTime() + 24 * 60 * 60 * 1000);
+
+  return {
+    start,
+    end,
+  };
+}
 
 /**----------------------------------------get route list ------------------------------------------- */
 
@@ -39,6 +64,7 @@ export async function GET(request: NextRequest) {
   const { data, error } = await supabase
     .from("routes")
     .select("*")
+    .eq("source_type", "curated")
     .order("created_at", { ascending: false });
 
   if (error) {
@@ -92,30 +118,34 @@ const createRouteSchema = z.object({
   title: z.string().min(1),
   summary: z.string().min(1),
   content: z.string().min(1),
-  departureRegion: z.enum([
-    "seoul",
-    "busan",
-    "daegu",
-    "incheon",
-    "gwangju",
-    "daejeon",
-    "ulsan",
-    "sejong",
-    "jeju",
-  ]),
-  destinationRegion: z.enum([
-    "seoul",
-    "busan",
-    "daegu",
-    "incheon",
-    "gwangju",
-    "daejeon",
-    "ulsan",
-    "sejong",
-    "jeju",
-  ]),
+  departureRegion: z
+    .enum([
+      "seoul",
+      "busan",
+      "daegu",
+      "incheon",
+      "gwangju",
+      "daejeon",
+      "ulsan",
+      "sejong",
+      "jeju",
+    ])
+    .optional(),
+  destinationRegion: z
+    .enum([
+      "seoul",
+      "busan",
+      "daegu",
+      "incheon",
+      "gwangju",
+      "daejeon",
+      "ulsan",
+      "sejong",
+      "jeju",
+    ])
+    .optional(),
   provider: z.enum(["naver", "etc"]).default("naver"),
-  externalMapUrl: z.string().url(),
+  externalMapUrl: z.string().url().optional(),
   thumbnailUrl: z.string().url().optional(),
   distanceKm: z.number().optional(),
   estimatedDurationMinutes: z.number().int().optional(),
@@ -162,8 +192,35 @@ export async function POST(request: Request) {
     return internalServerError(profileError.message);
   }
 
-  if (profile?.role !== "admin") {
-    return forbidden("경로 생성은 운영자만 가능합니다.");
+  const isAdmin = profile?.role === "admin";
+
+  if (!isAdmin && payload.sourceType !== "user") {
+    return forbidden("큐레이션 경로 생성은 운영자만 가능합니다.");
+  }
+
+  if (!isAdmin) {
+    const { start, end } = getKstDayRange();
+    const { count, error: usageError } = await supabase
+      .from("routes")
+      .select("id", { count: "exact", head: true })
+      .eq("created_by", session.userId)
+      .eq("source_type", "user")
+      .gte("created_at", start.toISOString())
+      .lt("created_at", end.toISOString());
+
+    if (usageError) {
+      return internalServerError(usageError.message);
+    }
+
+    if ((count ?? 0) >= USER_ROUTE_DAILY_CREATE_LIMIT) {
+      return tooManyRequests(
+        `사용자 경로는 하루 ${USER_ROUTE_DAILY_CREATE_LIMIT}개까지 생성할 수 있습니다.`,
+        {
+          limit: USER_ROUTE_DAILY_CREATE_LIMIT,
+          scope: "daily-user-route-create",
+        }
+      );
+    }
   }
 
   let calculatedRoute;
@@ -193,16 +250,40 @@ export async function POST(request: Request) {
     );
   }
 
+  const generatedExternalMapUrl =
+    payload.externalMapUrl?.trim() ||
+    buildNaverRouteUrl({
+      appname: new URL(request.url).origin,
+      departure: {
+        lat: payload.departureLat,
+        lng: payload.departureLng,
+        name: payload.departureRegion,
+      },
+      destination: {
+        lat: payload.destinationLat,
+        lng: payload.destinationLng,
+        name: payload.title,
+      },
+      waypoints: (payload.waypoints ?? [])
+        .slice()
+        .sort((a, b) => a.sequence - b.sequence)
+        .map((waypoint, index) => ({
+          lat: waypoint.lat,
+          lng: waypoint.lng,
+          name: `waypoint-${index + 1}`,
+        })),
+    });
+
   const { data, error } = await supabase
     .from("routes")
     .insert({
       title: payload.title.trim(),
       summary: payload.summary.trim(),
       content: payload.content.trim(),
-      departure_region: payload.departureRegion,
-      destination_region: payload.destinationRegion,
+      departure_region: payload.departureRegion ?? null,
+      destination_region: payload.destinationRegion ?? null,
       provider: "naver",
-      external_map_url: payload.externalMapUrl,
+      external_map_url: generatedExternalMapUrl,
       thumbnail_url: payload.thumbnailUrl ?? null,
       distance_km: calculatedRoute.distanceKm ?? payload.distanceKm ?? null,
       estimated_duration_minutes:
@@ -210,7 +291,7 @@ export async function POST(request: Request) {
         payload.estimatedDurationMinutes ??
         null,
       tags: payload.tags ?? [],
-      source_type: payload.sourceType ?? "curated",
+      source_type: isAdmin ? payload.sourceType ?? "curated" : "user",
       created_by: session.userId,
       departure_lat: payload.departureLat,
       departure_lng: payload.departureLng,
