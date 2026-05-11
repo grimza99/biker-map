@@ -1,6 +1,7 @@
 import type { UpdateRouteBody } from "@package-shared/types/route";
 import {
   badRequest,
+  buildNaverRouteUrl,
   calculateNaverRoutePath,
   createSupabaseApiClient,
   forbidden,
@@ -293,6 +294,28 @@ export async function PATCH(
     }
 
     updateInput.provider = "naver";
+    updateInput.external_map_url =
+      payload.externalMapUrl?.trim() ||
+      buildNaverRouteUrl({
+        appname: new URL(request.url).origin,
+        departure: {
+          lat: departureLat,
+          lng: departureLng,
+          name:
+            payload.departureRegion ??
+            (currentRoute.departure_region as string | undefined),
+        },
+        destination: {
+          lat: destinationLat,
+          lng: destinationLng,
+          name: payload.title ?? currentRoute.title,
+        },
+        waypoints: nextWaypoints.map((waypoint, index) => ({
+          lat: waypoint.lat,
+          lng: waypoint.lng,
+          name: `waypoint-${index + 1}`,
+        })),
+      });
     updateInput.distance_km = calculatedRoute.distanceKm ?? null;
     updateInput.estimated_duration_minutes =
       calculatedRoute.estimatedDurationMinutes ?? null;

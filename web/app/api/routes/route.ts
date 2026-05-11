@@ -5,6 +5,7 @@ import type {
 } from "@package-shared/types/route";
 import {
   badRequest,
+  buildNaverRouteUrl,
   calculateNaverRoutePath,
   createSupabaseApiClient,
   created,
@@ -120,7 +121,7 @@ const createRouteSchema = z.object({
     ])
     .optional(),
   provider: z.enum(["naver", "etc"]).default("naver"),
-  externalMapUrl: z.string().url(),
+  externalMapUrl: z.string().url().optional(),
   thumbnailUrl: z.string().url().optional(),
   distanceKm: z.number().optional(),
   estimatedDurationMinutes: z.number().int().optional(),
@@ -200,6 +201,30 @@ export async function POST(request: Request) {
     );
   }
 
+  const generatedExternalMapUrl =
+    payload.externalMapUrl?.trim() ||
+    buildNaverRouteUrl({
+      appname: new URL(request.url).origin,
+      departure: {
+        lat: payload.departureLat,
+        lng: payload.departureLng,
+        name: payload.departureRegion,
+      },
+      destination: {
+        lat: payload.destinationLat,
+        lng: payload.destinationLng,
+        name: payload.title,
+      },
+      waypoints: (payload.waypoints ?? [])
+        .slice()
+        .sort((a, b) => a.sequence - b.sequence)
+        .map((waypoint, index) => ({
+          lat: waypoint.lat,
+          lng: waypoint.lng,
+          name: `waypoint-${index + 1}`,
+        })),
+    });
+
   const { data, error } = await supabase
     .from("routes")
     .insert({
@@ -209,7 +234,7 @@ export async function POST(request: Request) {
       departure_region: payload.departureRegion ?? null,
       destination_region: payload.destinationRegion ?? null,
       provider: "naver",
-      external_map_url: payload.externalMapUrl,
+      external_map_url: generatedExternalMapUrl,
       thumbnail_url: payload.thumbnailUrl ?? null,
       distance_km: calculatedRoute.distanceKm ?? payload.distanceKm ?? null,
       estimated_duration_minutes:
