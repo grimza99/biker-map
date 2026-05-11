@@ -1,7 +1,5 @@
 "use client";
 
-import { useState } from "react";
-
 import { CommunityPostCard } from "@/entities/community";
 import { RouteCard } from "@/entities/route/ui/RouteCard";
 import { useMyFavoritePosts } from "@features/me/model/use-my-favorite-posts";
@@ -16,15 +14,9 @@ import {
   TabsList,
 } from "@shared/ui";
 
-type FavoriteTab = "post" | "route";
-
 export function MyFavoritesSection() {
-  const [tab, setTab] = useState<FavoriteTab>("post");
-  const favoritePostsQuery = useMyFavoritePosts(tab === "post");
-  const favoriteRoutesQuery = useMyFavoriteRoutes(tab === "route");
-
-  const isPostsTab = tab === "post";
-  const query = isPostsTab ? favoritePostsQuery : favoriteRoutesQuery;
+  const favoritePostsQuery = useMyFavoritePosts(true);
+  const favoriteRoutesQuery = useMyFavoriteRoutes(true);
   const posts = favoritePostsQuery.data?.data.items ?? [];
   const routes = favoriteRoutesQuery.data?.data.items ?? [];
 
@@ -38,23 +30,15 @@ export function MyFavoritesSection() {
           ]}
         />
         <TabsContent value="post" className="grid gap-4">
-          {query.isLoading ? (
-            <LoadingState
-              label={
-                isPostsTab
-                  ? "좋아요 한 글을 불러오는 중"
-                  : "좋아요 한 경로를 불러오는 중"
-              }
-            />
-          ) : query.isError ? (
+          {favoritePostsQuery.isLoading ? (
+            <LoadingState label={"좋아요 한 글을 불러오는 중"} />
+          ) : favoritePostsQuery.isError ? (
             <ErrorState
-              title={
-                isPostsTab
-                  ? "좋아요 한 글을 불러오지 못했습니다"
-                  : "좋아요 한 경로를 불러오지 못했습니다"
-              }
+              title={"좋아요 한 글을 불러오지 못했습니다"}
               message={
-                query.error instanceof Error ? query.error.message : undefined
+                favoritePostsQuery.error instanceof Error
+                  ? favoritePostsQuery.error.message
+                  : undefined
               }
             />
           ) : posts.length ? (
@@ -76,23 +60,15 @@ export function MyFavoritesSection() {
         </TabsContent>
 
         <TabsContent value="route" className="text-sm leading-7 text-muted">
-          {query.isLoading ? (
-            <LoadingState
-              label={
-                isPostsTab
-                  ? "좋아요 한 글을 불러오는 중"
-                  : "좋아요 한 경로를 불러오는 중"
-              }
-            />
-          ) : query.isError ? (
+          {favoriteRoutesQuery.isLoading ? (
+            <LoadingState label={"좋아요 한 경로를 불러오는 중"} />
+          ) : favoriteRoutesQuery.isError ? (
             <ErrorState
-              title={
-                isPostsTab
-                  ? "좋아요 한 글을 불러오지 못했습니다"
-                  : "좋아요 한 경로를 불러오지 못했습니다"
-              }
+              title={"좋아요 한 경로를 불러오지 못했습니다"}
               message={
-                query.error instanceof Error ? query.error.message : undefined
+                favoriteRoutesQuery.error instanceof Error
+                  ? favoriteRoutesQuery.error.message
+                  : undefined
               }
             />
           ) : routes.length ? (
