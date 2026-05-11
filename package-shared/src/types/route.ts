@@ -24,9 +24,8 @@ export type RouteCoordinate = {
   lng: number;
 };
 
-export type RouteMapPathItem = {
+export type RouteMapPathItem = RouteListItem & {
   routeId: string;
-  title: string;
   path: RoutePathPoint[];
 };
 
@@ -59,6 +58,8 @@ export type RouteListItem = {
   destinationLat?: number;
   destinationLng?: number;
   directionsCalculatedAt?: string;
+  favoriteId?: string;
+  favorited?: boolean;
 };
 
 export type RouteDetail = RouteListItem & {
@@ -94,7 +95,9 @@ export type CreateRouteResponseData = {
   createdAt: string;
 };
 
-export type UpdateRouteBody = Partial<CreateRouteBody>;
+export type UpdateRouteBody = Partial<Omit<CreateRouteBody, "thumbnailUrl">> & {
+  thumbnailUrl?: string | null;
+};
 
 export type UpdateRouteResponseData = {
   id: string;

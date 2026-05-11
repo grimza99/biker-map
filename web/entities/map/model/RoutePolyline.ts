@@ -8,7 +8,8 @@ export class RoutePolyline {
   constructor(
     private readonly maps: NaverMaps,
     private readonly map: any,
-    private readonly route: RouteMapPathItem
+    private readonly route: RouteMapPathItem,
+    private readonly onClick?: (route: RouteMapPathItem) => void
   ) {
     this.polyline = new this.maps.Polyline({
       map: null,
@@ -24,7 +25,7 @@ export class RoutePolyline {
     });
 
     this.maps.Event.addListener(this.polyline, "click", () => {
-      console.log(route);
+      this.onClick?.(route);
     });
   }
 

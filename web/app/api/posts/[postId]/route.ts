@@ -2,18 +2,21 @@ import type {
   CommunityCategorySlug,
   UpdatePostBody,
 } from "@package-shared/types/community";
+import type { ReactionSummary } from "@package-shared/types/reaction";
 import {
   badRequest,
   createSupabaseApiClient,
   forbidden,
   internalServerError,
+  loadFavoriteState,
   loadProfileNameMap,
+  loadSingleReactionSummary,
   mapCommunityPostDetail,
   notFound,
   ok,
   parseRequestBody,
 } from "@shared/api";
-import { requireApiSession } from "@shared/api/auth";
+import { getSupabaseAuthSession, requireApiSession } from "@shared/api/auth";
 import { z } from "zod";
 
 const updatePostSchema = z
@@ -42,6 +45,8 @@ export async function GET(
 ) {
   const { postId } = await params;
   const supabase = createSupabaseApiClient(_request);
+  const authSession = await getSupabaseAuthSession(_request);
+  const viewerUserId = authSession?.user.id ?? null;
 
   const { data: currentPost, error: currentPostError } = await supabase
     .from("posts")
@@ -59,17 +64,6 @@ export async function GET(
     return notFound("게시글을 찾을 수 없습니다.");
   }
 
-  const { error: updateError } = await supabase
-    .from("posts")
-    .update({
-      view_count: Number(currentPost.view_count ?? 0) + 1,
-    })
-    .eq("id", postId);
-
-  if (updateError) {
-    return internalServerError(updateError.message);
-  }
-
   let authorMap: Map<string, string>;
   try {
     authorMap = await loadProfileNameMap(supabase, [
@@ -83,11 +77,47 @@ export async function GET(
     );
   }
 
+  let reactionSummary: ReactionSummary;
+  try {
+    reactionSummary = await loadSingleReactionSummary(
+      "post",
+      postId,
+      viewerUserId
+    );
+  } catch (reactionError) {
+    return internalServerError(
+      reactionError instanceof Error
+        ? reactionError.message
+        : "게시글 반응 정보를 불러오지 못했습니다."
+    );
+  }
+
+  let favoriteState: { favorited: boolean; favoriteId?: string } = {
+    favorited: false,
+  };
+  try {
+    favoriteState = await loadFavoriteState(
+      supabase,
+      "post",
+      postId,
+      viewerUserId
+    );
+  } catch (favoriteError) {
+    return internalServerError(
+      favoriteError instanceof Error
+        ? favoriteError.message
+        : "게시글 즐겨찾기 정보를 불러오지 못했습니다."
+    );
+  }
+
   const post = currentPost
     ? mapCommunityPostDetail({
         ...currentPost,
         author_name:
           authorMap.get(String(currentPost.author_id ?? "")) ?? "익명",
+        reactions: reactionSummary,
+        favorite_id: favoriteState.favoriteId,
+        favorited: favoriteState.favorited,
       })
     : null;
   if (!post) {

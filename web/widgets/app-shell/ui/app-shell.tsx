@@ -4,6 +4,7 @@ import Link from "next/link";
 import type { ReactNode } from "react";
 
 import { MainNav } from "@/widgets/navs";
+import { NotificationsRealtimeBridge } from "@widgets/notification-bell";
 import { useSession } from "@features/session";
 import { cn } from "@shared/lib";
 
@@ -12,6 +13,7 @@ export function AppShell({ children }: { children: ReactNode }) {
 
   return (
     <>
+      {status === "authenticated" ? <NotificationsRealtimeBridge /> : null}
       <header className="sticky top-0 z-20 border-b border-border bg-panel backdrop-blur-md">
         <div className="mx-auto flex w-[min(1120px,calc(100%-32px))] flex-wrap items-center justify-between gap-4 py-4">
           <Link href="/" className="text-lg font-extrabold tracking-[-0.02em]">

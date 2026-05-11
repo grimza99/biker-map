@@ -11,6 +11,7 @@ import {
   notFound,
   ok,
   parseRequestBody,
+  syncCommentReplyCountBestEffort,
 } from "@shared/api";
 import { requireApiSession } from "@shared/api/auth";
 import { z } from "zod";
@@ -137,6 +138,8 @@ export async function DELETE(
   if (error) {
     return internalServerError(error.message);
   }
+
+  await syncCommentReplyCountBestEffort(String(currentReply.parent_comment_id));
 
   return ok<DeleteCommentResponseData>({
     id: replyId,

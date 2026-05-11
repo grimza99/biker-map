@@ -15,7 +15,9 @@ export default function Comment({ postId, comment }: CommentProps) {
   return (
     <div key={comment.id} className="flex flex-col gap-2">
       <CommentCard
+        postId={postId}
         content={comment}
+        disabled={status !== "authenticated"}
         onClickShowReplyForm={() => setShowReplyForm((p) => !p)}
       />
       {showReplyForm && (
@@ -23,12 +25,19 @@ export default function Comment({ postId, comment }: CommentProps) {
           postId={postId}
           disabled={status !== "authenticated"}
           placeholder="답글을 입력하세요"
+          submitType="reply"
+          commentId={comment.id}
         />
       )}
       {comment.replies.length > 0 && (
         <div className="grid gap-2 border-l border-border pl-4 m-4">
           {comment.replies.map((reply) => (
-            <CommentCard key={reply.id} content={reply} />
+            <CommentCard
+              key={reply.id}
+              postId={postId}
+              content={reply}
+              disabled={status !== "authenticated"}
+            />
           ))}
         </div>
       )}

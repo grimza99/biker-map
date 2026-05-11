@@ -74,11 +74,15 @@ function loadNaverMaps(clientId: string) {
 type NaverDynamicMapProps = {
   places: PlaceListItem[];
   routes?: RouteMapPathItem[];
+  onClickPlaceMarker?: (place: PlaceListItem) => void;
+  onClickRoutePolyline?: (route: RouteMapPathItem) => void;
 };
 
 export function NaverDynamicMap({
   places,
   routes = [],
+  onClickPlaceMarker,
+  onClickRoutePolyline,
 }: NaverDynamicMapProps) {
   const clientId = process.env.NEXT_PUBLIC_NAVER_MAP_CLIENT_ID;
   const mapElementRef = useRef<HTMLDivElement | null>(null);
@@ -213,9 +217,9 @@ export function NaverDynamicMap({
 
     markersRef.current.forEach((marker) => marker.detach());
     markersRef.current = validPlaces.map(
-      (place) => new PlaceMarker(maps, map, place)
+      (place) => new PlaceMarker(maps, map, place, onClickPlaceMarker)
     );
-  }, [validPlaces]);
+  }, [onClickPlaceMarker, validPlaces]);
 
   useEffect(() => {
     const map = mapRef.current;
@@ -229,11 +233,11 @@ export function NaverDynamicMap({
       routePolyline.detach()
     );
     routePolylinesRef.current = validRoutes.map(
-      (route) => new RoutePolyline(maps, map, route)
+      (route) => new RoutePolyline(maps, map, route, onClickRoutePolyline)
     );
     routePolylineVisibleRef.current = false;
     syncRouteVisibility();
-  }, [validRoutes]);
+  }, [onClickRoutePolyline, validRoutes]);
 
   return (
     <div className="absolute inset-0 overflow-hidden bg-panel-soft">
