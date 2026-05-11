@@ -17,7 +17,6 @@ import { addressRegionMap } from "@package-shared/model/route";
 import { apiFetch } from "@shared/api/http";
 import {
   Button,
-  ImageInput,
   Input,
   MarkdownEditor,
   SelectInput,
@@ -73,6 +72,11 @@ function mapAddressToRouteRegion(address: string) {
   )?.region;
 }
 
+function extractFirstMarkdownImageUrl(markdown: string) {
+  const match = markdown.match(/!\[[^\]]*]\(([^)\s]+)(?:\s+"[^"]*")?\)/);
+  return match?.[1];
+}
+
 export function RouteForm({
   initialData,
   onSuccess,
@@ -91,7 +95,6 @@ export function RouteForm({
   const [destinationRegion, setDestinationRegion] =
     useState<RouteRegion>("seoul");
   const [externalMapUrl, setExternalMapUrl] = useState("");
-  const [thumbnailUrl, setThumbnailUrl] = useState("");
   const [distanceKm, setDistanceKm] = useState("");
   const [estimatedDurationMinutes, setEstimatedDurationMinutes] = useState("");
   const [tags, setTags] = useState("");
@@ -130,7 +133,6 @@ export function RouteForm({
     setDepartureRegion("seoul");
     setDestinationRegion("seoul");
     setExternalMapUrl("");
-    setThumbnailUrl("");
     setDistanceKm("");
     setEstimatedDurationMinutes("");
     setTags("");
@@ -156,7 +158,6 @@ export function RouteForm({
     setDepartureRegion(initialData.departureRegion ?? "seoul");
     setDestinationRegion(initialData.destinationRegion ?? "seoul");
     setExternalMapUrl(initialData.externalMapUrl);
-    setThumbnailUrl(initialData.thumbnailUrl ?? "");
     setDistanceKm(
       initialData.distanceKm !== undefined ? String(initialData.distanceKm) : ""
     );
@@ -395,15 +396,20 @@ export function RouteForm({
           }
         });
 
+        const trimmedContent = content.trim();
+        const thumbnailUrl =
+          extractFirstMarkdownImageUrl(trimmedContent) ||
+          (isEditMode ? initialData?.thumbnailUrl : undefined);
+
         const payload = {
-          title,
+          title: title.trim(),
           summary,
-          content,
+          content: trimmedContent,
           departureRegion,
           destinationRegion,
           provider: "naver" as const,
           externalMapUrl: externalMapUrl.trim(),
-          thumbnailUrl: thumbnailUrl.trim() || undefined,
+          thumbnailUrl,
           distanceKm: distanceKm ? Number(distanceKm) : undefined,
           estimatedDurationMinutes: estimatedDurationMinutes
             ? Number(estimatedDurationMinutes)
@@ -452,7 +458,18 @@ export function RouteForm({
         placeholder="리스트 카드에 보여줄 짧은 소개"
         required
       />
-      <MarkdownEditor label="상세 소개" value={content} onChange={setContent} />
+      <div className="grid gap-2">
+        <MarkdownEditor
+          label="상세 소개"
+          value={content}
+          onChange={setContent}
+        />
+        <p className="m-0 text-xs leading-5 text-muted">
+          경로 이미지는 에디터 우측 상단의 이미지 업로드 버튼으로 본문에
+          삽입됩니다. 첫 번째 본문 이미지는 경로 카드의 썸네일로도
+          재사용됩니다.
+        </p>
+      </div>
       <div className="grid gap-4 md:grid-cols-2">
         <SelectInput
           label="출처"
@@ -610,13 +627,6 @@ export function RouteForm({
           placeholder="예: 24.5"
         />
       </div>
-
-      <ImageInput
-        label="썸네일"
-        value={thumbnailUrl}
-        onValueChange={(value) => setThumbnailUrl(value ? value[0] : "")}
-        maxImages={1}
-      />
 
       {formErrorMessage && (
         <Toast
