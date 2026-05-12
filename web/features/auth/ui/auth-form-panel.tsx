@@ -1,17 +1,9 @@
 "use client";
 
-import { API_PATHS } from "@package-shared/constants/api";
-import type {
-  AuthResponseData,
-  LoginBody,
-  SignUpBody,
-} from "@package-shared/types/auth";
-import { useMutation } from "@tanstack/react-query";
-import { useRouter } from "next/navigation";
+import type { LoginBody, SignUpBody } from "@package-shared/types/auth";
 import { useMemo, useState } from "react";
 
-import { useSession } from "@features/session";
-import { ApiClientError, apiFetch } from "@shared/api/http";
+import { ApiClientError } from "@shared/api/http";
 import {
   Button,
   DefaultCardContainer,
@@ -26,6 +18,7 @@ import {
   loginFormSchema,
   signUpFormSchema,
 } from "../model/auth-schemas";
+import { useLoginMutation, useSignUpMutation } from "../model/use-auth-mutation";
 
 type AuthFormPanelProps = {
   defaultTab?: AuthTabValue;
@@ -33,8 +26,6 @@ type AuthFormPanelProps = {
 
 export function AuthFormPanel({ defaultTab = "login" }: AuthFormPanelProps) {
   const [tab, setTab] = useState<AuthTabValue>(defaultTab);
-  const [isDirty, setIsDirty] = useState(false);
-
   const [loginValues, setLoginValues] = useState<LoginBody>({
     email: "",
     password: "",
@@ -44,9 +35,6 @@ export function AuthFormPanel({ defaultTab = "login" }: AuthFormPanelProps) {
     password: "",
     name: "",
   });
-
-  const router = useRouter();
-  const { setSession } = useSession();
 
   const loginValidation = loginFormSchema.safeParse(loginValues);
   const signUpValidation = signUpFormSchema.safeParse(signUpValues);
@@ -67,33 +55,8 @@ export function AuthFormPanel({ defaultTab = "login" }: AuthFormPanelProps) {
     return signUpValidation.error.issues[0]?.message ?? null;
   }, [signUpValidation]);
 
-  const loginMutation = useMutation({
-    mutationFn: (payload: LoginBody) =>
-      apiFetch<AuthResponseData>(API_PATHS.auth.login, {
-        method: "POST",
-        body: JSON.stringify(payload),
-        credentials: "include",
-      }),
-    onSuccess(response) {
-      setSession(response.data.session, response.data.accessToken);
-      router.push("/map");
-      router.refresh();
-    },
-  });
-
-  const signUpMutation = useMutation({
-    mutationFn: (payload: SignUpBody) =>
-      apiFetch<AuthResponseData>(API_PATHS.auth.signup, {
-        method: "POST",
-        body: JSON.stringify(payload),
-        credentials: "include",
-      }),
-    onSuccess(response) {
-      setSession(response.data.session, response.data.accessToken);
-      router.push("/map");
-      router.refresh();
-    },
-  });
+  const loginMutation = useLoginMutation();
+  const signUpMutation = useSignUpMutation();
 
   const loginMutationError =
     loginMutation.error instanceof ApiClientError
