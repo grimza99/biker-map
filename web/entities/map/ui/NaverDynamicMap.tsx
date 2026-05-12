@@ -19,7 +19,7 @@ const SOUTH_KOREA_BOUNDS = {
   southWest: { lat: 34.0, lng: 125.5 },
   northEast: { lat: 37.75, lng: 130.9 },
 };
-const ROUTE_POLYLINE_MIN_ZOOM = 10;
+const ROUTE_POLYLINE_MIN_ZOOM = 9;
 
 function buildNaverMapScriptUrl(clientId: string) {
   return `https://oapi.map.naver.com/openapi/v3/maps.js?ncpKeyId=${clientId}`;
