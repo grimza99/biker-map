@@ -1,3 +1,10 @@
+/**@description
+ * C - create
+ * U - update
+ * D - delete
+ * S - success
+ * f - fail
+ */
 export const TOAST_MESSAGE = {
   ADMIN: {
     C: "등록에 성공했습니다!",
