@@ -2,6 +2,7 @@
 
 import {
   API_PATHS,
+  TOAST_MESSAGE,
   type ApiResponse,
   type CreateFavoriteResponseData,
   type DeleteFavoriteResponseData,
@@ -11,6 +12,7 @@ import {
 } from "@package-shared/index";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 
+import { useToast } from "@/shared";
 import { apiFetch } from "@shared/api/http";
 import { queryKeys } from "@shared/config/query-keys";
 
@@ -24,7 +26,9 @@ type ToggleFavoriteParams = {
   targetId: string;
 };
 
-type FavoriteDetailData = ApiResponse<PostDetailResponseData> | ApiResponse<RouteDetail>;
+type FavoriteDetailData =
+  | ApiResponse<PostDetailResponseData>
+  | ApiResponse<RouteDetail>;
 
 type FavoriteMutationContext = {
   previousDetail?: FavoriteDetailData;
@@ -69,7 +73,11 @@ export function useToggleFavorite({
 }: ToggleFavoriteParams) {
   const queryClient = useQueryClient();
   const detailQueryKey =
-    targetType === "post" ? queryKeys.post(targetId) : queryKeys.route(targetId);
+    targetType === "post"
+      ? queryKeys.post(targetId)
+      : queryKeys.route(targetId);
+
+  const { showToast } = useToast();
 
   return useMutation({
     mutationFn: async (state: ToggleFavoriteState) => {
@@ -124,6 +132,10 @@ export function useToggleFavorite({
     },
     onError: (_error, _state, context) => {
       queryClient.setQueryData(detailQueryKey, context?.previousDetail);
+      showToast({
+        title:
+          targetType === "post" ? TOAST_MESSAGE.POST.E : TOAST_MESSAGE.ROUTE.E,
+      });
     },
     onSuccess: (result) => {
       queryClient.setQueryData<FavoriteDetailData>(
@@ -133,6 +145,10 @@ export function useToggleFavorite({
             | FavoriteDetailData
             | undefined
       );
+      showToast({
+        title:
+          targetType === "post" ? TOAST_MESSAGE.POST.F : TOAST_MESSAGE.ROUTE.F,
+      });
     },
     onSettled: async () => {
       await Promise.all([

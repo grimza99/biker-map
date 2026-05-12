@@ -11,6 +11,11 @@ export type SignUpBody = {
   name: string;
 };
 
+export type UpdateMeBody = {
+  name: string;
+  avatarUrl: string | null;
+};
+
 export type AuthResponseData = {
   session: AppSession | null;
   accessToken: string | null;
@@ -27,6 +32,10 @@ export type RefreshResponseData = {
 
 export type MeResponseData = {
   authenticated: boolean;
+  session: AppSession | null;
+};
+
+export type UpdateMeResponseData = {
   session: AppSession | null;
 };
 

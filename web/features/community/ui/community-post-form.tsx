@@ -12,15 +12,7 @@ import {
 } from "@package-shared/index";
 
 import { uploadImage } from "@/features/image";
-import { ApiClientError } from "@shared/api/http";
-import {
-  Button,
-  ImageInput,
-  Input,
-  SelectInput,
-  Textarea,
-  useToast,
-} from "@shared/ui";
+import { Button, ImageInput, Input, SelectInput, Textarea } from "@shared/ui";
 import { useState } from "react";
 import { useCreateCommunityPost } from "../model/use-post";
 
@@ -68,7 +60,6 @@ export function CommunityPostForm({
   const [images, setImages] = useState(initialValues?.images ?? []);
   const [isImageUploading, setIsImageUploading] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const { showToast } = useToast();
 
   const createPostMutation = useCreateCommunityPost();
 
@@ -77,23 +68,7 @@ export function CommunityPostForm({
       try {
         setIsSubmitting(true);
         const response = await onSubmit(payload);
-        showToast({
-          tone: "success",
-          title: "게시글이 수정되었습니다.",
-          description: "수정한 내용이 게시글에 반영되었습니다.",
-        });
         onSuccess?.("data" in response ? response.data : response);
-      } catch (error) {
-        showToast({
-          tone: "danger",
-          title: "게시글 저장에 실패했습니다.",
-          description:
-            error instanceof ApiClientError
-              ? error.message
-              : error instanceof Error
-              ? error.message
-              : "요청을 처리하지 못했습니다.",
-        });
       } finally {
         setIsSubmitting(false);
       }
@@ -106,24 +81,7 @@ export function CommunityPostForm({
         setContent("");
         setImages([]);
         setCategory(defaultCategory ?? options[0]?.value ?? "question");
-        showToast({
-          tone: "success",
-          title: "게시글이 생성되었습니다.",
-          description: "새 글이 커뮤니티 목록에 반영되었습니다.",
-        });
         onSuccess?.(response.data);
-      },
-      onError(error) {
-        showToast({
-          tone: "danger",
-          title: "게시글 생성에 실패했습니다.",
-          description:
-            error instanceof ApiClientError
-              ? error.message
-              : error instanceof Error
-              ? error.message
-              : "요청을 처리하지 못했습니다.",
-        });
       },
     });
   }
@@ -134,11 +92,6 @@ export function CommunityPostForm({
       onSubmit={(event) => {
         event.preventDefault();
         if (isImageUploading) {
-          showToast({
-            tone: "danger",
-            title: "이미지 업로드 진행 중",
-            description: "이미지 업로드가 끝난 뒤 저장할 수 있습니다.",
-          });
           return;
         }
 

@@ -10,6 +10,7 @@ import { useEffect, useState } from "react";
 
 import { placeCategoryOptions } from "@/entities/map/model/map-filters";
 import { uploadImage } from "@/features/image/model/upload-image";
+import { TOAST_MESSAGE } from "@package-shared/constants";
 import { ApiClientError } from "@shared/api/http";
 import {
   Button,
@@ -17,7 +18,7 @@ import {
   Input,
   SelectInput,
   Textarea,
-  Toast,
+  useToast,
 } from "@shared/ui";
 import { useCreatePlace, useEditPlace } from "../model/use-place";
 import { usePlaceGeocode } from "../model/use-place-geocode";
@@ -40,27 +41,27 @@ export function PlaceForm({
   const [lng, setLng] = useState("");
   const [naverPlaceUrl, setNaverPlaceUrl] = useState("");
   const [images, setImages] = useState<string[]>([]);
+
   const isEditMode = Boolean(initialData);
   const normalizedAddress = address.trim();
   const initialNormalizedAddress = initialData?.address.trim() ?? "";
   const shouldAutofillCoordinates =
     !isEditMode || normalizedAddress !== initialNormalizedAddress;
   const geocodeQuery = usePlaceGeocode(address, shouldAutofillCoordinates);
+
   const {
     mutateAsync: createPlace,
     error: createPlaceError,
-    isSuccess,
-    data: successData,
     isPending,
   } = useCreatePlace();
+
   const {
     mutateAsync: editPlace,
     error: editPlaceError,
     isPending: isEditPending,
   } = useEditPlace(initialData?.id ?? "");
-  const [dismissedToast, setDismissedToast] = useState<
-    "success" | "error" | null
-  >(null);
+
+  const { showToast } = useToast();
 
   const resetForm = () => {
     setName("");
@@ -118,23 +119,14 @@ export function PlaceForm({
   };
 
   const errorMessage =
-    (editPlaceError instanceof ApiClientError
+    isEditMode && editPlaceError
       ? editPlaceError.message
-      : editPlaceError instanceof Error
-      ? editPlaceError.message
-      : null) ??
-    (createPlaceError instanceof ApiClientError
+      : !isEditMode && createPlaceError
       ? createPlaceError.message
-      : createPlaceError instanceof Error
-      ? createPlaceError.message
-      : null);
+      : null;
 
   const geocodeErrorMessage =
-    geocodeQuery.error instanceof ApiClientError
-      ? geocodeQuery.error.message
-      : geocodeQuery.error instanceof Error
-      ? geocodeQuery.error.message
-      : null;
+    geocodeQuery.error instanceof ApiClientError && geocodeQuery.error.message;
 
   useEffect(() => {
     const geocoded = geocodeQuery.data?.data;
@@ -145,6 +137,21 @@ export function PlaceForm({
     setLat(String(geocoded.lat));
     setLng(String(geocoded.lng));
   }, [geocodeQuery.data]);
+
+  useEffect(() => {
+    if (geocodeErrorMessage)
+      showToast({
+        title: TOAST_MESSAGE.ADMIN.GEOCODING.E,
+        description: geocodeErrorMessage,
+        tone: "danger",
+      });
+    if (errorMessage)
+      showToast({
+        title: TOAST_MESSAGE.ADMIN.E,
+        description: errorMessage,
+        tone: "danger",
+      });
+  }, [geocodeErrorMessage, errorMessage]);
 
   return (
     <form className="grid gap-4" onSubmit={handleSubmit}>
@@ -223,24 +230,6 @@ export function PlaceForm({
           return uploaded.url;
         }}
       />
-
-      {errorMessage && dismissedToast !== "error" && (
-        <Toast
-          tone="danger"
-          title="장소등록 실패"
-          description={errorMessage}
-          onClose={() => setDismissedToast("error")}
-        />
-      )}
-
-      {isSuccess && !isEditMode && (
-        <Toast
-          tone="success"
-          title="장소등록 성공"
-          description="새로운 장소가 지도에 등록되었습니다."
-          onClose={() => setDismissedToast("success")}
-        />
-      )}
 
       <div className="flex items-center justify-end gap-2">
         {onCancel && (

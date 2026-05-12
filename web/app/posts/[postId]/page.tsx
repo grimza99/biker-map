@@ -1,5 +1,5 @@
 "use client";
-import { ApiClientError, formatDateByType } from "@/shared";
+import { formatDateByType } from "@/shared";
 import { CommunityEngagementBar } from "@/widgets";
 import { useParams, useRouter } from "next/navigation";
 import { useState } from "react";
@@ -29,7 +29,6 @@ import {
   MetaCounts,
   PageWrapper,
   Profile,
-  useToast,
 } from "@shared/ui";
 import { MessageSquare } from "lucide-react";
 
@@ -38,7 +37,6 @@ export default function PostDetailPage() {
   const router = useRouter();
   const postId = params?.postId ?? "";
   const { status, session } = useSession();
-  const { showToast } = useToast();
   const [isEditOpen, setIsEditOpen] = useState(false);
   const {
     data: detailpostData,
@@ -137,22 +135,8 @@ export default function PostDetailPage() {
                     if (!confirmed) {
                       return;
                     }
-
-                    try {
-                      await deletePostMutation.mutateAsync(undefined);
-                      router.replace("/posts");
-                    } catch (error) {
-                      showToast({
-                        tone: "danger",
-                        title: "게시글을 삭제하지 못했습니다.",
-                        description:
-                          error instanceof ApiClientError
-                            ? error.message
-                            : error instanceof Error
-                            ? error.message
-                            : "게시글을 삭제하지 못했습니다.",
-                      });
-                    }
+                    await deletePostMutation.mutateAsync(undefined);
+                    router.replace("/posts");
                   }}
                 >
                   게시글 삭제

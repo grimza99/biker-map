@@ -3,10 +3,11 @@
 import Link from "next/link";
 import type { ReactNode } from "react";
 
+import { Profile } from "@/shared";
 import { MainNav } from "@/widgets/navs";
-import { NotificationsRealtimeBridge } from "@widgets/notification-bell";
 import { useSession } from "@features/session";
 import { cn } from "@shared/lib";
+import { NotificationsRealtimeBridge } from "@widgets/notification-bell";
 
 export function AppShell({ children }: { children: ReactNode }) {
   const { session, status, signOut } = useSession();
@@ -21,11 +22,15 @@ export function AppShell({ children }: { children: ReactNode }) {
           </Link>
 
           <div className="flex flex-wrap items-center gap-3">
-            {status === "authenticated" ? (
-              <>
-                <div>{session?.name ?? "미로그인"}</div>
+            {session && status === "authenticated" ? (
+              <div className="flex gap-4 w-fit">
+                <Profile
+                  name={session?.name ? session.name : ""}
+                  href="/me"
+                  avatarUrl={session?.avatarUrl}
+                />
                 <button
-                  className="inline-flex items-center justify-center rounded-full border border-border bg-panel-solid px-3.5 py-2 text-sm font-medium transition duration-150 ease-out hover:-translate-y-0.5"
+                  className="inline-flex items-center justify-center rounded-full border border-border bg-panel-solid px-3.5 py-2 text-sm font-medium transition duration-150 ease-out hover:-translate-y-0.5 whitespace-nowrap"
                   type="button"
                   onClick={() => {
                     void signOut();
@@ -33,7 +38,7 @@ export function AppShell({ children }: { children: ReactNode }) {
                 >
                   로그아웃
                 </button>
-              </>
+              </div>
             ) : (
               <Link
                 href="/auth"

@@ -22,7 +22,7 @@ export function Profile({
     <Link
       href={href}
       className={cn(
-        "inline-flex max-w-40 w-full items-center justify-between rounded-3xl border border-border bg-panel-solid px-3 py-1.5 text-md font-medium text-text",
+        "inline-flex max-w-40 w-full items-center justify-between rounded-3xl border border-border bg-panel-solid px-3 py-1.5 text-md font-medium text-text gap-2",
         className
       )}
     >
