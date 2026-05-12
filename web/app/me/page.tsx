@@ -12,7 +12,6 @@ import {
 } from "@/entities/me";
 import { useDeleteAccount } from "@features/me/model/use-delete-account";
 import { useSession } from "@features/session/model/use-session";
-import { ApiClientError } from "@shared/api/http";
 import {
   Button,
   DefaultCardContainer,
@@ -123,15 +122,6 @@ export default function MePage() {
                 onSuccess: () => {
                   sessionState.setSession(null, null);
                   router.push("/");
-                },
-                onError: (error) => {
-                  window.alert(
-                    error instanceof ApiClientError
-                      ? error.message
-                      : error instanceof Error
-                      ? error.message
-                      : "회원 탈퇴를 진행하지 못했습니다."
-                  );
                 },
               });
             }}
