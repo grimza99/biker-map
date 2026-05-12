@@ -2,6 +2,7 @@ import type {
   DeleteAccountResponseData,
   UpdateMeResponseData,
 } from "@package-shared/types/auth";
+import { BUCKET_NAME } from "@package-shared/constants/supabase";
 import {
   badRequest,
   createSupabaseApiClient,
@@ -16,6 +17,7 @@ import {
   getSupabaseAuthSession,
 } from "@shared/api/auth";
 import { createSupabaseServiceClient } from "@shared/lib/supabase";
+import { getSupabasePublicEnv } from "@shared/config";
 import { getProfileStatus } from "@shared/api/supabase-profiles";
 import { NextResponse } from "next/server";
 import { z } from "zod";
@@ -61,6 +63,10 @@ export async function PATCH(request: Request) {
 
   const supabase = createSupabaseApiClient(request);
   const serviceSupabase = createSupabaseServiceClient();
+  const previousAvatarUrl =
+    typeof session.user.user_metadata?.avatar_url === "string"
+      ? session.user.user_metadata.avatar_url
+      : null;
 
   const { error: authError, data: authData } =
     await serviceSupabase.auth.admin.updateUserById(session.user.id, {
@@ -100,9 +106,49 @@ export async function PATCH(request: Request) {
     },
   };
 
+  const previousAvatarPath = extractPublicBucketPath(previousAvatarUrl);
+  if (previousAvatarPath && previousAvatarUrl !== payload.avatarUrl) {
+    const { error: removeError } = await serviceSupabase.storage
+      .from(BUCKET_NAME)
+      .remove([previousAvatarPath]);
+
+    if (removeError) {
+      return internalServerError(removeError.message);
+    }
+  }
+
   return ok<UpdateMeResponseData>({
     session: mapMe(updatedSession, profileStatus?.role || "member").session,
   });
+}
+
+function extractPublicBucketPath(avatarUrl: string | null) {
+  if (!avatarUrl) {
+    return null;
+  }
+
+  try {
+    const env = getSupabasePublicEnv();
+    const storageBaseUrl = new URL(env.NEXT_PUBLIC_SUPABASE_URL);
+    const candidateUrl = new URL(avatarUrl);
+
+    if (candidateUrl.origin !== storageBaseUrl.origin) {
+      return null;
+    }
+
+    const publicPrefix = `/storage/v1/object/public/${BUCKET_NAME}/`;
+    if (!candidateUrl.pathname.startsWith(publicPrefix)) {
+      return null;
+    }
+
+    const path = decodeURIComponent(
+      candidateUrl.pathname.slice(publicPrefix.length)
+    );
+
+    return path || null;
+  } catch {
+    return null;
+  }
 }
 
 export async function DELETE(request: Request) {
