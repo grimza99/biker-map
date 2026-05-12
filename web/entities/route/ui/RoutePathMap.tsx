@@ -107,18 +107,14 @@ export function RoutePathMap({ path }: RoutePathMapProps) {
           mapRef.current = new maps.Map(mapElementRef.current, {
             center: new maps.LatLng(36.4, 127.8),
             zoom: 8,
-            minZoom: 6,
-            maxZoom: 17,
-            pinchZoom: true,
-            scrollWheel: true,
-            keyboardShortcuts: true,
+            disableDoubleClickZoom: true,
+            pinchZoom: false,
+            scrollWheel: false,
+            keyboardShortcuts: false,
             scaleControl: false,
-            logoControl: false,
             mapDataControl: false,
-            zoomControl: true,
-            zoomControlOptions: {
-              position: maps.Position.TOP_RIGHT,
-            },
+            zoomControl: false,
+            draggable: false,
           });
         }
 

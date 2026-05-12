@@ -167,8 +167,8 @@ export function NaverDynamicMap({
 
           mapRef.current = new maps.Map(mapElementRef.current, {
             center: new maps.LatLng(36.4, 127.8),
-            zoom: 7,
-            minZoom: 6,
+            zoom: 8,
+            minZoom: 8,
             maxZoom: 16,
             pinchZoom: true,
             scrollWheel: true,
@@ -178,7 +178,8 @@ export function NaverDynamicMap({
             mapDataControl: false,
             zoomControl: true,
             zoomControlOptions: {
-              position: maps.Position.TOP_RIGHT,
+              position: maps.Position.BOTTOM_RIGHT,
+              style: maps.ZoomControlStyle.SMALL,
             },
             maxBounds: defaultBounds,
           });
