@@ -15,6 +15,7 @@ import {
   clearRefreshTokenCookie,
   getSupabaseAuthSession,
 } from "@shared/api/auth";
+import { createSupabaseServiceClient } from "@shared/lib/supabase";
 import { getProfileStatus } from "@shared/api/supabase-profiles";
 import { NextResponse } from "next/server";
 import { z } from "zod";
@@ -59,13 +60,16 @@ export async function PATCH(request: Request) {
   }
 
   const supabase = createSupabaseApiClient(request);
+  const serviceSupabase = createSupabaseServiceClient();
 
-  const { error: authError, data: authData } = await supabase.auth.updateUser({
-    data: {
-      display_name: payload.name,
-      avatar_url: payload.avatarUrl,
-    },
-  });
+  const { error: authError, data: authData } =
+    await serviceSupabase.auth.admin.updateUserById(session.user.id, {
+      user_metadata: {
+        ...session.user.user_metadata,
+        display_name: payload.name,
+        avatar_url: payload.avatarUrl,
+      },
+    });
 
   if (authError) {
     return internalServerError(authError.message);
