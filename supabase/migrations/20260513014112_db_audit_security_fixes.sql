@@ -20,8 +20,20 @@ alter table public.notifications
   check (source_type in ('post', 'comment', 'system'));
 
 -- Hide internal profile columns from client-side SELECT while keeping role/email readable.
-revoke select (deleted_at, avatar_path) on table public.profiles from anon;
-revoke select (deleted_at, avatar_path) on table public.profiles from authenticated;
+revoke all on table public.profiles from anon;
+revoke all on table public.profiles from authenticated;
+
+grant select (id, name, email, avatar_url, role, created_at, updated_at)
+on table public.profiles
+to anon;
+
+grant select (id, name, email, avatar_url, role, created_at, updated_at)
+on table public.profiles
+to authenticated;
+
+grant update (name, deleted_at)
+on table public.profiles
+to authenticated;
 
 -- Admin-only writes for route child tables while custom user routes remain closed.
 drop policy if exists route_waypoints_delete_route_owner_or_admin on public.route_waypoints;
