@@ -29,7 +29,7 @@ export async function POST() {
   if (data.session?.user?.id) {
     let profileStatus = null;
     try {
-      profileStatus = await getProfileStatus(supabase, data.session.user.id);
+      profileStatus = await getProfileStatus(data.session.user.id);
     } catch (profileError) {
       const errorResponse = internalServerError(
         profileError instanceof Error
