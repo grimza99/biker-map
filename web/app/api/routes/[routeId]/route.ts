@@ -206,10 +206,8 @@ export async function PATCH(
   }
 
   const isAdmin = profile?.role === "admin";
-  const isOwner = String(currentRoute.created_by ?? "") === session.userId;
-
-  if (!isAdmin && !isOwner) {
-    return forbidden("경로 수정은 작성자 또는 운영자만 가능합니다.");
+  if (!isAdmin) {
+    return forbidden("경로 수정은 운영자만 가능합니다.");
   }
 
   const updateInput: Record<string, unknown> = {};
@@ -468,7 +466,7 @@ export async function DELETE(
 
   const { data: currentRoute, error: currentRouteError } = await supabase
     .from("routes")
-    .select("id, created_by")
+    .select("id")
     .eq("id", routeId)
     .maybeSingle();
 
@@ -481,10 +479,8 @@ export async function DELETE(
   }
 
   const isAdmin = profile?.role === "admin";
-  const isOwner = String(currentRoute.created_by ?? "") === session.userId;
-
-  if (!isAdmin && !isOwner) {
-    return forbidden("경로 삭제는 작성자 또는 운영자만 가능합니다.");
+  if (!isAdmin) {
+    return forbidden("경로 삭제는 운영자만 가능합니다.");
   }
 
   const { error } = await supabase.from("routes").delete().eq("id", routeId);
