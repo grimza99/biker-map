@@ -13,6 +13,7 @@ import {
   parseRequestBody,
 } from "@shared/api";
 import { requireApiSession } from "@shared/api/auth";
+import { createSupabaseServiceClient } from "@shared/lib/supabase";
 import { z } from "zod";
 
 const createReactionSchema = z.object({
@@ -35,6 +36,7 @@ export async function POST(request: Request) {
   }
 
   const supabase = createSupabaseApiClient(request);
+  const serviceSupabase = createSupabaseServiceClient();
   let reactionTarget:
     | {
         postId: string;
@@ -101,11 +103,13 @@ export async function POST(request: Request) {
     };
   }
 
-  const { data: activeReaction, error: toggleError } = await supabase.rpc("toggle_reaction", {
-    input_target_type: payload.targetType,
-    input_target_id: payload.targetId,
-    input_reaction: payload.reaction,
-  });
+  const { data: activeReaction, error: toggleError } =
+    await serviceSupabase.rpc("toggle_reaction", {
+      actor_user_id: session.userId,
+      input_target_type: payload.targetType,
+      input_target_id: payload.targetId,
+      input_reaction: payload.reaction,
+    });
 
   if (toggleError) {
     if (toggleError.message.includes("반응 대상을 찾을 수 없습니다.")) {

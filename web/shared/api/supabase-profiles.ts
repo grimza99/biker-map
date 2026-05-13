@@ -1,4 +1,5 @@
 import type { SupabaseClient } from "@supabase/supabase-js";
+import { createSupabaseServiceClient } from "@shared/lib/supabase";
 
 export type ProfileStatus = {
   id: string;
@@ -30,10 +31,8 @@ export async function loadProfileNameMap(
   );
 }
 
-export async function getProfileStatus(
-  client: SupabaseClient,
-  userId: string
-): Promise<ProfileStatus | null> {
+export async function getProfileStatus(userId: string): Promise<ProfileStatus | null> {
+  const client = createSupabaseServiceClient();
   const { data, error } = await client
     .from("profiles")
     .select("id, name, role, deleted_at")
