@@ -33,10 +33,9 @@ export async function GET(request: Request) {
     return unauthorized();
   }
 
-  const supabase = createSupabaseApiClient(request);
   let profileStatus = null;
   try {
-    profileStatus = await getProfileStatus(supabase, session.user.id);
+    profileStatus = await getProfileStatus(session.user.id);
   } catch {
     return unauthorized();
   }
@@ -92,7 +91,7 @@ export async function PATCH(request: Request) {
     return internalServerError(profileError.message);
   }
 
-  const profileStatus = await getProfileStatus(supabase, session.user.id);
+  const profileStatus = await getProfileStatus(session.user.id);
 
   const updatedSession = {
     ...session,

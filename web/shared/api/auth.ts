@@ -60,10 +60,8 @@ async function getApiSession(request: Request): Promise<AppSession | null> {
     return mappedSession;
   }
 
-  const supabase = createSupabaseAuthClient(session.access_token);
-
   try {
-    const profileStatus = await getProfileStatus(supabase, mappedSession.userId);
+    const profileStatus = await getProfileStatus(mappedSession.userId);
     if (profileStatus?.deletedAt) {
       return null;
     }

@@ -49,7 +49,7 @@ export async function POST(request: Request) {
 
   let profileStatus = null;
   try {
-    profileStatus = await getProfileStatus(supabase, mappedSession.userId);
+    profileStatus = await getProfileStatus(mappedSession.userId);
   } catch (profileError) {
     return internalServerError(
       profileError instanceof Error
