@@ -5,7 +5,7 @@ metadata:
   short-description: Biker Map repo guidance
 ---
 
-<strong>버전 : </strong> v1
+<strong>버전 : </strong> v1.1
 
 <strong>생성 날짜 : </strong> 2026-05-21
 
@@ -24,6 +24,7 @@ metadata:
 - subagent는 전문 검토, 병렬 조사, 리뷰, QA, 릴리즈 점검에 사용합니다.
 - 최종 응답과 의사결정은 메인 에이전트가 통합해서 제공합니다.
 - source of truth는 현재 `web`이며, 앱 영향이 있는 변경은 `package-shared`와 모바일 계약을 함께 확인합니다.
+- 릴리즈는 `dev -> main` 직행이 아니라 `main`에서 분기한 `release/*` 브랜치에 `dev`의 필요한 변경만 `cherry-pick`하는 전략을 기본값으로 봅니다.
 - 구현 요청이 명확하면 계획 설명에 머무르지 않고 필요한 변경, 검증, 정리까지 진행합니다.
 - 커밋, PR, 배포, Notion 문서화는 사용자의 명시 요청이 있을 때 수행합니다.
 

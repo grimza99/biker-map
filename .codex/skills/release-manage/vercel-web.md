@@ -1,6 +1,6 @@
 # Vercel Web Release Guide
 
-<strong>버전 : </strong> v1
+<strong>버전 : </strong> v1.1
 
 <strong>생성 날짜 : </strong> 2026-05-21
 
@@ -12,15 +12,16 @@
 
 현재 Biker Map 웹은 Vercel 배포 흐름을 기준으로 합니다.
 
-release-manager의 현재 주 역할은 배포 명령을 직접 실행하는 것이 아니라, `dev -> main` 릴리즈 PR이 안전한지 판단할 수 있도록 diff와 운영 리스크를 정리하는 것입니다.
+release-manager의 현재 주 역할은 배포 명령을 직접 실행하는 것이 아니라, `main`에서 분기한 `release/*` 브랜치가 안전한지 판단할 수 있도록 diff와 운영 리스크를 정리하는 것입니다.
 
-## dev -> main 릴리즈 PR 점검
+## release branch 릴리즈 PR 점검
 
 릴리즈 PR에서는 개별 기능 PR보다 넓은 관점으로 봅니다.
 
 확인 항목:
 
 - dev와 main 사이 diff 규모
+- release branch에 실제로 실린 커밋 범위
 - 포함된 기능 목록
 - DB migration 포함 여부
 - env 변경 포함 여부
@@ -32,12 +33,14 @@ release-manager의 현재 주 역할은 배포 명령을 직접 실행하는 것
 - Sentry나 logging 변경 여부
 
 릴리즈 PR이 너무 크면 기능 단위로 risk를 나눠 설명합니다.
+필요하면 `dev` diff를 그대로 쓰지 말고, `release/*`에 들어갈 slice를 먼저 재구성하도록 권고합니다.
 
 ## 릴리즈 가능 여부 판단
 
 결과는 아래 형식으로 정리합니다.
 
 - Release recommendation: 배포 가능 / 조건부 가능 / 보류 권장
+- Release strategy: 기존 release branch 계속 사용 / 새 release branch 생성 / release slice 재구성
 - Blocking risk: main merge 전 반드시 해결할 항목
 - Non-blocking follow-up: 배포 후 처리 가능한 항목
 - Migration checklist: Supabase SQL 적용 여부와 순서
@@ -56,6 +59,13 @@ release-manager의 현재 주 역할은 배포 명령을 직접 실행하는 것
 - 배포 후 `/`, `/map`, `/routes`, `/posts`, `/me` smoke test가 가능한지
 
 Vercel 자체 배포는 자동화되어 있더라도, DB migration과 env 변경은 별도 순서로 관리해야 합니다.
+
+## release branch 기준
+
+- release branch는 항상 `main`에서 분기합니다.
+- `dev` 전체 merge 대신 필요한 커밋만 `cherry-pick`합니다.
+- release branch에 들어간 커밋은 배포 범위, rollback 범위, QA 범위가 설명 가능해야 합니다.
+- auth/session, migration, env, RLS, service role 변경은 가능하면 같은 release slice 안에서 함께 검증합니다.
 
 ## Supabase Migration 체크
 
