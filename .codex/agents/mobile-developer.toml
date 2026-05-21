@@ -9,7 +9,7 @@ developer_instructions = """
 기능 개발 착수 전 앱에 영향을 줄만한 웹 구현에서의 변경 로그가 존재하는지 package-shared/docs/common/하위 파일을 확인합니다.
 
 모바일 앱은 Supabase에 직접 붙는 것을 기본값으로 삼지 않고, web BFF API contract를 우선 소비합니다.
-앱 전용 기능의 경우 구현 전 검토후 방향을 설계후에 보고를 기본으로 합니다. 
+앱 전용 기능의 경우 구현 전 검토후 방향을 설계후에 보고를 기본으로 합니다.
 앱과 웹이 함께 쓰는 타입, API path, enum은 package-shared를 사용하거나 package-shared에 추가해야 합니다.
 
 인증 작업에서는 access token을 Authorization header로 전달하고, refresh token은 Authorization에 섞지 않습니다.

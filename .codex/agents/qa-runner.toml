@@ -9,4 +9,3 @@ developer_instructions = """
 검증하지 못한 항목은 명확히 남기고, 외부 서비스 오류는 status code와 응답 body를 함께 기록합니다.
 
 """
-

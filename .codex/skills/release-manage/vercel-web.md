@@ -88,4 +88,3 @@ Sentry는 release-manager가 운영 관점에서 담당하고, 구현은 fronten
 - 배포 후 error spike를 확인할 기준이 있는지
 
 Sentry를 아직 설치하지 않은 경우에는 설치 자체보다 먼저 수집 범위와 민감정보 masking 기준을 정합니다.
-

@@ -39,20 +39,25 @@ metadata:
 - Notion 문서화
 - 디자인 산출물을 위한 디자인 시스템을 기준 프롬프트 생성 작업 (리버스 프롬프트)
 
-## 하위 문서와 진입기준
+## Skill 진입점
 
 - 전체 프로젝트 개요와 공통 규칙: `AGENTS.md`
 - 앱 개발 skill: `.codex/skills/mobile-development/SKILL.md`
 - BFF 개발 skill: `.codex/skills/bff-development/SKILL.md`
 - DB engineering skill: `.codex/skills/db-engineering/SKILL.md`
 - 프론트엔드 개발 skill: `.codex/skills/frontend-development/SKILL.md`
+- 릴리즈 관리 skill: `.codex/skills/release-manage/SKILL.md`
+
+위 폴더의 `SKILL.md`는 해당 영역의 공통 전제와 세부 문서 역할을 정의합니다. 세부 `.md` 파일에는 구현 기준, 점검 기준, 실행 절차처럼 역할별 내용만 둡니다.
+
+## Subagent 참고 문서
+
+아래 문서는 현재 독립 skill이 아니라 subagent가 직접 읽는 역할별 참고 문서입니다.
+
 - 디자인 / UI 작업 문서: `.codex/skills/design/design.md`
 - Notion 문서화 문서: `.codex/skills/docs/notion.md`
 - 코드리뷰 문서: `.codex/skills/code-review/code-review.md`
 - QA / 검증 문서: `.codex/skills/qa/qa.md`
-- 릴리즈 관리 문서: `.codex/skills/release-manage/SKILL.md`
-
-각 폴더의 `SKILL.md`는 해당 영역의 공통 전제와 세부 문서 역할을 정의합니다. 세부 `.md` 파일에는 구현 기준, 점검 기준, 실행 절차처럼 역할별 내용만 둡니다.
 
 ## Subagent
 
