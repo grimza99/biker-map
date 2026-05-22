@@ -1,5 +1,6 @@
 import { type PropsWithChildren } from "react";
 import { ScrollView, StyleSheet, Text, View } from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
 
 import { bikerMapTheme } from "@package-shared/constants/theme";
 
@@ -11,14 +12,16 @@ type AppScreenProps = PropsWithChildren<{
 
 export function AppScreen({ eyebrow, title, description, children }: AppScreenProps) {
   return (
-    <ScrollView style={styles.container} contentContainerStyle={styles.content} showsVerticalScrollIndicator={false}>
-      <View style={styles.hero}>
-        <Text style={styles.eyebrow}>{eyebrow}</Text>
-        <Text style={styles.title}>{title}</Text>
-        <Text style={styles.description}>{description}</Text>
-      </View>
-      {children}
-    </ScrollView>
+    <SafeAreaView style={styles.container} edges={["top"]}>
+      <ScrollView contentContainerStyle={styles.content} showsVerticalScrollIndicator={false}>
+        <View style={styles.hero}>
+          <Text style={styles.eyebrow}>{eyebrow}</Text>
+          <Text style={styles.title}>{title}</Text>
+          <Text style={styles.description}>{description}</Text>
+        </View>
+        {children}
+      </ScrollView>
+    </SafeAreaView>
   );
 }
 
@@ -30,7 +33,7 @@ const styles = StyleSheet.create({
   content: {
     gap: 18,
     padding: 20,
-    paddingBottom: 32,
+    paddingBottom: 28,
   },
   hero: {
     gap: 10,
