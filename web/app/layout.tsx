@@ -23,7 +23,7 @@ export default async function RootLayout({
 
   return (
     <html lang="ko">
-      <body style={bodyThemeVars}>
+      <body style={bodyThemeVars} className="w-screen h-screen">
         <AppProviders initialSession={initialSession}>{children}</AppProviders>
       </body>
     </html>
