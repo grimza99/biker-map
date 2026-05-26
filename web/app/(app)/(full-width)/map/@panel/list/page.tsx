@@ -1,5 +1,10 @@
-import { MapPanelPlaceholder } from "../_components/MapPanelPlaceholder";
+import { MapListPanelClient } from "../_components/MapListPanelClient";
+import { MapPanelFrame } from "../_components/MapPanelFrame";
 
 export default function MapListPanelPage() {
-  return <MapPanelPlaceholder title="목록 패널 자리" />;
+  return (
+    <MapPanelFrame title="장소 목록">
+      <MapListPanelClient />
+    </MapPanelFrame>
+  );
 }

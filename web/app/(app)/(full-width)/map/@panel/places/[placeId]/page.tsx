@@ -1,4 +1,5 @@
-import { MapPanelPlaceholder } from "../../_components/MapPanelPlaceholder";
+import { MapPanelFrame } from "../../_components/MapPanelFrame";
+import { PlaceDetailPanelClient } from "../../_components/PlaceDetailPanelClient";
 
 export default async function MapPlacePanelPage({
   params,
@@ -7,5 +8,9 @@ export default async function MapPlacePanelPage({
 }) {
   const { placeId } = await params;
 
-  return <MapPanelPlaceholder title={`장소 패널 자리: ${placeId}`} />;
+  return (
+    <MapPanelFrame title="장소 상세">
+      <PlaceDetailPanelClient placeId={placeId} />
+    </MapPanelFrame>
+  );
 }

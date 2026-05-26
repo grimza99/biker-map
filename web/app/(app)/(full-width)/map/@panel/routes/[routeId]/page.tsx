@@ -1,4 +1,5 @@
-import { MapPanelPlaceholder } from "../../_components/MapPanelPlaceholder";
+import { MapPanelFrame } from "../../_components/MapPanelFrame";
+import { RouteDetailPanelClient } from "../../_components/RouteDetailPanelClient";
 
 export default async function MapRoutePanelPage({
   params,
@@ -7,5 +8,9 @@ export default async function MapRoutePanelPage({
 }) {
   const { routeId } = await params;
 
-  return <MapPanelPlaceholder title={`경로 패널 자리: ${routeId}`} />;
+  return (
+    <MapPanelFrame title="경로 상세">
+      <RouteDetailPanelClient routeId={routeId} />
+    </MapPanelFrame>
+  );
 }
