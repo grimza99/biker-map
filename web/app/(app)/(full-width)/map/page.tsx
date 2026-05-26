@@ -1,51 +1,32 @@
 "use client";
 
-import { RouteCard } from "@/entities";
 import { usePlaces } from "@features/places/model/use-places";
 import { useRouteMapPaths } from "@features/routes/model/use-route-map-paths";
-import type { PlaceListItem, RouteMapPathItem } from "@package-shared/index";
 import { ArrowLeftToLine } from "lucide-react";
-import { startTransition, useDeferredValue, useMemo, useState } from "react";
+import { useRouter } from "next/navigation";
+import { startTransition, useMemo, useState } from "react";
 
 import {
-  MapSidePanel,
   NaverDynamicMap,
-  PlaceDetailSidePanel,
   mapCategoryOptions,
   type MapCategoryFilter,
 } from "@/entities/map";
-import {
-  Button,
-  SidePanel,
-  SidePanelBody,
-  SidePanelContent,
-  SidePanelTrigger,
-} from "@shared/ui";
+import { Button } from "@shared/ui";
 
 export default function MapPage() {
-  const [searchInput, setSearchInput] = useState("");
+  const router = useRouter();
   const [category, setCategory] = useState<MapCategoryFilter | undefined>(
     "all"
   );
-  const [isSidePanelOpen, setIsSidePanelOpen] = useState(false);
-  const [selectedPlace, setSelectedPlace] = useState<PlaceListItem | null>(
-    null
-  );
-  const [selectedRoute, setSelectedRoute] = useState<RouteMapPathItem | null>(
-    null
-  );
-  const deferredSearch = useDeferredValue(searchInput);
-  const isStale = searchInput !== deferredSearch;
   const placeCategory = category === "route" ? undefined : category;
   const filters = useMemo(
     () => ({
-      search: deferredSearch,
       category: placeCategory,
       limit: 100,
     }),
-    [deferredSearch, placeCategory]
+    [placeCategory]
   );
-  const { data, isLoading, isError, error } = usePlaces(filters);
+  const { data } = usePlaces(filters);
   const routeMapPathsQuery = useRouteMapPaths();
   const places = data?.data.items ?? [];
   const routes = routeMapPathsQuery.data?.data.items ?? [];
@@ -53,38 +34,15 @@ export default function MapPage() {
   const visibleRoutes =
     category === "route" || category === "all" ? routes : [];
 
-  const handleChangeSearchInput = (input: string) => {
-    if (category !== "route") {
-      setCategory(undefined);
-    }
-    setSearchInput(input);
-  };
-
-  const handleOpenSearchPanel = () => {
-    setSelectedPlace(null);
-    setSelectedRoute(null);
-    setIsSidePanelOpen(true);
-  };
-
-  const handleClickPlaceMarker = (place: PlaceListItem) => {
-    setSelectedPlace(place);
-    setSelectedRoute(null);
-    setIsSidePanelOpen(true);
-  };
-
-  const handleClickRoutePolyline = (route: RouteMapPathItem) => {
-    setSelectedPlace(null);
-    setSelectedRoute(route);
-    setIsSidePanelOpen(true);
-  };
-
   return (
     <div className="relative min-h-[calc(100vh-11rem)] h-full overflow-hidden ">
       <NaverDynamicMap
         places={visiblePlaces}
         routes={visibleRoutes}
-        onClickPlaceMarker={handleClickPlaceMarker}
-        onClickRoutePolyline={handleClickRoutePolyline}
+        onClickPlaceMarker={(place) => router.push(`/map/places/${place.id}`)}
+        onClickRoutePolyline={(route) =>
+          router.push(`/map/routes/${route.routeId}`)
+        }
       />
 
       <div className="pointer-events-none absolute inset-0">
@@ -113,42 +71,14 @@ export default function MapPage() {
           </div>
 
           <div className="pointer-events-auto">
-            <SidePanel open={isSidePanelOpen} onOpenChange={setIsSidePanelOpen}>
-              <SidePanelTrigger asChild>
-                <Button variant="primary" onClick={handleOpenSearchPanel}>
-                  <ArrowLeftToLine className="m-0 h-4 w-4" />
-                </Button>
-              </SidePanelTrigger>
-              <SidePanelContent
-                title={
-                  <h2>
-                    {selectedPlace
-                      ? selectedPlace.name
-                      : selectedRoute
-                      ? "추천 경로"
-                      : "검색"}
-                  </h2>
-                }
-                overlayClassName="bg-transparent backdrop-blur-none"
-              >
-                <SidePanelBody>
-                  {selectedPlace ? (
-                    <PlaceDetailSidePanel placeId={selectedPlace.id} />
-                  ) : selectedRoute ? (
-                    <RouteCard route={selectedRoute} />
-                  ) : (
-                    <MapSidePanel
-                      places={places}
-                      onChangeSearchInput={handleChangeSearchInput}
-                      isLoading={isLoading}
-                      isError={isError}
-                      error={error}
-                      isStale={isStale}
-                    />
-                  )}
-                </SidePanelBody>
-              </SidePanelContent>
-            </SidePanel>
+            <Button
+              variant="primary"
+              size="icon"
+              aria-label="목록 패널 열기"
+              onClick={() => router.push("/map/list")}
+            >
+              <ArrowLeftToLine className="m-0 h-4 w-4" />
+            </Button>
           </div>
         </div>
       </div>
