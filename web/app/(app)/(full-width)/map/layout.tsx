@@ -1,5 +1,7 @@
 import type { ReactNode } from "react";
 
+import { MapPanelSlot } from "./_components/MapPanelSlot";
+
 export default function MapLayout({
   children,
   panel,
@@ -10,7 +12,7 @@ export default function MapLayout({
   return (
     <div className="relative h-full w-full">
       {children}
-      {panel}
+      <MapPanelSlot>{panel}</MapPanelSlot>
     </div>
   );
 }
