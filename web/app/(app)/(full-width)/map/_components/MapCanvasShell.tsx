@@ -9,6 +9,7 @@ import { startTransition, useCallback, useMemo } from "react";
 import { NaverDynamicMap, mapCategoryOptions } from "@/entities/map";
 import { Button } from "@shared/ui";
 
+import { PATHS } from "@package-shared/constants";
 import { useMapCanvasData } from "./MapCanvasDataProvider";
 
 const EMPTY_PLACES: PlaceListItem[] = [];
@@ -30,13 +31,13 @@ export function MapCanvasShell() {
   );
   const handleClickPlaceMarker = useCallback(
     (place: PlaceListItem) => {
-      router.push(`/map/places/${place.id}`);
+      router.push(PATHS.map.detailPlace(place.id));
     },
     [router]
   );
   const handleClickRoutePolyline = useCallback(
     (route: RouteMapPathItem) => {
-      router.push(`/map/routes/${route.routeId}`);
+      router.push(PATHS.map.detailRoute(route.routeId));
     },
     [router]
   );
@@ -80,7 +81,7 @@ export function MapCanvasShell() {
               variant="primary"
               size="icon"
               aria-label="목록 패널 열기"
-              onClick={() => router.push("/map/list")}
+              onClick={() => router.push(PATHS.map.list)}
             >
               <ArrowLeftToLine className="m-0 h-4 w-4" />
             </Button>
