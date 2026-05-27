@@ -3,7 +3,7 @@
 import { ErrorState } from "@/shared";
 import type { PlaceListItem } from "@package-shared/types/place";
 import type { RouteMapPathItem } from "@package-shared/types/route";
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 
 import { PlaceMarker } from "../model/PlaceMarker";
 import { RoutePolyline } from "../model/RoutePolyline";
@@ -91,6 +91,8 @@ export function NaverDynamicMap({
   const markersRef = useRef<PlaceMarker[]>([]);
   const routePolylinesRef = useRef<RoutePolyline[]>([]);
   const routePolylineVisibleRef = useRef(false);
+  const onClickPlaceMarkerRef = useRef(onClickPlaceMarker);
+  const onClickRoutePolylineRef = useRef(onClickRoutePolyline);
   const [error, setError] = useState<string | null>(null);
   const [isLoaded, setIsLoaded] = useState(false);
 
@@ -113,7 +115,15 @@ export function NaverDynamicMap({
     [routes]
   );
 
-  function syncRouteVisibility() {
+  const handleClickPlaceMarker = useCallback((place: PlaceListItem) => {
+    onClickPlaceMarkerRef.current?.(place);
+  }, []);
+
+  const handleClickRoutePolyline = useCallback((route: RouteMapPathItem) => {
+    onClickRoutePolylineRef.current?.(route);
+  }, []);
+
+  const syncRouteVisibility = useCallback(() => {
     const map = mapRef.current;
     if (!map) {
       return;
@@ -133,7 +143,15 @@ export function NaverDynamicMap({
 
       routePolyline.detach();
     });
-  }
+  }, []);
+
+  useEffect(() => {
+    onClickPlaceMarkerRef.current = onClickPlaceMarker;
+  }, [onClickPlaceMarker]);
+
+  useEffect(() => {
+    onClickRoutePolylineRef.current = onClickRoutePolyline;
+  }, [onClickRoutePolyline]);
 
   useEffect(() => {
     if (!clientId) {
@@ -206,27 +224,27 @@ export function NaverDynamicMap({
     return () => {
       canceled = true;
     };
-  }, [clientId]);
+  }, [clientId, syncRouteVisibility]);
 
   useEffect(() => {
     const map = mapRef.current;
     const maps = mapsApiRef.current;
 
-    if (!map || !maps) {
+    if (!isLoaded || !map || !maps) {
       return;
     }
 
     markersRef.current.forEach((marker) => marker.detach());
     markersRef.current = validPlaces.map(
-      (place) => new PlaceMarker(maps, map, place, onClickPlaceMarker)
+      (place) => new PlaceMarker(maps, map, place, handleClickPlaceMarker)
     );
-  }, [onClickPlaceMarker, validPlaces]);
+  }, [handleClickPlaceMarker, isLoaded, validPlaces]);
 
   useEffect(() => {
     const map = mapRef.current;
     const maps = mapsApiRef.current;
 
-    if (!map || !maps) {
+    if (!isLoaded || !map || !maps) {
       return;
     }
 
@@ -234,11 +252,11 @@ export function NaverDynamicMap({
       routePolyline.detach()
     );
     routePolylinesRef.current = validRoutes.map(
-      (route) => new RoutePolyline(maps, map, route, onClickRoutePolyline)
+      (route) => new RoutePolyline(maps, map, route, handleClickRoutePolyline)
     );
     routePolylineVisibleRef.current = false;
     syncRouteVisibility();
-  }, [onClickRoutePolyline, validRoutes]);
+  }, [handleClickRoutePolyline, isLoaded, syncRouteVisibility, validRoutes]);
 
   return (
     <div className="absolute inset-0 overflow-hidden bg-panel-soft">
