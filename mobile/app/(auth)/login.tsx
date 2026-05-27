@@ -11,7 +11,7 @@ export default function LoginScreen() {
 
   const handleSignIn = () => {
     signIn();
-    router.replace("/(tabs)");
+    router.replace("/(tabs)/map");
   };
 
   return (

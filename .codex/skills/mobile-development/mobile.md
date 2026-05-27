@@ -4,7 +4,7 @@
 
 <strong>생성 날짜 : </strong> 2026-05-21
 
-<strong>최신 업데이트 날짜 : </strong> 2026-05-21
+<strong>최신 업데이트 날짜 : </strong> 2026-05-27
 
 이 문서는 Biker Map 모바일 앱 개발 시의 구현 기준을 정리합니다.
 
@@ -30,6 +30,13 @@
 - `mobile/assets`: 이미지와 폰트 리소스
 
 새 기능을 만들 때는 웹의 FSD 구조를 그대로 복사하기보다, Expo Router와 앱 화면 단위에 맞춰 단순하게 시작합니다.
+
+### 2026-05-27 Metro / install 메모
+
+- `codex/mobile-tab-shell` 작업 중 Expo Metro가 root workspace hoist를 따라가면서 `expo/package.json` 해상도 에러를 일으킨 이력이 있다.
+- 모바일 개발 시 의존성 install은 우선 `mobile` 디렉터리 기준으로 진행하고, Expo 런타임이 root `node_modules`를 참조하지 않게 유지한다.
+- `metro.config.js`는 `expo/metro-config` 기반으로 두되, root `node_modules`를 강제로 resolver path에 넣는 설정은 지양한다.
+- 이 판단은 `package-shared` 런타임 에러가 확인되기 전까지의 기본선이다. shared import 이슈가 실제로 생기면 그때 별도 Metro 조정을 검토한다.
 
 ## 인증 흐름
 
