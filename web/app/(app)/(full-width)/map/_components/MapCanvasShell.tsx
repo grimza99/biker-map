@@ -1,40 +1,33 @@
 "use client";
 
-import { usePlaces } from "@features/places/model/use-places";
-import { useRouteMapPaths } from "@features/routes/model/use-route-map-paths";
 import type { PlaceListItem } from "@package-shared/types/place";
 import type { RouteMapPathItem } from "@package-shared/types/route";
 import { ArrowLeftToLine } from "lucide-react";
 import { useRouter } from "next/navigation";
-import { startTransition, useCallback, useMemo, useState } from "react";
+import { startTransition, useCallback, useMemo } from "react";
 
-import {
-  NaverDynamicMap,
-  mapCategoryOptions,
-  type MapCategoryFilter,
-} from "@/entities/map";
+import { NaverDynamicMap, mapCategoryOptions } from "@/entities/map";
 import { Button } from "@shared/ui";
+
+import { useMapCanvasData } from "./MapCanvasDataProvider";
+
+const EMPTY_PLACES: PlaceListItem[] = [];
+const EMPTY_ROUTES: RouteMapPathItem[] = [];
 
 export function MapCanvasShell() {
   const router = useRouter();
-  const [category, setCategory] = useState<MapCategoryFilter | undefined>(
-    "all"
+  const { category, setCategory, placesQuery, routeMapPathsQuery } =
+    useMapCanvasData();
+  const places = placesQuery.data?.data.items ?? EMPTY_PLACES;
+  const routes = routeMapPathsQuery.data?.data.items ?? EMPTY_ROUTES;
+  const visiblePlaces = useMemo(
+    () => (category === "route" ? EMPTY_PLACES : places),
+    [category, places]
   );
-  const placeCategory = category === "route" ? undefined : category;
-  const filters = useMemo(
-    () => ({
-      category: placeCategory,
-      limit: 100,
-    }),
-    [placeCategory]
+  const visibleRoutes = useMemo(
+    () => (category === "route" || category === "all" ? routes : EMPTY_ROUTES),
+    [category, routes]
   );
-  const { data } = usePlaces(filters);
-  const routeMapPathsQuery = useRouteMapPaths();
-  const places = data?.data.items ?? [];
-  const routes = routeMapPathsQuery.data?.data.items ?? [];
-  const visiblePlaces = category === "route" ? [] : places;
-  const visibleRoutes =
-    category === "route" || category === "all" ? routes : [];
   const handleClickPlaceMarker = useCallback(
     (place: PlaceListItem) => {
       router.push(`/map/places/${place.id}`);
