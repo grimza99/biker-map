@@ -3,10 +3,6 @@
   "compilerOptions": {
     "baseUrl": "."
   },
-  "include": [
-    "src/**/*.ts"
-  ],
-  "exclude": [
-    "node_modules"
-  ]
+  "include": ["src/**/*.ts", "src/constants/paths.ts"],
+  "exclude": ["node_modules"]
 }
