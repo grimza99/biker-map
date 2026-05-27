@@ -65,7 +65,7 @@ export function MobileTabBar({ state }: MobileTabBarProps) {
           return (
             <Link key={route.key} href={route.href} asChild>
               <Pressable
-                style={[styles.item, isActive && styles.itemActive]}
+                style={StyleSheet.flatten([styles.item, isActive && styles.itemActive])}
                 accessibilityRole="tab"
                 accessibilityState={{ selected: isActive }}
                 accessibilityLabel={`${route.label} 탭`}
