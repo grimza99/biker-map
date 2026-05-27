@@ -12,6 +12,11 @@ import { useQuery } from "@tanstack/react-query";
 import { apiFetch } from "@shared/api/http";
 import { queryKeys } from "@shared/config/query-keys";
 
+type UsePlacesOptions = {
+  enabled?: boolean;
+  staleTime?: number;
+};
+
 function serializeViewport(viewport?: PlaceViewport) {
   if (!viewport) {
     return null;
@@ -25,11 +30,25 @@ function serializeViewport(viewport?: PlaceViewport) {
   ].join(",");
 }
 
+function normalizePlacesFilters(filters: PlacesQuery): PlacesQuery {
+  const search = filters.search?.trim();
+
+  return {
+    ...(search ? { search } : {}),
+    ...(filters.category && filters.category !== "all"
+      ? { category: filters.category }
+      : {}),
+    ...(filters.viewport ? { viewport: filters.viewport } : {}),
+    ...(filters.cursor ? { cursor: filters.cursor } : {}),
+    ...(filters.limit !== undefined ? { limit: filters.limit } : {}),
+  };
+}
+
 function buildPlacesSearchParams(filters: PlacesQuery) {
   const searchParams = new URLSearchParams();
 
-  if (filters.search?.trim()) {
-    searchParams.set("search", filters.search.trim());
+  if (filters.search) {
+    searchParams.set("search", filters.search);
   }
 
   if (filters.category) {
@@ -52,11 +71,12 @@ function buildPlacesSearchParams(filters: PlacesQuery) {
   return searchParams.toString();
 }
 
-export function usePlaces(filters: PlacesQuery) {
-  const query = buildPlacesSearchParams(filters);
+export function usePlaces(filters: PlacesQuery, options?: UsePlacesOptions) {
+  const normalizedFilters = normalizePlacesFilters(filters);
+  const query = buildPlacesSearchParams(normalizedFilters);
 
   return useQuery({
-    queryKey: queryKeys.places(filters),
+    queryKey: queryKeys.places(normalizedFilters),
     queryFn: async () => {
       const endpoint = query
         ? `${API_PATHS.places.list}?${query}`
@@ -64,6 +84,8 @@ export function usePlaces(filters: PlacesQuery) {
 
       return apiFetch<PlacesListResponseData>(endpoint);
     },
+    enabled: options?.enabled,
+    staleTime: options?.staleTime,
     placeholderData: (previousData) => previousData,
   });
 }
