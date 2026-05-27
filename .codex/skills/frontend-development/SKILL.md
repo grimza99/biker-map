@@ -31,6 +31,7 @@ metadata:
 - TanStack Query 서버 상태 관리: `.codex/skills/frontend-development/tanstack-query.md`
 - Zod 검증 규칙: `.codex/skills/frontend-development/zod.md`
 - Supabase client 사용 규칙: `.codex/skills/frontend-development/supabase-client.md`
+- 지도 사이드패널 Parallel Route 기준: `.codex/skills/frontend-development/map-panel-parallel-route.md`
 
 ## 공통 전제
 
@@ -67,5 +68,6 @@ metadata:
 - `.codex/skills/frontend-development/tanstack-query.md`: query/mutation hook, toast, optimistic update, cache 기준입니다.
 - `.codex/skills/frontend-development/zod.md`: API/form/env/error payload 런타임 검증 기준입니다.
 - `.codex/skills/frontend-development/supabase-client.md`: Supabase client 종류, env, browser/server 경계 기준입니다.
+- `.codex/skills/frontend-development/map-panel-parallel-route.md`: 지도 `@panel` parallel route, route-local UI, `/map/list` path 기준입니다.
 - `.codex/skills/bff-development/bff.md`: API route authorization과 response contract의 source of truth입니다.
 - `.codex/skills/db-engineering/SKILL.md`: RLS, baseline, service role 공통 전제의 source of truth입니다.
