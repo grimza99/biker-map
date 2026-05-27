@@ -212,7 +212,7 @@ export function NaverDynamicMap({
     const map = mapRef.current;
     const maps = mapsApiRef.current;
 
-    if (!map || !maps) {
+    if (!isLoaded || !map || !maps) {
       return;
     }
 
@@ -220,13 +220,13 @@ export function NaverDynamicMap({
     markersRef.current = validPlaces.map(
       (place) => new PlaceMarker(maps, map, place, onClickPlaceMarker)
     );
-  }, [onClickPlaceMarker, validPlaces]);
+  }, [isLoaded, onClickPlaceMarker, validPlaces]);
 
   useEffect(() => {
     const map = mapRef.current;
     const maps = mapsApiRef.current;
 
-    if (!map || !maps) {
+    if (!isLoaded || !map || !maps) {
       return;
     }
 
@@ -238,7 +238,7 @@ export function NaverDynamicMap({
     );
     routePolylineVisibleRef.current = false;
     syncRouteVisibility();
-  }, [onClickRoutePolyline, validRoutes]);
+  }, [isLoaded, onClickRoutePolyline, validRoutes]);
 
   return (
     <div className="absolute inset-0 overflow-hidden bg-panel-soft">

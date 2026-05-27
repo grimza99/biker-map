@@ -1,3 +1,3 @@
-import MapPage from "../../page";
-
-export default MapPage;
+export default function MapPlacePage() {
+  return null;
+}
