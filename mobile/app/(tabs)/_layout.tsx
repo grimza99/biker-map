@@ -18,21 +18,27 @@ export default function TabsLayout() {
       }}
     >
       <Tabs.Screen
-        name="index"
-        options={{
-          title: "홈",
-        }}
-      />
-      <Tabs.Screen
         name="map"
         options={{
           title: "지도",
         }}
       />
       <Tabs.Screen
+        name="bikers"
+        options={{
+          title: "바이커",
+        }}
+      />
+      <Tabs.Screen
         name="community"
         options={{
           title: "커뮤니티",
+        }}
+      />
+      <Tabs.Screen
+        name="routes"
+        options={{
+          title: "경로",
         }}
       />
       <Tabs.Screen
