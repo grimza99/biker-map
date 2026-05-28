@@ -8,9 +8,13 @@ import { containerStyles } from "@/shared";
 import { formStyles } from "./form-style";
 
 interface ISignUpForm {
-  onSubmit: (body: SignUpBody) => void;
+  isSubmitting?: boolean;
+  onSubmit: (body: SignUpBody) => Promise<void>;
 }
-export default function SignUpForm({ onSubmit }: ISignUpForm) {
+export default function SignUpForm({
+  isSubmitting = false,
+  onSubmit,
+}: ISignUpForm) {
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -19,30 +23,43 @@ export default function SignUpForm({ onSubmit }: ISignUpForm) {
     <ScrollView style={[containerStyles.panel]}>
       <View style={[formStyles.formContainer]}>
         <Input
+          editable={!isSubmitting}
           label="이름"
-          onChange={(e) => {
-            setName(e.nativeEvent.text);
-          }}
+          onChangeText={setName}
+          placeholder="이름"
           style={{ gap: 10 }}
           fieldStyle={formStyles.fieldStyle}
+          value={name}
         />
         <Input
+          autoCapitalize="none"
+          autoCorrect={false}
+          editable={!isSubmitting}
+          keyboardType="email-address"
           label="이메일"
-          onChange={(e) => {
-            setEmail(e.nativeEvent.text);
-          }}
+          onChangeText={setEmail}
+          placeholder="email@example.com"
           style={{ gap: 10 }}
           fieldStyle={formStyles.fieldStyle}
+          value={email}
         />
         <Input
+          autoCapitalize="none"
+          autoCorrect={false}
+          editable={!isSubmitting}
           label="비밀번호"
-          onChange={(e) => {
-            setPassword(e.nativeEvent.text);
-          }}
+          onChangeText={setPassword}
+          placeholder="비밀번호"
+          secureTextEntry
           style={{ gap: 10 }}
           fieldStyle={formStyles.fieldStyle}
+          value={password}
         />
-        <Button onPress={() => onSubmit({ name, email, password })}>
+        <Button
+          disabled={!name || !email || !password}
+          loading={isSubmitting}
+          onPress={() => void onSubmit({ name, email, password })}
+        >
           회원가입
         </Button>
       </View>

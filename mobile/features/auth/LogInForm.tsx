@@ -8,9 +8,13 @@ import { containerStyles } from "@/shared";
 import { formStyles } from "./form-style";
 
 interface ILogInForm {
-  onSubmit: (body: LoginBody) => void;
+  isSubmitting?: boolean;
+  onSubmit: (body: LoginBody) => Promise<void>;
 }
-export default function LogInForm({ onSubmit }: ILogInForm) {
+export default function LogInForm({
+  isSubmitting = false,
+  onSubmit,
+}: ILogInForm) {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
 
@@ -18,22 +22,36 @@ export default function LogInForm({ onSubmit }: ILogInForm) {
     <ScrollView style={[containerStyles.panel]}>
       <View style={[formStyles.formContainer]}>
         <Input
+          autoCapitalize="none"
+          autoCorrect={false}
+          editable={!isSubmitting}
+          keyboardType="email-address"
           label="이메일"
-          onChange={(e) => {
-            setEmail(e.nativeEvent.text);
-          }}
+          onChangeText={setEmail}
+          placeholder="email@example.com"
           style={{ gap: 10 }}
           fieldStyle={formStyles.fieldStyle}
+          value={email}
         />
         <Input
+          autoCapitalize="none"
+          autoCorrect={false}
+          editable={!isSubmitting}
           label="비밀번호"
-          onChange={(e) => {
-            setPassword(e.nativeEvent.text);
-          }}
+          onChangeText={setPassword}
+          placeholder="비밀번호"
+          secureTextEntry
           style={{ gap: 10 }}
           fieldStyle={formStyles.fieldStyle}
+          value={password}
         />
-        <Button onPress={() => onSubmit({ email, password })}>로그인</Button>
+        <Button
+          disabled={!email || !password}
+          loading={isSubmitting}
+          onPress={() => void onSubmit({ email, password })}
+        >
+          로그인
+        </Button>
       </View>
     </ScrollView>
   );
