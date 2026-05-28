@@ -44,6 +44,13 @@ metadata:
 - `widgets`는 여러 entity와 feature를 조합한 화면 블록을 둡니다.
 - 댓글, 반응, 즐겨찾기처럼 함께 쓰이는 기능은 세부 feature를 분리하되 화면에서는 widget에서 조합합니다.
 
+### Server Action
+
+- Next.js Server Action은 사용자 액션의 서버 실행 entrypoint로 보고 `features/{feature}/actions` 하위에 둡니다.
+- `"use server"` boundary, form submit 처리, redirect, cookie, server-side auth 호출은 `model`이 아니라 `actions`에서 시작합니다.
+- `model`에는 schema, mapper, hook, 상태, 클라이언트/서버 공용 도메인 로직을 둡니다.
+- Server Action에서 사용하는 Zod schema나 순수 helper는 재사용성이 있으면 `model`로 분리하고, action 파일에서는 흐름 조합만 담당하게 합니다.
+
 ### Server State
 
 - API 응답 데이터, 로딩, 에러, 캐시, invalidation은 TanStack Query가 담당합니다.
