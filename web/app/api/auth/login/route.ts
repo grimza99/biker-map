@@ -6,9 +6,16 @@ import {
   ok,
   parseRequestBody,
 } from "@shared/api";
-import { clearRefreshTokenCookie, setRefreshTokenCookie } from "@shared/api/auth";
+import {
+  clearRefreshTokenCookie,
+  setRefreshTokenCookie,
+} from "@shared/api/auth";
+import { isMobileClientRequest } from "@shared/api/auth.server";
 import { getProfileStatus } from "@shared/api/supabase-profiles";
-import { createSupabaseAuthClient, mapSupabaseSession } from "@shared/lib/supabase";
+import {
+  createSupabaseAuthClient,
+  mapSupabaseSession,
+} from "@shared/lib/supabase";
 import { NextResponse } from "next/server";
 import { z } from "zod";
 
@@ -18,6 +25,7 @@ const loginSchema = z.object({
 });
 
 export async function POST(request: Request) {
+  const isMobileClient = isMobileClientRequest(request);
   let payload: LoginBody;
   try {
     payload = await parseRequestBody(request, loginSchema);
@@ -72,6 +80,7 @@ export async function POST(request: Request) {
       role: profileStatus?.role || "member",
     },
     accessToken: session.access_token,
+    refreshToken: isMobileClient ? session.refresh_token : null,
   }) as NextResponse;
 
   setRefreshTokenCookie(response, session.refresh_token);

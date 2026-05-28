@@ -7,6 +7,10 @@ import { MOBILE_PATHS } from "@/shared/constants/paths";
 export default function TabsLayout() {
   const { status } = useSession();
 
+  if (status === "loading") {
+    return null;
+  }
+
   if (status !== "authenticated") {
     return <Redirect href={MOBILE_PATHS.auth} />;
   }

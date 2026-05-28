@@ -6,6 +6,10 @@ import { MOBILE_PATHS } from "@/shared/constants/paths";
 export default function RootIndex() {
   const { status } = useSession();
 
+  if (status === "loading") {
+    return null;
+  }
+
   return (
     <Redirect
       href={status === "authenticated" ? MOBILE_PATHS.map : MOBILE_PATHS.auth}
