@@ -7,7 +7,7 @@
     "build:web": "npm --prefix web run build",
     "start:web": "npm --prefix web run start",
     "lint:web": "npm --prefix web run lint",
-    "dev:mobile": "npm --prefix mobile run dev"
+    "dev:mobile": "npm --prefix mobile run dev -- --clear"
   },
   "workspaces": [
     "package-shared",
