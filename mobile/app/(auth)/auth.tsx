@@ -9,6 +9,7 @@ import { useSession } from "../../features/session/model";
 import { Button } from "@/components/common";
 import SignUpForm from "@/features/auth/SignUpForm";
 import LogInForm from "@/features/auth/LogInForm";
+import { MOBILE_PATHS } from "@/shared/constants/paths";
 
 type AuthTab = "logIn" | "signUp";
 
@@ -22,7 +23,7 @@ export default function AuthScreen() {
   const handleSignIn = (body: LoginBody) => {
     try {
       login(body);
-      router.replace("/(tabs)/map");
+      router.replace(MOBILE_PATHS.map);
     } catch {
       console.log("로그인 실패");
     }
@@ -31,7 +32,7 @@ export default function AuthScreen() {
   const handleSignUp = (body: SignUpBody) => {
     try {
       signUp(body);
-      router.replace("/(tabs)/map");
+      router.replace(MOBILE_PATHS.map);
     } catch {
       console.log("회원가입 실패");
     }
