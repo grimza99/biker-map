@@ -1,6 +1,7 @@
 import type { AuthResponseData, SignUpBody } from "@package-shared/types/auth";
 import { badRequest, created, parseRequestBody } from "@shared/api";
 import { setRefreshTokenCookie } from "@shared/api/auth";
+import { isMobileClientRequest } from "@shared/api/auth.server";
 import {
   createSupabaseAuthClient,
   mapSupabaseSession,
@@ -15,6 +16,7 @@ const signUpSchema = z.object({
 });
 
 export async function POST(request: Request) {
+  const isMobileClient = isMobileClientRequest(request);
   let payload: SignUpBody;
   try {
     payload = await parseRequestBody(request, signUpSchema);
@@ -45,6 +47,7 @@ export async function POST(request: Request) {
   const response = created<AuthResponseData>({
     session: mappedSession,
     accessToken: session?.access_token ?? null,
+    refreshToken: isMobileClient ? session?.refresh_token ?? null : null,
   }) as NextResponse;
 
   if (session?.refresh_token) {

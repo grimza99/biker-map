@@ -6,6 +6,10 @@ import { useSession } from "../../features/session/model";
 export default function TabsLayout() {
   const { status } = useSession();
 
+  if (status === "loading") {
+    return null;
+  }
+
   if (status !== "authenticated") {
     return <Redirect href="/(auth)/login" />;
   }

@@ -1,5 +1,6 @@
-import { useRouter } from "expo-router";
-import { Pressable, StyleSheet, Text, View } from "react-native";
+import { Redirect, useRouter } from "expo-router";
+import { useState } from "react";
+import { Pressable, StyleSheet, Text, TextInput, View } from "react-native";
 
 import { bikerMapTheme } from "@package-shared/constants/theme";
 import { AppScreen } from "../../components/shell";
@@ -7,27 +8,82 @@ import { useSession } from "../../features/session/model";
 
 export default function LoginScreen() {
   const router = useRouter();
-  const { status, signIn } = useSession();
+  const { status, login } = useSession();
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [errorMessage, setErrorMessage] = useState<string | null>(null);
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
-  const handleSignIn = () => {
-    signIn();
-    router.replace("/(tabs)/map");
-  };
+  if (status === "loading") {
+    return null;
+  }
+
+  if (status === "authenticated") {
+    return <Redirect href="/(tabs)" />;
+  }
+
+  async function handleSignIn() {
+    setIsSubmitting(true);
+    setErrorMessage(null);
+
+    try {
+      await login({
+        email,
+        password,
+      });
+      router.replace("/(tabs)");
+    } catch (error) {
+      setErrorMessage(
+        error instanceof Error ? error.message : "로그인에 실패했습니다."
+      );
+    } finally {
+      setIsSubmitting(false);
+    }
+  }
 
   return (
     <AppScreen
       eyebrow="Session gate"
       title="로그인이 필요한 구간"
-      description="현재는 세션 분기 초안만 연결되어 있습니다. 다음 단계에서 실제 인증 공급자를 붙일 수 있습니다."
+      description="모바일은 웹 API를 통해 인증하고, 세션/토큰은 기기 보안 저장소에 보관합니다."
     >
       <View style={styles.panel}>
-        <Text style={styles.panelTitle}>현재 상태: {status === "authenticated" ? "authenticated" : "anonymous"}</Text>
+        <Text style={styles.panelTitle}>로그인</Text>
         <Text style={styles.panelDescription}>
-          인증이 붙기 전이라도 라우팅 구조는 먼저 고정합니다. 로그인 버튼을 누르면 탭 셸로 이동합니다.
+          로그인 요청은 웹 auth route를 호출하고, 401 응답 시 refresh token으로 자동 재시도합니다.
         </Text>
 
-        <Pressable style={styles.button} onPress={handleSignIn}>
-          <Text style={styles.buttonText}>로그인하고 앱 셸로 이동</Text>
+        <TextInput
+          autoCapitalize="none"
+          keyboardType="email-address"
+          onChangeText={setEmail}
+          placeholder="이메일"
+          placeholderTextColor={bikerMapTheme.colors.muted}
+          style={styles.input}
+          value={email}
+        />
+        <TextInput
+          autoCapitalize="none"
+          onChangeText={setPassword}
+          placeholder="비밀번호"
+          placeholderTextColor={bikerMapTheme.colors.muted}
+          secureTextEntry
+          style={styles.input}
+          value={password}
+        />
+
+        {errorMessage ? (
+          <Text style={styles.errorMessage}>{errorMessage}</Text>
+        ) : null}
+
+        <Pressable
+          disabled={isSubmitting}
+          style={[styles.button, isSubmitting && styles.buttonDisabled]}
+          onPress={() => void handleSignIn()}
+        >
+          <Text style={styles.buttonText}>
+            {isSubmitting ? "로그인 중..." : "로그인하고 앱 셸로 이동"}
+          </Text>
         </Pressable>
       </View>
     </AppScreen>
@@ -53,6 +109,21 @@ const styles = StyleSheet.create({
     fontSize: 14,
     lineHeight: 21,
   },
+  input: {
+    borderRadius: 14,
+    borderWidth: 1,
+    borderColor: bikerMapTheme.colors.border,
+    backgroundColor: bikerMapTheme.colors.panel,
+    color: bikerMapTheme.colors.text,
+    fontSize: 15,
+    paddingHorizontal: 14,
+    paddingVertical: 12,
+  },
+  errorMessage: {
+    color: bikerMapTheme.colors.danger,
+    fontSize: 13,
+    lineHeight: 18,
+  },
   button: {
     alignSelf: "flex-start",
     borderRadius: 999,
@@ -64,5 +135,8 @@ const styles = StyleSheet.create({
     color: bikerMapTheme.colors.bg,
     fontSize: 14,
     fontWeight: "700",
+  },
+  buttonDisabled: {
+    opacity: 0.6,
   },
 });

@@ -9,16 +9,20 @@ import {
   clearRefreshTokenCookie,
   setRefreshTokenCookie,
 } from "@shared/api/auth";
-import { getRefreshTokenFromCookie } from "@shared/api/auth.server";
+import {
+  getRefreshTokenFromRequest,
+  isMobileClientRequest,
+} from "@shared/api/auth.server";
 import { getProfileStatus } from "@shared/api/supabase-profiles";
 
 import { createSupabaseAuthClient } from "@shared/lib/supabase";
 import { NextResponse } from "next/server";
 
-export async function POST() {
-  const refreshToken = await getRefreshTokenFromCookie();
+export async function POST(request: Request) {
+  const isMobileClient = isMobileClientRequest(request);
+  const refreshToken = await getRefreshTokenFromRequest(request);
   if (!refreshToken) {
-    return badRequest("refresh token cookie가 없습니다.");
+    return badRequest("refresh token이 없습니다.");
   }
 
   const supabase = createSupabaseAuthClient();
@@ -49,7 +53,13 @@ export async function POST() {
     }
   }
 
-  const response = ok(mapRefreshData(data.session, !error)) as NextResponse;
+  const response = ok(
+    mapRefreshData(
+      data.session,
+      !error,
+      isMobileClient ? data.session?.refresh_token ?? null : null
+    )
+  ) as NextResponse;
 
   if (data.session?.refresh_token) {
     setRefreshTokenCookie(response, data.session.refresh_token);
