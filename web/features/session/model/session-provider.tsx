@@ -1,30 +1,24 @@
 "use client";
 
 import { API_PATHS } from "@package-shared/constants/api";
-import type { ApiResponse } from "@package-shared/types/api";
-import type {
-  MeResponseData,
-  RefreshResponseData,
-} from "@package-shared/types/auth";
 import type {
   AppSession,
   InitialSessionData,
 } from "@package-shared/types/session";
 import {
-  apiFetch,
-  setApiAccessToken,
-  subscribeApiAccessToken,
-} from "@shared/api/http";
+  SessionProvider as NextAuthSessionProvider,
+  signOut as nextAuthSignOut,
+  useSession as useNextAuthSession,
+} from "next-auth/react";
 import {
   createContext,
   useContext,
   useEffect,
-  useLayoutEffect,
   useMemo,
-  useRef,
-  useState,
   type ReactNode,
 } from "react";
+
+import { setApiAccessToken, setApiSessionRefreshHandler } from "@shared/api/http";
 
 type SessionState = {
   session: AppSession | null;
@@ -44,136 +38,85 @@ export function SessionProvider({
   children: ReactNode;
   initialSession: InitialSessionData;
 }) {
-  const [session, setSession] = useState<AppSession | null>(initialSession.session);
-  const [accessToken, setAccessToken] = useState<string | null>(
-    initialSession.accessToken
+  return (
+    <NextAuthSessionProvider refetchOnWindowFocus>
+      <SessionBridge initialSession={initialSession}>{children}</SessionBridge>
+    </NextAuthSessionProvider>
   );
-  const [status, setStatus] = useState<SessionState["status"]>(
-    initialSession.session && initialSession.accessToken
-      ? "authenticated"
-      : "loading"
-  );
-  const hasAttemptedInitialRestoreRef = useRef(false);
+}
 
-  function updateSession(
-    nextSession: AppSession | null,
-    nextAccessToken: string | null = accessToken
-  ) {
-    setSession(nextSession);
-    setAccessToken(nextAccessToken);
-    setApiAccessToken(nextAccessToken);
-    setStatus(nextSession ? "authenticated" : "anonymous");
-  }
+function SessionBridge({
+  children,
+  initialSession,
+}: {
+  children: ReactNode;
+  initialSession: InitialSessionData;
+}) {
+  const {
+    data: nextAuthSession,
+    status: nextAuthStatus,
+    update,
+  } = useNextAuthSession();
+
+  const session =
+    nextAuthStatus === "loading"
+      ? initialSession.session
+      : nextAuthSession?.appSession ?? null;
+  const accessToken =
+    nextAuthStatus === "loading"
+      ? initialSession.accessToken
+      : nextAuthSession?.accessToken ?? null;
+  const status: SessionState["status"] =
+    nextAuthStatus === "loading"
+      ? "loading"
+      : session && accessToken
+      ? "authenticated"
+      : "anonymous";
+
+  useEffect(() => {
+    setApiAccessToken(status === "authenticated" ? accessToken : null);
+  }, [accessToken, status]);
+
+  useEffect(() => {
+    setApiSessionRefreshHandler(async () => {
+      const updatedSession = await update({ forceRefresh: true });
+      return updatedSession?.accessToken ?? null;
+    });
+
+    return () => {
+      setApiSessionRefreshHandler(null);
+    };
+  }, [update]);
 
   const value = useMemo<SessionState>(
     () => ({
-      session,
-      accessToken,
+      session: status === "authenticated" ? session : null,
+      accessToken: status === "authenticated" ? accessToken : null,
       status,
       setSession(nextSession, nextAccessToken = accessToken) {
-        updateSession(nextSession, nextAccessToken);
+        void update({
+          appSession: nextSession,
+          accessToken: nextAccessToken,
+        });
       },
       async refreshSession() {
-        let refreshPayload: ApiResponse<RefreshResponseData>;
-        try {
-          refreshPayload = await apiFetch<RefreshResponseData>(
-            API_PATHS.auth.refresh,
-            {
-              method: "POST",
-            }
-          );
-        } catch {
-          updateSession(null, null);
-          return null;
-        }
-
-        const nextAccessToken = refreshPayload.data.accessToken ?? null;
-        setApiAccessToken(nextAccessToken);
-
-        let mePayload: ApiResponse<MeResponseData>;
-        try {
-          mePayload = await apiFetch<MeResponseData>(API_PATHS.me.profile);
-        } catch {
-          updateSession(null, null);
-          return null;
-        }
-
-        const nextSession = mePayload.data.session ?? null;
-        updateSession(nextSession, nextAccessToken);
-        return nextSession;
+        const updatedSession = await update({ forceRefresh: true });
+        const updatedAppSession = updatedSession?.appSession ?? null;
+        const updatedAccessToken = updatedSession?.accessToken ?? null;
+        setApiAccessToken(updatedAccessToken);
+        return updatedAccessToken ? updatedAppSession : null;
       },
       async signOut() {
+        await nextAuthSignOut({ redirect: false });
         await fetch(API_PATHS.auth.logout, {
           method: "POST",
           credentials: "include",
-        });
-        updateSession(null, null);
+        }).catch(() => undefined);
+        setApiAccessToken(null);
       },
     }),
-    [accessToken, session, status]
+    [accessToken, session, status, update]
   );
-
-  useLayoutEffect(() => {
-    setApiAccessToken(accessToken);
-  }, [accessToken]);
-
-  useEffect(() => {
-    return subscribeApiAccessToken((nextAccessToken) => {
-      setAccessToken((currentAccessToken) => {
-        if (currentAccessToken === nextAccessToken) {
-          return currentAccessToken;
-        }
-
-        return nextAccessToken;
-      });
-    });
-  }, []);
-
-  useEffect(() => {
-    if (accessToken || hasAttemptedInitialRestoreRef.current) {
-      return;
-    }
-
-    hasAttemptedInitialRestoreRef.current = true;
-
-    let cancelled = false;
-
-    void (async () => {
-      try {
-        const refreshPayload = await apiFetch<RefreshResponseData>(
-          API_PATHS.auth.refresh,
-          {
-            method: "POST",
-          }
-        );
-
-        if (cancelled) {
-          return;
-        }
-
-        const nextAccessToken = refreshPayload.data.accessToken ?? null;
-        if (!nextAccessToken) {
-          updateSession(null, null);
-          return;
-        }
-
-        const mePayload = await apiFetch<MeResponseData>(API_PATHS.me.profile);
-        if (cancelled) {
-          return;
-        }
-
-        updateSession(mePayload.data.session ?? null, nextAccessToken);
-      } catch {
-        if (!cancelled) {
-          updateSession(null, null);
-        }
-      }
-    })();
-
-    return () => {
-      cancelled = true;
-    };
-  }, [accessToken]);
 
   return (
     <SessionContext.Provider value={value}>{children}</SessionContext.Provider>
