@@ -15,28 +15,18 @@ type AuthTab = "logIn" | "signUp";
 
 export default function AuthScreen() {
   const router = useRouter();
-  const { status, login, signUp } = useSession();
+  const { login, signUp } = useSession();
   const [tab, setTab] = useState<AuthTab>("logIn");
 
-  console.log(status);
+  async function handleSignIn(body: LoginBody) {
+    await login(body);
+    router.replace(MOBILE_PATHS.map);
+  }
 
-  const handleSignIn = (body: LoginBody) => {
-    try {
-      login(body);
-      router.replace(MOBILE_PATHS.map);
-    } catch {
-      console.log("로그인 실패");
-    }
-  };
-
-  const handleSignUp = (body: SignUpBody) => {
-    try {
-      signUp(body);
-      router.replace(MOBILE_PATHS.map);
-    } catch {
-      console.log("회원가입 실패");
-    }
-  };
+  async function handleSignUp(body: SignUpBody) {
+    await signUp(body);
+    router.replace(MOBILE_PATHS.map);
+  }
   return (
     <AppScreen>
       <View style={styles.tabContainer}>
