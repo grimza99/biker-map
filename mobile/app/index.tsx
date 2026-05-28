@@ -10,9 +10,5 @@ export default function RootIndex() {
     return null;
   }
 
-  return (
-    <Redirect
-      href={status === "authenticated" ? MOBILE_PATHS.map : MOBILE_PATHS.auth}
-    />
-  );
+  return <Redirect href={MOBILE_PATHS.map} />;
 }
