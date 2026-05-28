@@ -29,7 +29,6 @@
       "output": "static",
       "favicon": "./assets/images/favicon.png"
     },
-    "scheme": "bikermap",
     "plugins": [
       "expo-router",
       "expo-secure-store"
