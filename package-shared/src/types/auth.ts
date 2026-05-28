@@ -19,6 +19,7 @@ export type UpdateMeBody = {
 export type AuthResponseData = {
   session: AppSession | null;
   accessToken: string | null;
+  refreshToken: string | null;
 };
 
 export type LogoutResponseData = {
@@ -28,6 +29,7 @@ export type LogoutResponseData = {
 export type RefreshResponseData = {
   refreshed: boolean;
   accessToken: string | null;
+  refreshToken: string | null;
 };
 
 export type MeResponseData = {
