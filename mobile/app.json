@@ -31,7 +31,8 @@
     },
     "scheme": "bikermap",
     "plugins": [
-      "expo-router"
+      "expo-router",
+      "expo-secure-store"
     ],
     "experiments": {
       "typedRoutes": true

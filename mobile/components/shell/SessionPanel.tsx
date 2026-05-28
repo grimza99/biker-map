@@ -4,7 +4,7 @@ import { bikerMapTheme } from "@package-shared/constants/theme";
 import { useSession } from "../../features/session/model";
 
 export function SessionPanel() {
-  const { status, user, signIn, signOut } = useSession();
+  const { status, user, signOut } = useSession();
 
   const isAuthenticated = status === "authenticated";
 
@@ -18,9 +18,11 @@ export function SessionPanel() {
           : "로그인 전 상태입니다. 현재는 gate 구조만 열려 있습니다."}
       </Text>
 
-      <Pressable style={styles.button} onPress={isAuthenticated ? signOut : signIn}>
-        <Text style={styles.buttonText}>{isAuthenticated ? "로그아웃" : "로그인 상태로 전환"}</Text>
-      </Pressable>
+      {isAuthenticated ? (
+        <Pressable style={styles.button} onPress={() => void signOut()}>
+          <Text style={styles.buttonText}>로그아웃</Text>
+        </Pressable>
+      ) : null}
     </View>
   );
 }
