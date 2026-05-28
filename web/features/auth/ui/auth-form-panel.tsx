@@ -22,7 +22,7 @@ import {
   type AuthActionState,
   loginAction,
   signUpAction,
-} from "../model/auth-actions";
+} from "../actions";
 
 type AuthFormPanelProps = {
   defaultTab?: AuthTabValue;

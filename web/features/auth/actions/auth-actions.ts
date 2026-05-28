@@ -5,7 +5,7 @@ import { redirect } from "next/navigation";
 
 import { signIn, signOut } from "@/auth";
 import { createSupabaseAuthClient } from "@shared/lib/supabase";
-import { loginFormSchema, signUpFormSchema } from "./auth-schemas";
+import { loginFormSchema, signUpFormSchema } from "../model/auth-schemas";
 
 export type AuthActionState = {
   message: string | null;

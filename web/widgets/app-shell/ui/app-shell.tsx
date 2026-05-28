@@ -5,7 +5,7 @@ import type { ReactNode } from "react";
 
 import { Profile } from "@/shared";
 import { MainNav } from "@/widgets/navs";
-import { logoutAction } from "@features/auth/model/auth-actions";
+import { logoutAction } from "@features/auth/actions";
 import { useSession } from "@features/session";
 import { cn } from "@shared/lib";
 import { NotificationsRealtimeBridge } from "@widgets/notification-bell";
