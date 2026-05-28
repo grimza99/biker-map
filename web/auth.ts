@@ -3,7 +3,10 @@ import NextAuth from "next-auth";
 import Credentials from "next-auth/providers/credentials";
 import { z } from "zod";
 
-import { getProfileStatus } from "@shared/api/supabase-profiles";
+import {
+  getProfileStatus,
+  type ProfileStatus,
+} from "@shared/api/supabase-profiles";
 import { createSupabaseAuthClient } from "@shared/lib/supabase";
 
 const credentialsSchema = z.object({
@@ -64,7 +67,12 @@ export const {
           return null;
         }
 
-        const profileStatus = await getProfileStatus(session.user.id);
+        const profileStatusResult = await resolveProfileStatus(session.user.id);
+        if (!profileStatusResult.ok) {
+          return null;
+        }
+
+        const profileStatus = profileStatusResult.profileStatus;
         if (profileStatus?.deletedAt) {
           return null;
         }
@@ -215,7 +223,24 @@ async function refreshSupabaseToken(token: Record<string, unknown>) {
     };
   }
 
-  const profileStatus = await getProfileStatus(data.session.user.id);
+  const profileStatusResult = await resolveProfileStatus(data.session.user.id);
+  if (!profileStatusResult.ok) {
+    return {
+      ...token,
+      userId: data.session.user.id,
+      email: data.session.user.email ?? "",
+      picture:
+        typeof data.session.user.user_metadata?.avatar_url === "string"
+          ? data.session.user.user_metadata.avatar_url
+          : null,
+      supabaseAccessToken: data.session.access_token,
+      supabaseRefreshToken: data.session.refresh_token,
+      supabaseExpiresAt: data.session.expires_at ?? 0,
+      supabaseError: "ProfileStatusLookupError",
+    };
+  }
+
+  const profileStatus = profileStatusResult.profileStatus;
   if (profileStatus?.deletedAt) {
     return {
       ...token,
@@ -246,4 +271,25 @@ async function refreshSupabaseToken(token: Record<string, unknown>) {
     supabaseExpiresAt: data.session.expires_at ?? 0,
     supabaseError: undefined,
   };
+}
+
+async function resolveProfileStatus(userId: string): Promise<
+  | {
+      ok: true;
+      profileStatus: ProfileStatus | null;
+    }
+  | {
+      ok: false;
+    }
+> {
+  try {
+    return {
+      ok: true,
+      profileStatus: await getProfileStatus(userId),
+    };
+  } catch {
+    return {
+      ok: false,
+    };
+  }
 }
