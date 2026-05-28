@@ -135,7 +135,15 @@ export const {
           token.picture = updatePayload.appSession.avatarUrl;
         } else if (updatePayload?.appSession === null) {
           token.userId = null;
+          token.role = undefined;
+          token.name = undefined;
+          token.email = undefined;
+          token.picture = undefined;
           token.supabaseAccessToken = null;
+          token.supabaseRefreshToken = null;
+          token.supabaseExpiresAt = 0;
+          token.supabaseError = undefined;
+          return token;
         }
 
         if (updatePayload?.accessToken) {
