@@ -1,4 +1,4 @@
-import { useRouter } from "expo-router";
+import { Redirect, useRouter } from "expo-router";
 import { StyleSheet, Text, View } from "react-native";
 import { useState } from "react";
 
@@ -15,10 +15,18 @@ type AuthTab = "logIn" | "signUp";
 
 export default function AuthScreen() {
   const router = useRouter();
-  const { login, signUp } = useSession();
+  const { status, login, signUp } = useSession();
   const [tab, setTab] = useState<AuthTab>("logIn");
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
+
+  if (status === "loading") {
+    return null;
+  }
+
+  if (status === "authenticated") {
+    return <Redirect href={MOBILE_PATHS.map} />;
+  }
 
   async function handleSignIn(body: LoginBody) {
     setIsSubmitting(true);
