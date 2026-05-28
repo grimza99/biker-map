@@ -7,7 +7,7 @@ export default function TabsLayout() {
   const { status } = useSession();
 
   if (status !== "authenticated") {
-    return <Redirect href="/(auth)/login" />;
+    return <Redirect href="/(auth)/auth" />;
   }
 
   return (

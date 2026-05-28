@@ -5,5 +5,9 @@ import { useSession } from "../features/session/model";
 export default function RootIndex() {
   const { status } = useSession();
 
-  return <Redirect href={status === "authenticated" ? "/(tabs)/map" : "/(auth)/login"} />;
+  return (
+    <Redirect
+      href={status === "authenticated" ? "/(tabs)/map" : "/(auth)/auth"}
+    />
+  );
 }
