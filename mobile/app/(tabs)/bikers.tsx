@@ -1,3 +1,4 @@
+import { Button } from "@/components/common";
 import { AppScreen } from "../../components/shell";
 
 export default function BikersScreen() {
