@@ -10,6 +10,7 @@ import type {
   AppSession,
   AuthResponseData,
   LoginBody,
+  MeResponseData,
   LogoutResponseData,
   SignUpBody,
 } from "@package-shared/index";
@@ -48,9 +49,23 @@ export function SessionProvider({ children }: PropsWithChildren) {
         }
 
         if (authState.session && authState.accessToken) {
-          setUser(authState.session);
-          setStatus("authenticated");
-          return;
+          try {
+            const meResponse = await apiFetch.get<MeResponseData>(
+              API_PATHS.me.profile
+            );
+
+            if (!mounted) {
+              return;
+            }
+
+            if (meResponse.data.authenticated && meResponse.data.session) {
+              setUser(meResponse.data.session);
+              setStatus("authenticated");
+              return;
+            }
+          } catch {
+            await clearApiAuthState();
+          }
         }
       } catch {
         // noop
