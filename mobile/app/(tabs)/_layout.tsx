@@ -1,4 +1,4 @@
-import { Redirect, Tabs } from "expo-router";
+import { Tabs } from "expo-router";
 
 import { MobileTabBar } from "../../components/shell";
 import { useSession } from "../../features/session/model";
@@ -8,10 +8,6 @@ export default function TabsLayout() {
 
   if (status === "loading") {
     return null;
-  }
-
-  if (status !== "authenticated") {
-    return <Redirect href="/(auth)/login" />;
   }
 
   return (

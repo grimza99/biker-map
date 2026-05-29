@@ -1,24 +1,38 @@
 import { type PropsWithChildren } from "react";
-import { ScrollView, StyleSheet, Text, View } from "react-native";
+import {
+  ScrollView,
+  StyleProp,
+  StyleSheet,
+  Text,
+  ViewStyle,
+} from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
 import { bikerMapTheme } from "@package-shared/constants/theme";
 
 type AppScreenProps = PropsWithChildren<{
-  eyebrow: string;
-  title: string;
-  description: string;
+  eyebrow?: string;
+  title?: string;
+  description?: string;
+  containerStyle?: StyleProp<ViewStyle>;
 }>;
 
-export function AppScreen({ eyebrow, title, description, children }: AppScreenProps) {
+export function AppScreen({
+  eyebrow,
+  title,
+  description,
+  children,
+  containerStyle,
+}: AppScreenProps) {
   return (
-    <SafeAreaView style={styles.container} edges={["top"]}>
-      <ScrollView contentContainerStyle={styles.content} showsVerticalScrollIndicator={false}>
-        <View style={styles.hero}>
-          <Text style={styles.eyebrow}>{eyebrow}</Text>
-          <Text style={styles.title}>{title}</Text>
-          <Text style={styles.description}>{description}</Text>
-        </View>
+    <SafeAreaView style={[styles.container, containerStyle]} edges={["top"]}>
+      <ScrollView
+        contentContainerStyle={styles.content}
+        showsVerticalScrollIndicator={false}
+      >
+        <Text style={styles.eyebrow}>{eyebrow}</Text>
+        <Text style={styles.title}>{title}</Text>
+        <Text style={styles.description}>{description}</Text>
         {children}
       </ScrollView>
     </SafeAreaView>
@@ -35,14 +49,7 @@ const styles = StyleSheet.create({
     padding: 20,
     paddingBottom: 28,
   },
-  hero: {
-    gap: 10,
-    borderRadius: 24,
-    borderWidth: 1,
-    borderColor: bikerMapTheme.colors.border,
-    backgroundColor: bikerMapTheme.colors.panel,
-    padding: 20,
-  },
+
   eyebrow: {
     color: bikerMapTheme.colors.active,
     fontSize: 12,
