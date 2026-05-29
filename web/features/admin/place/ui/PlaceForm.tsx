@@ -11,7 +11,7 @@ import { useEffect, useState } from "react";
 import { placeCategoryOptions } from "@/entities/map/model/map-filters";
 import { uploadImage } from "@/features/image/model/upload-image";
 import { TOAST_MESSAGE } from "@package-shared/constants";
-import { ApiClientError } from "@shared/api/http";
+import { ApiClientError } from "@package-shared/index";
 import {
   Button,
   ImageInput,
