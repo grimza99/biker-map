@@ -9,6 +9,7 @@ import { SafeAreaProvider } from "react-native-safe-area-context";
 
 import { bikerMapTheme } from "@package-shared/constants/theme";
 import { SessionProvider } from "../features/session/model";
+import "../global.css"
 
 export default function RootLayout() {
   const [fontsLoaded] = useFonts({
