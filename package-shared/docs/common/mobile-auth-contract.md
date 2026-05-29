@@ -5,7 +5,7 @@
 ## 목표
 
 - 앱은 Supabase에 직접 붙지 않고 웹 API를 통해 인증한다.
-- 웹은 기존 cookie 기반 흐름을 유지할 수 있다.
+- 웹은 NextAuth/Auth.js 세션 표면을 사용하고, Supabase access token은 API/RLS/Realtime 권한 토큰으로만 브리지한다.
 - 모바일은 cookie refresh를 재사용하지 않고 명시적인 header/body 계약을 사용한다.
 
 ## 기본 원칙
@@ -13,7 +13,8 @@
 1. 모바일 앱은 `Authorization` 헤더를 access token 전용으로 사용한다.
 2. refresh token은 `Authorization`에 섞지 않고 별도 헤더로 전달한다.
 3. 모바일 요청은 웹과 응답 형식을 다르게 가져갈 수 있도록 명시적인 클라이언트 메타 헤더를 보낸다.
-4. 웹은 cookie 기반 refresh를 유지하고, 모바일은 body 기반 refresh 응답을 사용한다.
+4. 웹은 NextAuth JWT callback 내부에서 Supabase refresh token을 사용하며, 모바일은 기존 body 기반 refresh 응답을 사용한다.
+5. 기존 `/api/auth/login`, `/api/auth/signup`, `/api/auth/logout`, `/api/auth/refresh`, `/api/me` 계약은 모바일 호환을 위해 유지한다.
 
 ## 헤더 규칙
 
@@ -266,4 +267,3 @@ export type RefreshResponseData = {
 - `X-Refresh-Token` 이름을 그대로 쓸지 확정 필요
 - 모바일 logout 시 서버 측 revoke 정책을 둘지
 - signup 직후 refresh token을 바로 발급할지
-
