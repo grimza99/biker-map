@@ -1,9 +1,9 @@
 "use client";
 
 import type { LoginBody, SignUpBody } from "@package-shared/types/auth";
-import { useMemo, useState } from "react";
+import { useActionState, useMemo, useState } from "react";
+import { useFormStatus } from "react-dom";
 
-import { ApiClientError } from "@shared/api/http";
 import {
   Button,
   DefaultCardContainer,
@@ -18,14 +18,30 @@ import {
   loginFormSchema,
   signUpFormSchema,
 } from "../model/auth-schemas";
-import { useLoginMutation, useSignUpMutation } from "../model/use-auth-mutation";
+import {
+  type AuthActionState,
+  loginAction,
+  signUpAction,
+} from "../actions";
 
 type AuthFormPanelProps = {
   defaultTab?: AuthTabValue;
 };
 
+const authActionInitialState: AuthActionState = {
+  message: null,
+};
+
 export function AuthFormPanel({ defaultTab = "login" }: AuthFormPanelProps) {
   const [tab, setTab] = useState<AuthTabValue>(defaultTab);
+  const [loginState, loginFormAction] = useActionState(
+    loginAction,
+    authActionInitialState
+  );
+  const [signUpState, signUpFormAction] = useActionState(
+    signUpAction,
+    authActionInitialState
+  );
   const [loginValues, setLoginValues] = useState<LoginBody>({
     email: "",
     password: "",
@@ -55,23 +71,6 @@ export function AuthFormPanel({ defaultTab = "login" }: AuthFormPanelProps) {
     return signUpValidation.error.issues[0]?.message ?? null;
   }, [signUpValidation]);
 
-  const loginMutation = useLoginMutation();
-  const signUpMutation = useSignUpMutation();
-
-  const loginMutationError =
-    loginMutation.error instanceof ApiClientError
-      ? loginMutation.error.message
-      : loginMutation.error instanceof Error
-      ? loginMutation.error.message
-      : null;
-
-  const signUpMutationError =
-    signUpMutation.error instanceof ApiClientError
-      ? signUpMutation.error.message
-      : signUpMutation.error instanceof Error
-      ? signUpMutation.error.message
-      : null;
-
   return (
     <Tabs
       value={tab}
@@ -92,21 +91,11 @@ export function AuthFormPanel({ defaultTab = "login" }: AuthFormPanelProps) {
             바이커맵 로그인
           </h2>
 
-          <form
-            className="grid gap-4"
-            onSubmit={(event) => {
-              event.preventDefault();
-
-              if (!loginValidation.success) {
-                return;
-              }
-
-              loginMutation.mutate(loginValidation.data);
-            }}
-          >
+          <form className="grid gap-4" action={loginFormAction}>
             <Input
               label="이메일"
               type="email"
+              name="email"
               placeholder="rider@example.com"
               value={loginValues.email}
               onChange={(event) =>
@@ -119,6 +108,7 @@ export function AuthFormPanel({ defaultTab = "login" }: AuthFormPanelProps) {
             <Input
               label="비밀번호"
               type="password"
+              name="password"
               placeholder="6자 이상 입력"
               value={loginValues.password}
               onChange={(event) =>
@@ -134,19 +124,15 @@ export function AuthFormPanel({ defaultTab = "login" }: AuthFormPanelProps) {
                 {loginError}
               </p>
             ) : null}
-            {loginMutationError ? (
+            {loginState.message ? (
               <p className="m-0 rounded-[16px] border border-danger/30 bg-danger/8 px-4 py-3 text-sm text-danger">
-                {loginMutationError}
+                {loginState.message}
               </p>
             ) : null}
 
-            <Button
-              type="submit"
-              loading={loginMutation.isPending}
-              disabled={!loginValidation.success}
-            >
+            <AuthSubmitButton disabled={!loginValidation.success}>
               로그인
-            </Button>
+            </AuthSubmitButton>
           </form>
         </DefaultCardContainer>
       </TabsContent>
@@ -156,20 +142,10 @@ export function AuthFormPanel({ defaultTab = "login" }: AuthFormPanelProps) {
           <h2 className="text-center m-0 text-2xl font-semibold tracking-[var(--tracking-heading-md)] text-text">
             바이커맵 계정 만들기
           </h2>
-          <form
-            className="grid gap-4"
-            onSubmit={(event) => {
-              event.preventDefault();
-
-              if (!signUpValidation.success) {
-                return;
-              }
-
-              signUpMutation.mutate(signUpValidation.data);
-            }}
-          >
+          <form className="grid gap-4" action={signUpFormAction}>
             <Input
               label="이름"
+              name="name"
               placeholder="라이더 이름"
               value={signUpValues.name}
               onChange={(event) =>
@@ -182,6 +158,7 @@ export function AuthFormPanel({ defaultTab = "login" }: AuthFormPanelProps) {
             <Input
               label="이메일"
               type="email"
+              name="email"
               placeholder="rider@example.com"
               value={signUpValues.email}
               onChange={(event) =>
@@ -194,6 +171,7 @@ export function AuthFormPanel({ defaultTab = "login" }: AuthFormPanelProps) {
             <Input
               label="비밀번호"
               type="password"
+              name="password"
               placeholder="6자 이상 입력"
               value={signUpValues.password}
               onChange={(event) =>
@@ -209,22 +187,34 @@ export function AuthFormPanel({ defaultTab = "login" }: AuthFormPanelProps) {
                 {signUpError}
               </p>
             ) : null}
-            {signUpMutationError ? (
+            {signUpState.message ? (
               <p className="m-0 rounded-[16px] border border-danger/30 bg-danger/8 px-4 py-3 text-sm text-danger">
-                {signUpMutationError}
+                {signUpState.message}
               </p>
             ) : null}
 
-            <Button
-              type="submit"
-              loading={signUpMutation.isPending}
-              disabled={!signUpValidation.success}
-            >
+            <AuthSubmitButton disabled={!signUpValidation.success}>
               회원가입
-            </Button>
+            </AuthSubmitButton>
           </form>
         </DefaultCardContainer>
       </TabsContent>
     </Tabs>
+  );
+}
+
+function AuthSubmitButton({
+  children,
+  disabled,
+}: {
+  children: string;
+  disabled: boolean;
+}) {
+  const { pending } = useFormStatus();
+
+  return (
+    <Button type="submit" loading={pending} disabled={disabled}>
+      {children}
+    </Button>
   );
 }

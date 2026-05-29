@@ -43,6 +43,7 @@ metadata:
 ## Skill 진입점
 
 - 전체 프로젝트 개요와 공통 규칙: `AGENTS.md`
+- 테스트 플랜 : `.codex/skills/qa/qa-master-plan.md`,`.codex/skills/qa/test-plan-template.md`
 - 앱 개발 skill: `.codex/skills/mobile-development/SKILL.md`
 - BFF 개발 skill: `.codex/skills/bff-development/SKILL.md`
 - DB engineering skill: `.codex/skills/db-engineering/SKILL.md`

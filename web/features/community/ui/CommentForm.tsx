@@ -1,4 +1,5 @@
-import { ApiClientError, Button, Input } from "@/shared";
+import { Button, Input } from "@/shared";
+import { ApiClientError } from "@package-shared/index";
 import { SubmitEvent, useState } from "react";
 import { useCreatePostComment } from "../model/use-comments";
 import { useCreateCommentReply } from "../model/use-reply";

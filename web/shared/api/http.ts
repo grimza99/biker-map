@@ -1,25 +1,11 @@
-import { API_PATHS } from "@package-shared/constants/api";
+import { ApiClientError } from "@package-shared/index";
 import type { ApiResponse } from "@package-shared/types/api";
+import { getSession } from "next-auth/react";
 import { apiErrorSchema } from "./contracts";
-
-export class ApiClientError extends Error {
-  code: string;
-  details?: Record<string, unknown>;
-
-  constructor(
-    message: string,
-    code = "UNKNOWN_ERROR",
-    details?: Record<string, unknown>
-  ) {
-    super(message);
-    this.name = "ApiClientError";
-    this.code = code;
-    this.details = details;
-  }
-}
 
 let accessToken: string | null = null;
 let refreshPromise: Promise<string | null> | null = null;
+let sessionRefreshHandler: (() => Promise<string | null>) | null = null;
 const accessTokenListeners = new Set<(accessToken: string | null) => void>();
 
 export function setApiAccessToken(nextAccessToken: string | null) {
@@ -40,28 +26,21 @@ export function subscribeApiAccessToken(
   };
 }
 
-async function refreshAccessToken() {
+export function setApiSessionRefreshHandler(
+  handler: (() => Promise<string | null>) | null
+) {
+  sessionRefreshHandler = handler;
+}
+
+async function refreshAccessToken(forceRefresh = false) {
   if (!refreshPromise) {
-    refreshPromise = fetch(API_PATHS.auth.refresh, {
-      method: "POST",
-      credentials: "include",
-      headers: {
-        "Content-Type": "application/json",
-      },
-    })
-      .then(async (response) => {
-        if (!response.ok) {
-          setApiAccessToken(null);
-          return null;
-        }
-
-        const payload = (await response
-          .json()
-          .catch(() => null)) as ApiResponse<{
-          accessToken: string | null;
-        }> | null;
-
-        const nextAccessToken = payload?.data?.accessToken ?? null;
+    refreshPromise = (
+      forceRefresh && sessionRefreshHandler
+        ? sessionRefreshHandler()
+        : getSession().then((session) => session?.accessToken ?? null)
+    )
+      .then((refreshedAccessToken) => {
+        const nextAccessToken = refreshedAccessToken ?? null;
         setApiAccessToken(nextAccessToken);
         return nextAccessToken;
       })
@@ -102,7 +81,7 @@ export async function apiFetch<T>(
   const payload = await response.json().catch(() => null);
 
   if (response.status === 401 && !retried) {
-    const refreshedAccessToken = await refreshAccessToken();
+    const refreshedAccessToken = await refreshAccessToken(true);
 
     if (refreshedAccessToken) {
       return apiFetch<T>(input, init, true);
