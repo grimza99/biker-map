@@ -26,11 +26,11 @@ type SupabaseBridgeUser = {
 };
 
 const ACCESS_TOKEN_REFRESH_BUFFER_SECONDS = 60;
+const isProduction = process.env.NODE_ENV === "production";
+const useSecureAuthCookies = isProduction;
 const authSecret =
   process.env.AUTH_SECRET ??
-  (process.env.NODE_ENV === "production"
-    ? undefined
-    : "biker-map-local-next-auth-secret");
+  (isProduction ? undefined : "biker-map-local-next-auth-secret");
 
 export const {
   handlers: { GET, POST },
@@ -39,6 +39,9 @@ export const {
   signOut,
 } = NextAuth({
   secret: authSecret,
+  // Auth.js keeps auth cookies HttpOnly, SameSite=Lax, and Path=/ by default.
+  // Keep Secure explicit: enabled in production HTTPS, disabled for local HTTP.
+  useSecureCookies: useSecureAuthCookies,
   session: {
     strategy: "jwt",
   },
