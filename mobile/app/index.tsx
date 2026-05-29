@@ -1,6 +1,7 @@
 import { Redirect } from "expo-router";
 
 import { useSession } from "../features/session/model";
+import { MOBILE_PATHS } from "@/shared/constants/paths";
 
 export default function RootIndex() {
   const { status } = useSession();
@@ -9,5 +10,5 @@ export default function RootIndex() {
     return null;
   }
 
-  return <Redirect href={status === "authenticated" ? "/(tabs)" : "/(auth)/login"} />;
+  return <Redirect href={MOBILE_PATHS.map} />;
 }

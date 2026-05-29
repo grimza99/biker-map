@@ -2,6 +2,7 @@ import { Redirect, Tabs } from "expo-router";
 import { Ionicons } from "@expo/vector-icons";
 
 import { bikerMapTheme } from "@package-shared/constants/theme";
+import { MOBILE_PATHS } from "@/shared/constants/paths";
 import { useSession } from "../../features/session/model";
 
 export default function TabsLayout() {
@@ -12,7 +13,7 @@ export default function TabsLayout() {
   }
 
   if (status !== "authenticated") {
-    return <Redirect href="/(auth)/login" />;
+    return <Redirect href={MOBILE_PATHS.auth} />;
   }
 
   return (
