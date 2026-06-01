@@ -7,11 +7,11 @@ metadata:
 
 # Frontend Development Skill
 
-<strong>버전 : </strong> v1
+<strong>버전 : </strong> v2
 
 <strong>생성 날짜 : </strong> 2026-05-21
 
-<strong>최신 업데이트 날짜 : </strong> 2026-05-21
+<strong>최신 업데이트 날짜 : </strong> 2026-06-01
 
 이 skill은 Biker Map의 프론트엔드 구현 컨벤션을 따를 때 사용합니다.
 
@@ -32,6 +32,7 @@ metadata:
 - Zod 검증 규칙: `.codex/skills/frontend-development/zod.md`
 - Supabase client 사용 규칙: `.codex/skills/frontend-development/supabase-client.md`
 - 지도 사이드패널 Parallel Route 기준: `.codex/skills/frontend-development/map-panel-parallel-route.md`
+- auth 플로우 테스트: `.codex/skills/frontend-development/auth-flow-test-plan.md`
 
 ## 공통 전제
 
