@@ -1,18 +1,40 @@
 import { apiFetch } from "@/shared";
 import { API_PATHS } from "@package-shared/constants";
-import { PostsListResponseData } from "@package-shared/index";
+import {
+  type CommunityPostsQuery,
+  type PostsListResponseData,
+} from "@package-shared/index";
 
-export async function getCommunityPostList() {
-  let postListData;
-  try {
-    const response = await apiFetch.get<PostsListResponseData>(
-      API_PATHS.community.posts
-    );
-    postListData = response;
-  } catch {
-    //todo 토스트 메시지
+export async function getCommunityPostList(filters: CommunityPostsQuery = {}) {
+  const query = buildPostsSearchParams(filters);
+
+  return apiFetch.get<PostsListResponseData>(
+    query ? `${API_PATHS.community.posts}?${query}` : API_PATHS.community.posts
+  );
+}
+
+function buildPostsSearchParams(filters: CommunityPostsQuery) {
+  const searchParams = new URLSearchParams();
+
+  if (filters.category) {
+    searchParams.set("category", filters.category);
   }
-  //todo 토스트 등 성공 메시지
 
-  return postListData ?? { data: { items: [] }, meta: null };
+  if (filters.search?.trim()) {
+    searchParams.set("search", filters.search.trim());
+  }
+
+  if (filters.page) {
+    searchParams.set("page", String(filters.page));
+  }
+
+  if (filters.pageSize) {
+    searchParams.set("pageSize", String(filters.pageSize));
+  }
+
+  if (filters.sort) {
+    searchParams.set("sort", filters.sort);
+  }
+
+  return searchParams.toString();
 }
