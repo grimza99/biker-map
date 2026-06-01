@@ -1,11 +1,11 @@
 import { ReactNode } from "react";
-import { StyleProp, StyleSheet, View, ViewStyle } from "react-native";
+import { View } from "react-native";
 
-import { bikerMapTheme } from "@package-shared/constants";
+import { cn } from "@/shared";
 
 interface IDefaultCardProps {
-  containerStyle?: StyleProp<ViewStyle>;
-  footerStyle?: StyleProp<ViewStyle>;
+  containerStyle?: string;
+  footerStyle?: string;
 
   children: ReactNode;
   footer?: ReactNode;
@@ -17,26 +17,23 @@ export function DefaultCardContainer({
   footer,
 }: IDefaultCardProps) {
   return (
-    <View style={[styles.container, containerStyle]}>
+    <View
+      className={cn(
+        "p-4 flex flex-col gap-4 rounded-2xl border border-border bg-bg",
+        containerStyle
+      )}
+    >
       {children}
-      {footer && <View style={[styles.footer, footerStyle]}>{footer}</View>}
+      {footer && (
+        <View
+          className={cn(
+            "flex flex-col items-center justify-center",
+            footerStyle
+          )}
+        >
+          {footer}
+        </View>
+      )}
     </View>
   );
 }
-
-const styles = StyleSheet.create({
-  container: {
-    flexDirection: "column",
-    gap: 16,
-    borderRadius: 16,
-    borderWidth: 1,
-    borderColor: bikerMapTheme.colors.border,
-    backgroundColor: bikerMapTheme.colors.panelSoft,
-    shadowColor: bikerMapTheme.shadows.panel,
-  },
-  footer: {
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "center",
-  },
-});
