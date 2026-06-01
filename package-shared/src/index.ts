@@ -13,3 +13,4 @@ export * from "./types/session";
 export * from "./types/upload";
 export * from "./types/ws";
 export * from "./utils";
+export * from "./styles";

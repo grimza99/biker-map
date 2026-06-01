@@ -22,4 +22,5 @@ export type {
 } from "./DropdownMenu";
 
 export * from "./card";
+export { Chip } from "./Chip";
 export { MetaCounts } from "./MetaCounts";
