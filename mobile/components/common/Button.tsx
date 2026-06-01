@@ -15,6 +15,7 @@ import type {
 } from "react-native";
 
 import { bikerMapTheme } from "@package-shared/constants/theme";
+import { resolvePressableStyle } from "@/shared";
 
 export type ButtonVariant =
   | "primary"
@@ -95,20 +96,13 @@ export function Button({
     >
       <View style={[styles.content, contentStyle]}>
         {loading ? (
-          <ActivityIndicator
-            color={indicatorColorMap[variant]}
-            size="small"
-          />
+          <ActivityIndicator color={indicatorColorMap[variant]} size="small" />
         ) : (
           leftIcon
         )}
 
         {size === "icon" && loading ? null : (
-          <ButtonChildren
-            size={size}
-            textStyle={textStyle}
-            variant={variant}
-          >
+          <ButtonChildren size={size} textStyle={textStyle} variant={variant}>
             {children}
           </ButtonChildren>
         )}
@@ -147,13 +141,6 @@ function ButtonChildren({
   }
 
   return children;
-}
-
-function resolvePressableStyle(
-  style: PressableProps["style"] | undefined,
-  state: PressableStateCallbackType
-) {
-  return typeof style === "function" ? style(state) : style;
 }
 
 const styles = StyleSheet.create({
