@@ -81,7 +81,7 @@ export default function CommunityScreen() {
                 setSearchQuery(value);
                 setCurrentPage(1);
               }}
-              placeholder="제목, 본문, 작성자 검색"
+              placeholder="제목, 본문 검색"
               leftIcon={
                 <Feather
                   name="search"
