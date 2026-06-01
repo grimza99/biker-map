@@ -1,4 +1,5 @@
 import { useFonts } from "expo-font";
+import Feather from "@expo/vector-icons/Feather";
 import FontAwesome5 from "@expo/vector-icons/FontAwesome5";
 import Ionicons from "@expo/vector-icons/Ionicons";
 import MaterialCommunityIcons from "@expo/vector-icons/MaterialCommunityIcons";
@@ -14,6 +15,7 @@ import { THEME_VARS } from "@/shared";
 
 export default function RootLayout() {
   const [fontsLoaded] = useFonts({
+    ...Feather.font,
     ...Ionicons.font,
     ...FontAwesome5.font,
     ...MaterialCommunityIcons.font,

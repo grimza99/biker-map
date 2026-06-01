@@ -33,6 +33,7 @@ Expo 기반 Biker Map 모바일 앱 개발, 웹 API 계약 연동, 앱 전용 UX
 - 공통 문서 허브: `package-shared/docs/common/README.md`
 - 모바일 README: `mobile/README.md`
 - BFF API 기준: `.codex/skills/bff-development/bff.md`
+- nativeCss가이드 : `.codex/skills/mobile-development/native-css.md`
 
 ## 공통 전제
 
