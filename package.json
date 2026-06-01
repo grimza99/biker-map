@@ -8,7 +8,12 @@
     "start:web": "npm --prefix web run start",
     "lint:web": "npm --prefix web run lint",
     "dev:mobile": "npm --prefix mobile run dev -- --clear",
-    "ci:all": "npm ci && npm --prefix mobile ci"
+    "ci:all": "npm ci && npm --prefix mobile ci",
+    "supabase:start": "supabase start",
+    "supabase:stop": "supabase stop",
+    "supabase:status": "supabase status",
+    "supabase:reset": "bash scripts/supabase-local-reset.sh",
+    "test:e2e:local-supabase": "bash scripts/web-e2e-local-supabase.sh"
   },
   "workspaces": [
     "package-shared",
@@ -17,5 +22,8 @@
   "overrides": {
     "lightningcss": "1.30.1"
   },
-  "packageManager": "npm@11.3.0"
+  "packageManager": "npm@11.3.0",
+  "devDependencies": {
+    "supabase": "2.102.0"
+  }
 }
