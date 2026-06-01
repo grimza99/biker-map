@@ -1,10 +1,11 @@
-import { Alert, StyleSheet, Text, View } from "react-native";
+import { Alert, StyleSheet, View } from "react-native";
 import { useCallback, useEffect, useState } from "react";
 
-import { CommunityPost } from "@package-shared/index";
+import { CommunityPost, categoryLabelMap } from "@package-shared/index";
 
 import { AppScreen } from "../../components/shell";
-import { getCommunityPostList } from "@/features/community/model/community-post-api";
+import { getCommunityPostList } from "@/entities/community/model/community-post-api";
+import { PostCard } from "@/entities/community/ui/PostCard";
 
 export default function CommunityScreen() {
   const [isLoading, setIsLoading] = useState(true);
@@ -38,7 +39,13 @@ export default function CommunityScreen() {
     <AppScreen title="커뮤니티">
       <View style={styles.communityPostList}>
         {postList.length > 0 &&
-          postList.map((post) => <Text key={post.id}>{post.id}</Text>)}
+          postList.map((post) => (
+            <PostCard
+              key={post.id}
+              post={post}
+              categoryLabel={categoryLabelMap[post.category]}
+            />
+          ))}
       </View>
     </AppScreen>
   );

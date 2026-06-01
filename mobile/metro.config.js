@@ -1,7 +1,9 @@
 // Learn more https://docs.expo.io/guides/customizing-metro
+/** @type {import('expo/metro-config').MetroConfig} */
 const path = require("path");
 const { getDefaultConfig } = require("expo/metro-config");
-/** @type {import('expo/metro-config').MetroConfig} */
+
+const { withNativewind } = require("nativewind/metro");
 
 const projectRoot = __dirname;
 
@@ -13,4 +15,4 @@ config.watchFolders = [path.resolve(projectRoot, "../package-shared")];
 // node_modules는 mobile 로컬에서만 탐색 (root hoisting 방지)
 config.resolver.nodeModulesPaths = [path.resolve(projectRoot, "node_modules")];
 
-module.exports = config;
+module.exports = withNativewind(config);
