@@ -1,3 +1,4 @@
+
 import { Feather } from "@expo/vector-icons";
 import { Alert, ScrollView, StyleSheet, View } from "react-native";
 import { useCallback, useEffect, useState } from "react";
@@ -9,6 +10,7 @@ import {
   type CommunityPost,
   bikerMapTheme,
 } from "@package-shared/index";
+
 
 import { AppText, Button, Input, Pagination } from "@/components/common";
 import { AppScreen } from "../../components/shell";
