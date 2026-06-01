@@ -1,7 +1,7 @@
 import { expect, test } from "@playwright/test";
 
-test.describe("auth smoke", () => {
-  test("renders auth entry and rejects malformed login API payload", async ({
+test.describe("인증 기본 동작", () => {
+  test("인증 화면을 렌더링후 잘못된 로그인 API payload는 거부한다", async ({
     page,
     request,
   }) => {
