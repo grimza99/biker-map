@@ -1,4 +1,4 @@
-import { Alert, ScrollView, StyleSheet, Text } from "react-native";
+import { Alert, StyleSheet, Text, View } from "react-native";
 import { useCallback, useEffect, useState } from "react";
 
 import { CommunityPost } from "@package-shared/index";
@@ -36,9 +36,10 @@ export default function CommunityScreen() {
 
   return (
     <AppScreen title="커뮤니티">
-      <ScrollView style={[styles.communityPostList]}>
-        {postList.length > 0 && postList.map((post) => <Text>{post.id}</Text>)}
-      </ScrollView>
+      <View style={styles.communityPostList}>
+        {postList.length > 0 &&
+          postList.map((post) => <Text key={post.id}>{post.id}</Text>)}
+      </View>
     </AppScreen>
   );
 }
