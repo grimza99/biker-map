@@ -31,6 +31,9 @@ export default defineConfig({
         "playwright-local-publishable-key",
       AUTH_SECRET:
         process.env.AUTH_SECRET ?? "playwright-local-auth-secret-for-smoke",
+      SUPABASE_SERVICE_ROLE_KEY:
+        process.env.SUPABASE_SERVICE_ROLE_KEY ??
+        "playwright-local-service-role-key",
     },
   },
   projects: [
