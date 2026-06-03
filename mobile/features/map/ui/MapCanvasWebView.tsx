@@ -26,6 +26,12 @@ type BridgeEvent =
       type: "SET_PLACES";
     };
 
+type WebViewLoadErrorEvent = {
+  nativeEvent: {
+    description?: string;
+  };
+};
+
 export function MapCanvasWebView({
   activeFilter,
   focusedPlaceId = null,
@@ -86,6 +92,13 @@ export function MapCanvasWebView({
     }
   }
 
+  function handleWebViewError(event: WebViewLoadErrorEvent) {
+    setIsReady(false);
+    setErrorMessage(
+      event.nativeEvent.description || "지도 WebView를 불러오지 못했습니다."
+    );
+  }
+
   return (
     <View style={styles.container}>
       <WebView
@@ -93,7 +106,9 @@ export function MapCanvasWebView({
         originWhitelist={["*"]}
         source={{ html: initialHtml, baseUrl: "http://localhost" }}
         onMessage={handleMessage}
+        onError={handleWebViewError}
         javaScriptEnabled
+        domStorageEnabled
         scrollEnabled={false}
         overScrollMode="never"
         bounces={false}
@@ -130,9 +145,18 @@ function buildMapHtml(clientId: string) {
     <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" />
     <style>
       * { box-sizing: border-box; margin: 0; padding: 0; }
-      html, body { width: 100%; height: 100%; overflow: hidden; }
-      body { position: relative; }
-      #map { position: absolute; top: 0; left: 0; right: 0; bottom: 0; }
+      html, body, #map {
+        width: 100%;
+        height: 100%;
+        min-height: 100vh;
+        overflow: hidden;
+      }
+      body {
+        background: #111315;
+      }
+      #map {
+        display: block;
+      }
     </style>
   </head>
   <body>
@@ -278,7 +302,7 @@ function buildMapHtml(clientId: string) {
 
 const styles = StyleSheet.create({
   container: {
-    ...StyleSheet.absoluteFillObject,
+    flex: 1,
   },
   loadingOverlay: {
     ...StyleSheet.absoluteFillObject,
