@@ -48,6 +48,18 @@ export async function deleteAuthUser(userId: string | null) {
   }
 }
 
+export async function markAuthUserProfileDeleted(userId: string) {
+  const supabase = createLocalSupabaseAdminClient();
+  const { error } = await supabase
+    .from("profiles")
+    .update({ deleted_at: new Date().toISOString() })
+    .eq("id", userId);
+
+  if (error) {
+    throw new Error(`테스트 사용자 탈퇴 상태 변경 실패: ${error.message}`);
+  }
+}
+
 export function findAuthSessionCookieName(
   cookies: Array<{ name: string }>
 ) {
