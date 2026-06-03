@@ -181,11 +181,11 @@ function buildMapHtml(clientId: string) {
       function makeMarkerContent(color, focused, name, address) {
         var safeName = escapeHtml(name);
         var safeAddress = escapeHtml(address);
-        var dotSize = focused ? 24 : 18;
+        var dotSize = focused ? 16 : 12;
         var outline = focused ? ';outline:3px solid rgba(245,247,251,0.24)' : '';
-        var dot = '<div style="width:' + dotSize + 'px;height:' + dotSize + 'px;border-radius:50%;background:' + color + ';border:2.5px solid rgba(245,247,251,0.9);box-shadow:0 4px 12px rgba(0,0,0,0.4)' + outline + '"></div>';
+        var dot = '<div style="position:relative;z-index:1;width:' + dotSize + 'px;height:' + dotSize + 'px;border-radius:50%;background:' + color + ';border:2.5px solid rgba(245,247,251,0.9);box-shadow:0 4px 12px rgba(0,0,0,0.4)' + outline + '"></div>';
         if (!focused) return dot;
-        var card = '<div style="position:absolute;bottom:' + (dotSize + 6) + 'px;left:50%;transform:translateX(-50%);min-width:140px;padding:8px 10px;background:rgba(12,16,22,0.92);border-radius:10px;border:1px solid rgba(99,114,130,0.32);pointer-events:none;">'
+        var card = '<div style="position:absolute;z-index:2;bottom:' + (dotSize + 6) + 'px;left:50%;transform:translateX(-50%);min-width:140px;padding:8px 10px;background:rgba(12,16,22,0.92);border-radius:10px;border:1px solid rgba(99,114,130,0.32);pointer-events:none;">'
           + '<div style="font-size:13px;font-weight:800;color:#f5f7fb;white-space:nowrap;">' + safeName + '</div>'
           + '<div style="font-size:11px;color:#8c97a6;margin-top:3px;white-space:nowrap;">' + safeAddress + '</div>'
           + '</div>';
