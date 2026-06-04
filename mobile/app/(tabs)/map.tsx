@@ -86,23 +86,23 @@ export default function MapScreen() {
             );
           })}
         </ScrollView>
-      </SafeAreaView>
 
-      {isLoading || errorMessage ? (
-        <View style={styles.statusBadge}>
-          {isLoading ? (
-            <ActivityIndicator
-              color={bikerMapTheme.colors.accent}
-              size="small"
-            />
-          ) : null}
-          {errorMessage ? (
-            <Text style={styles.statusText}>{errorMessage}</Text>
-          ) : (
-            <Text style={styles.statusText}>장소를 불러오는 중입니다.</Text>
-          )}
-        </View>
-      ) : null}
+        {isLoading || errorMessage ? (
+          <View style={styles.statusBadge}>
+            {isLoading ? (
+              <ActivityIndicator
+                color={bikerMapTheme.colors.accent}
+                size="small"
+              />
+            ) : null}
+            {errorMessage ? (
+              <Text style={styles.statusText}>{errorMessage}</Text>
+            ) : (
+              <Text style={styles.statusText}>장소를 불러오는 중입니다.</Text>
+            )}
+          </View>
+        ) : null}
+      </SafeAreaView>
 
       <FloatingMapSheet sheetContent={<Text>테스트</Text>} />
     </View>
