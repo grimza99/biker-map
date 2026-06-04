@@ -1,18 +1,24 @@
-import { useEffect, useState } from "react";
-import { ScrollView, StyleSheet, Text, View } from "react-native";
+import { useState } from "react";
+import {
+  ActivityIndicator,
+  ScrollView,
+  StyleSheet,
+  Text,
+  View,
+} from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
-import { bikerMapTheme, PlacesQuery } from "@package-shared/index";
+import { bikerMapTheme } from "@package-shared/index";
 import type {
   AllPlaceCategory,
   PlaceCategory,
-  PlaceListItem,
+  PlacesQuery,
 } from "@package-shared/index";
 
 import { MapCanvasWebView } from "../../features/map/ui/MapCanvasWebView";
 import { Button } from "@/components/common";
 import { cn } from "@/shared";
-import { getPlaceList } from "@/entities/place";
+import { usePlaceList } from "@/entities/place";
 
 export const placeCategoryOptions: { label: string; value: PlaceCategory }[] = [
   { label: "주유소", value: "gas" },
@@ -33,20 +39,15 @@ export default function MapScreen() {
   const [activeCategory, setActiveCategory] =
     useState<PlacesQuery["category"]>("all");
   const [focusedPlaceId, setFocusedPlaceId] = useState<string | null>(null);
-  const [places, setPlaces] = useState<PlaceListItem[]>([]);
+  const {
+    errorMessage,
+    isLoading,
+    places,
+  } = usePlaceList({ category: activeCategory });
 
   const handleMarkerPressed = (placeId: string) => {
     setFocusedPlaceId(placeId);
   };
-
-  const loadPlaceList = async (currentCategory: PlacesQuery["category"]) => {
-    const list = await getPlaceList({ category: currentCategory });
-    setPlaces(list);
-  };
-
-  useEffect(() => {
-    loadPlaceList(activeCategory);
-  }, [activeCategory]);
 
   return (
     <View className="bg-bg flex-1">
@@ -59,7 +60,6 @@ export default function MapScreen() {
 
       <SafeAreaView
         style={styles.overlayPanel}
-        // className="absolute top-0 left-0 right-0 gap-2.5 pb-3 pt-2 px-4"
         edges={["top"]}
       >
         <ScrollView
@@ -89,6 +89,22 @@ export default function MapScreen() {
             );
           })}
         </ScrollView>
+
+        {isLoading || errorMessage ? (
+          <View style={styles.statusBadge}>
+            {isLoading ? (
+              <ActivityIndicator
+                color={bikerMapTheme.colors.accent}
+                size="small"
+              />
+            ) : null}
+            {errorMessage ? (
+              <Text style={styles.statusText}>{errorMessage}</Text>
+            ) : (
+              <Text style={styles.statusText}>장소를 불러오는 중입니다.</Text>
+            )}
+          </View>
+        ) : null}
       </SafeAreaView>
 
       {/* bottom sheet 예정 */}
@@ -120,5 +136,22 @@ const styles = StyleSheet.create({
   filterChipActive: {
     borderColor: bikerMapTheme.colors.accent,
     backgroundColor: bikerMapTheme.colors.accent,
+  },
+  statusBadge: {
+    alignSelf: "flex-start",
+    alignItems: "center",
+    flexDirection: "row",
+    gap: 8,
+    borderRadius: 999,
+    borderWidth: 1,
+    borderColor: bikerMapTheme.colors.border,
+    backgroundColor: "rgba(17, 19, 21, 0.9)",
+    paddingHorizontal: 12,
+    paddingVertical: 8,
+  },
+  statusText: {
+    color: bikerMapTheme.colors.text,
+    fontSize: 12,
+    fontWeight: "700",
   },
 });
