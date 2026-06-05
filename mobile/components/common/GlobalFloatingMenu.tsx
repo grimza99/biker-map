@@ -5,7 +5,7 @@ import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 import { bikerMapTheme } from "@package-shared/constants/theme";
 
-import { Button } from "../common";
+import { Button } from "./Button";
 
 export type GlobalFloatingMenuOption<T> = {
   disabled?: boolean;
