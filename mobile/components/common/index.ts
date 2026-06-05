@@ -1,5 +1,17 @@
 export { CommonModal } from "./CommonModal";
 export type { CommonModalProps, CommonModalVariant } from "./CommonModal";
+export {
+  BottomSheet,
+  BottomSheetClose,
+  BottomSheetContent,
+  BottomSheetTrigger,
+} from "./BottomSheet";
+export type {
+  BottomSheetCloseProps,
+  BottomSheetContentProps,
+  BottomSheetProps,
+  BottomSheetTriggerProps,
+} from "./BottomSheet";
 export { Button } from "./Button";
 export type { ButtonProps, ButtonSize, ButtonVariant } from "./Button";
 export { ImageInput } from "./ImageInput";
