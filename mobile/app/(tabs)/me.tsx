@@ -1,57 +1,63 @@
-import { StyleSheet, Text, View } from "react-native";
+import { bikerMapTheme } from "@package-shared/constants";
+import { AppScreen, GlobalFloatingMenu } from "../../components/shell";
+import { Feather, FontAwesome5, Ionicons } from "@expo/vector-icons";
+import { ReactNode, useState } from "react";
 
-import {
-  AppScreen,
-  AuthRequiredPanel,
-  SessionPanel,
-} from "../../components/shell";
-import { useSession } from "../../features/session/model";
+type FloatingMenuOptionId = "favorite" | "my-post" | "my-info" | "draw";
+
+const meFloatingMenuOptions: {
+  icon: ReactNode;
+  id: FloatingMenuOptionId;
+  label: string;
+}[] = [
+  {
+    icon: (
+      <Ionicons name="heart" size={24} color={bikerMapTheme.colors.accent} />
+    ),
+    id: "favorite",
+    label: "즐겨찾기",
+  },
+  {
+    icon: (
+      <FontAwesome5
+        name="comment-dots"
+        size={24}
+        color={bikerMapTheme.colors.accent}
+      />
+    ),
+    id: "my-post",
+    label: "내가 쓴글",
+  },
+  {
+    icon: (
+      <FontAwesome5 name="user" size={24} color={bikerMapTheme.colors.accent} />
+    ),
+    id: "my-info",
+    label: "내 정보",
+  },
+  {
+    icon: (
+      <Feather
+        name="user-minus"
+        size={24}
+        color={bikerMapTheme.colors.accent}
+      />
+    ),
+    id: "draw",
+    label: "회원 탈퇴",
+  },
+];
 
 export default function MeScreen() {
-  const { status } = useSession();
-  const isAuthenticated = status === "authenticated";
-
+  const [activeMenu, setActiveMenu] = useState<FloatingMenuOptionId>("my-info");
   return (
-    <AppScreen
-      eyebrow="Profile gate"
-      title="내 정보"
-      description="세션과 개인 설정이 붙을 기준 화면입니다. 비로그인 상태에서는 접근 안내만 보여줍니다."
-    >
-      {isAuthenticated ? (
-        <>
-          <SessionPanel />
-          <View style={styles.hero}>
-            <Text style={styles.title}>내 정보</Text>
-            <Text style={styles.description}>
-              로그인 상태를 보여주고, 이후에는 세션 종료나 개인 설정으로
-              확장할 수 있습니다.
-            </Text>
-          </View>
-        </>
-      ) : (
-        <AuthRequiredPanel description="프로필, 개인 설정, 내가 남긴 활동 정보는 로그인 후 확인할 수 있습니다." />
-      )}
+    <AppScreen title="마이페이지">
+      <GlobalFloatingMenu
+        options={meFloatingMenuOptions}
+        onSelect={(option) => {
+          setActiveMenu(option.id as FloatingMenuOptionId);
+        }}
+      />
     </AppScreen>
   );
 }
-
-const styles = StyleSheet.create({
-  hero: {
-    borderRadius: 24,
-    borderWidth: 1,
-    borderColor: "#1c334d",
-    backgroundColor: "#0e1d31",
-    padding: 20,
-    gap: 10,
-  },
-  title: {
-    color: "#f3fbff",
-    fontSize: 30,
-    fontWeight: "800",
-  },
-  description: {
-    color: "#b5c6d8",
-    fontSize: 15,
-    lineHeight: 22,
-  },
-});
