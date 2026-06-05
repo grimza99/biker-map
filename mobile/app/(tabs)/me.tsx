@@ -1,7 +1,8 @@
 import { bikerMapTheme } from "@package-shared/constants";
-import { AppScreen, GlobalFloatingMenu } from "../../components/shell";
+import { AppScreen } from "../../components/shell";
 import { Feather, FontAwesome5, Ionicons } from "@expo/vector-icons";
 import { ReactNode, useState } from "react";
+import { GlobalFloatingMenu } from "@/components/common";
 
 type FloatingMenuOptionId = "favorite" | "my-post" | "my-info" | "draw";
 
