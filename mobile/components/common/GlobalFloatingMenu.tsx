@@ -8,6 +8,7 @@ import { bikerMapTheme } from "@package-shared/constants/theme";
 import { Button } from "./Button";
 
 export type GlobalFloatingMenuOption<T> = {
+  description?: string;
   disabled?: boolean;
   icon?: ReactNode;
   id: T | string;
@@ -55,7 +56,7 @@ export function GlobalFloatingMenu<T>({
   return (
     <>
       <View
-        className="absolute -bottom-180 right-5 z-50 items-end flex flex-col gap-3"
+        className="absolute bottom-4 right-5 z-50 flex flex-col items-end gap-3"
         pointerEvents="box-none"
         style={{ paddingBottom: Math.max(insets.bottom, 10) }}
       >
@@ -87,12 +88,20 @@ export function GlobalFloatingMenu<T>({
                   }}
                 >
                   {option.icon && option.icon}
-                  <Text
-                    className="font-extrabold text-black"
-                    style={[isDraw && styles.drawButtonText]}
-                  >
-                    {option.label}
-                  </Text>
+                  <View className="min-w-0 flex-1">
+                    <Text
+                      className="font-extrabold text-black"
+                      numberOfLines={1}
+                      style={[isDraw && styles.drawButtonText]}
+                    >
+                      {option.label}
+                    </Text>
+                    {option.description ? (
+                      <Text className="text-[11px] text-muted" numberOfLines={1}>
+                        {option.description}
+                      </Text>
+                    ) : null}
+                  </View>
                   {option.rightSlot && option.rightSlot}
                 </Button>
               );
@@ -129,8 +138,7 @@ export function GlobalFloatingMenu<T>({
 
 const styles = StyleSheet.create({
   drawButton: {
-    backgroundColor: bikerMapTheme.colors.accent,
-    opacity: 0.5,
+    backgroundColor: "rgba(229, 87, 47, 0.2)",
   },
   drawButtonText: {
     color: bikerMapTheme.colors.accentStrong,

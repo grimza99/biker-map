@@ -53,7 +53,7 @@ test.describe("로컬 Supabase 인증 성공 경로", () => {
         })
       );
 
-      createdUserId = signedUpSession.appSession.userId;
+      createdUserId = signedUpSession.appSession?.userId ?? null;
 
       expect(JSON.stringify(signedUpSession)).not.toContain("refreshToken");
       expect(JSON.stringify(signedUpSession)).not.toContain(

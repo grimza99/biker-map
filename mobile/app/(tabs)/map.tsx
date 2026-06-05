@@ -9,12 +9,14 @@ import {
 import { SafeAreaView } from "react-native-safe-area-context";
 
 import { bikerMapTheme } from "@package-shared/index";
+
 import type {
   AllPlaceCategory,
   PlaceCategory,
   PlacesQuery,
 } from "@package-shared/index";
 
+import { FloatingMapSheet } from "../../components/shell";
 import { MapCanvasWebView } from "../../features/map/ui/MapCanvasWebView";
 import { Button } from "@/components/common";
 import { cn } from "@/shared";
@@ -39,11 +41,9 @@ export default function MapScreen() {
   const [activeCategory, setActiveCategory] =
     useState<PlacesQuery["category"]>("all");
   const [focusedPlaceId, setFocusedPlaceId] = useState<string | null>(null);
-  const {
-    errorMessage,
-    isLoading,
-    places,
-  } = usePlaceList({ category: activeCategory });
+  const { errorMessage, isLoading, places } = usePlaceList({
+    category: activeCategory,
+  });
 
   const handleMarkerPressed = (placeId: string) => {
     setFocusedPlaceId(placeId);
@@ -58,10 +58,7 @@ export default function MapScreen() {
         places={places}
       />
 
-      <SafeAreaView
-        style={styles.overlayPanel}
-        edges={["top"]}
-      >
+      <SafeAreaView style={styles.overlayPanel} edges={["top"]}>
         <ScrollView
           horizontal
           showsHorizontalScrollIndicator={false}
@@ -107,7 +104,7 @@ export default function MapScreen() {
         ) : null}
       </SafeAreaView>
 
-      {/* bottom sheet 예정 */}
+      <FloatingMapSheet sheetContent={<Text>테스트</Text>} />
     </View>
   );
 }
