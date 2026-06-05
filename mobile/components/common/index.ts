@@ -1,8 +1,7 @@
 export * from "./CommonModal";
 export * from "./Button";
 export * from "./ImageInput";
-export { Input } from "./Input";
-export type { InputProps, InputSize } from "./Input";
+export * from "./Input";
 export type * from "./DropdownMenu";
 export * from "./card";
 export { AppText } from "./AppText";
