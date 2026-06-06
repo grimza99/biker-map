@@ -36,5 +36,10 @@ export type {
 export * from "./card";
 export { AppText } from "./AppText";
 export { Chip } from "./Chip";
+export { GlobalFloatingMenu } from "./GlobalFloatingMenu";
+export type {
+  GlobalFloatingMenuOption,
+  GlobalFloatingMenuProps,
+} from "./GlobalFloatingMenu";
 export { MetaCounts } from "./MetaCounts";
 export { Pagination } from "./Pagination";
