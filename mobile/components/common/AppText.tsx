@@ -12,7 +12,7 @@ type AppTextProps = ComponentProps<typeof Text> & {
 
 const toneClassName: Record<AppTextTone, string> = {
   default: "text-text",
-  muted: "text-text/76",
+  muted: "text-muted",
   subtle: "text-text/88",
 };
 
