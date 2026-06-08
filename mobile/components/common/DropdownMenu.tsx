@@ -1,23 +1,13 @@
 import { type ReactNode, useMemo, useState } from "react";
-import {
-  Modal,
-  Pressable,
-  ScrollView,
-  StyleSheet,
-  Text,
-  View,
-} from "react-native";
-import type {
-  PressableProps,
-  PressableStateCallbackType,
-  StyleProp,
-  TextStyle,
-  ViewStyle,
-} from "react-native";
+import { Modal, Pressable, ScrollView, View } from "react-native";
+import type { PressableProps, ViewStyle } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
+import { AntDesign } from "@expo/vector-icons";
 
 import { bikerMapTheme } from "@package-shared/constants/theme";
-import { AntDesign } from "@expo/vector-icons";
+
+import { cn, resolvePressableStyle } from "@/shared";
+import { AppText } from "./AppText";
 
 export type DropdownOptionTone = "default" | "danger";
 
@@ -53,11 +43,13 @@ export type DropdownMenuProps = {
   options: DropdownOption[];
   placeholder?: string;
   renderTrigger?: (props: DropdownMenuRenderTriggerProps) => ReactNode;
-  sheetStyle?: StyleProp<ViewStyle>;
-  style?: StyleProp<ViewStyle>;
+  sheetClassName?: string;
+  className?: string;
   title?: string;
-  triggerStyle?: PressableProps["style"];
-  triggerTextStyle?: StyleProp<TextStyle>;
+  triggerStyle: {
+    triggerPressable: PressableProps["style"];
+    triggerText: string;
+  };
   value?: string;
   visible?: boolean;
 };
@@ -75,11 +67,10 @@ export function DropdownMenu({
   options,
   placeholder = "선택하세요",
   renderTrigger,
-  sheetStyle,
-  style,
+  sheetClassName,
+  className,
   title,
   triggerStyle,
-  triggerTextStyle,
   value,
   visible,
 }: DropdownMenuProps) {
@@ -134,12 +125,15 @@ export function DropdownMenu({
   };
 
   return (
-    <View style={[styles.container, style]}>
-      {label ? (
-        <Text style={[styles.label, errorText ? styles.labelError : null]}>
+    <View className={cn("gap-1.75", className)}>
+      {label && (
+        <AppText
+          tone={errorText ? "danger" : "default"}
+          className={cn("text-sm font-extrabold")}
+        >
           {label}
-        </Text>
-      ) : null}
+        </AppText>
+      )}
 
       {renderTrigger ? (
         renderTrigger(triggerProps)
@@ -153,36 +147,41 @@ export function DropdownMenu({
           }}
           disabled={disabled}
           onPress={triggerProps.openMenu}
+          className={cn(
+            "items-center flex flex-row gap-3 min-h-12 rounded-2xl border border-border bg-panel-solid px-4 py-3",
+            isVisible && "border-accent bg-panel-soft",
+            errorText && "border-danger bg-[rgba(216, 91, 78, 0.1)]",
+            disabled && "opacity-5"
+          )}
           style={(state) => [
-            styles.trigger,
-            isVisible ? styles.triggerOpen : null,
-            errorText ? styles.triggerError : null,
-            disabled ? styles.triggerDisabled : null,
-            state.pressed && !disabled ? styles.triggerPressed : null,
-            resolvePressableStyle(triggerStyle, state),
+            state.pressed && !disabled ? triggerPressedStyle : null,
+            resolvePressableStyle(triggerStyle.triggerPressable, state),
           ]}
         >
-          <Text
+          <AppText
             numberOfLines={1}
-            style={[
-              styles.triggerText,
-              selectedOption ? null : styles.placeholder,
-              triggerTextStyle,
-            ]}
+            className={cn("flex-1 text-sm font-bold", triggerStyle.triggerText)}
+            tone={selectedOption ? "muted" : "default"}
           >
             {selectedOption?.label ?? placeholder}
-          </Text>
+          </AppText>
           <View
-            style={[styles.chevron, isVisible ? styles.chevronOpen : null]}
+            className={cn(
+              "w-2 h-2 border-r-2 border-b-2 border border-muted rotate-45",
+              isVisible && "border-accent rotate-225"
+            )}
           />
         </Pressable>
       )}
 
-      {message ? (
-        <Text style={[styles.message, errorText ? styles.messageError : null]}>
+      {message && (
+        <AppText
+          className={cn("text-xs font-semibold")}
+          tone={errorText ? "danger" : "muted"}
+        >
           {message}
-        </Text>
-      ) : null}
+        </AppText>
+      )}
 
       <Modal
         animationType="slide"
@@ -194,35 +193,43 @@ export function DropdownMenu({
           accessibilityLabel="드롭다운 닫기"
           accessibilityRole="button"
           onPress={() => setMenuVisible(false)}
-          style={styles.backdrop}
+          className="absolute inset-0 bg-[rgba(3,6,11,0.64)]"
         >
           <View />
         </Pressable>
 
         <View
           pointerEvents="box-none"
-          style={[
-            styles.sheetWrap,
-            { paddingBottom: Math.max(insets.bottom, 14) },
-          ]}
+          className={cn("flex-1 justify-end px-3.5")}
+          style={[{ paddingBottom: Math.max(insets.bottom, 14) }]}
         >
-          <View style={[styles.sheet, sheetStyle]}>
-            <View style={styles.handle} />
-            <View style={styles.sheetHeader}>
-              <Text numberOfLines={1} style={styles.sheetTitle}>
+          <View
+            className={cn(
+              "max-h-[78%] gap-3 rounded-3xl border border-border bg-panel pt-3 pb-4 px-4",
+              sheetClassName
+            )}
+          >
+            <View className="self-center w-13.5 h-1.25 rounded-full bg-panel-soft" />
+            <View
+              className={cn("items-center flex flex-row justify-between gap-3")}
+            >
+              <AppText
+                numberOfLines={1}
+                className="flex-1 text-lg font-extrabold"
+              >
                 {sheetTitle}
-              </Text>
+              </AppText>
               <Pressable
                 accessibilityRole="button"
                 onPress={() => setMenuVisible(false)}
-                style={styles.closeButton}
+                className="min-h-11 justify-center px-3.5"
               >
                 <AntDesign name="close" size={16} color="gray" />
               </Pressable>
             </View>
 
             <ScrollView
-              contentContainerStyle={styles.optionList}
+              contentContainerClassName="gap-2 pb-0.5"
               showsVerticalScrollIndicator={false}
             >
               {options.length > 0 ? (
@@ -240,39 +247,46 @@ export function DropdownMenu({
                       disabled={option.disabled}
                       key={option.value}
                       onPress={() => handleSelect(option)}
+                      className={cn(
+                        "min-h-13 flex-row items-center justify-between gap-3 rounded-[18px] border border-transparent bg-panel-solid px-3.5 py-3",
+                        isSelected && "border-accent bg-panel-soft",
+                        isDanger && "border-danger/22",
+                        option.disabled && "opacity-45"
+                      )}
                       style={(state) => [
-                        styles.option,
-                        isSelected ? styles.optionSelected : null,
-                        isDanger ? styles.optionDanger : null,
-                        option.disabled ? styles.optionDisabled : null,
                         state.pressed && !option.disabled
-                          ? styles.optionPressed
+                          ? optionPressedStyle
                           : null,
                       ]}
                     >
-                      <View style={styles.optionCopy}>
-                        <Text
-                          style={[
-                            styles.optionLabel,
-                            isDanger ? styles.optionLabelDanger : null,
-                          ]}
+                      <View className="flex-1 gap-1">
+                        <AppText
+                          tone={isDanger ? "danger" : "default"}
+                          className="font-extrabold text-sm"
                         >
                           {option.label}
-                        </Text>
-                        {option.description ? (
-                          <Text style={styles.optionDescription}>
+                        </AppText>
+                        {option.description && (
+                          <AppText tone="muted" className="text-xs">
                             {option.description}
-                          </Text>
-                        ) : null}
+                          </AppText>
+                        )}
                       </View>
 
-                      {isSelected ? <View style={styles.selectedDot} /> : null}
+                      {isSelected && (
+                        <View className="w-2.5 h-2.5 rounded-full bg-accent" />
+                      )}
                     </Pressable>
                   );
                 })
               ) : (
-                <View style={styles.emptyState}>
-                  <Text style={styles.emptyText}>{emptyText}</Text>
+                <View className="min-h-18 justify-center rounded-2xl border border-border bg-panel-solid px-3.5">
+                  <AppText
+                    tone="muted"
+                    className="font-semibold text-center text-sm"
+                  >
+                    {emptyText}
+                  </AppText>
                 </View>
               )}
             </ScrollView>
@@ -283,197 +297,10 @@ export function DropdownMenu({
   );
 }
 
-function resolvePressableStyle(
-  style: PressableProps["style"] | undefined,
-  state: PressableStateCallbackType
-) {
-  return typeof style === "function" ? style(state) : style;
-}
+const triggerPressedStyle: ViewStyle = {
+  transform: [{ translateY: 1 }],
+};
 
-const styles = StyleSheet.create({
-  container: {
-    gap: 7,
-  },
-  label: {
-    color: bikerMapTheme.colors.text,
-    fontSize: 13,
-    fontWeight: "800",
-    lineHeight: 18,
-  },
-  labelError: {
-    color: bikerMapTheme.colors.danger,
-  },
-  trigger: {
-    alignItems: "center",
-    flexDirection: "row",
-    gap: 12,
-    minHeight: 48,
-    borderRadius: 18,
-    borderWidth: 1,
-    borderColor: bikerMapTheme.colors.border,
-    backgroundColor: bikerMapTheme.colors.panelSolid,
-    paddingHorizontal: 16,
-    paddingVertical: 12,
-  },
-  triggerOpen: {
-    borderColor: bikerMapTheme.colors.accent,
-    backgroundColor: bikerMapTheme.colors.panelSoft,
-  },
-  triggerError: {
-    borderColor: bikerMapTheme.colors.danger,
-    backgroundColor: "rgba(216, 91, 78, 0.1)",
-  },
-  triggerDisabled: {
-    opacity: 0.5,
-  },
-  triggerPressed: {
-    transform: [{ translateY: 1 }],
-  },
-  triggerText: {
-    flex: 1,
-    color: bikerMapTheme.colors.text,
-    fontSize: 15,
-    fontWeight: "700",
-    lineHeight: 20,
-  },
-  placeholder: {
-    color: bikerMapTheme.colors.muted,
-  },
-  chevron: {
-    width: 8,
-    height: 8,
-    borderRightWidth: 2,
-    borderBottomWidth: 2,
-    borderColor: bikerMapTheme.colors.muted,
-    transform: [{ rotate: "45deg" }],
-  },
-  chevronOpen: {
-    borderColor: bikerMapTheme.colors.accent,
-    transform: [{ rotate: "225deg" }],
-  },
-  message: {
-    color: bikerMapTheme.colors.muted,
-    fontSize: 12,
-    fontWeight: "600",
-    lineHeight: 17,
-  },
-  messageError: {
-    color: bikerMapTheme.colors.danger,
-  },
-  backdrop: {
-    ...StyleSheet.absoluteFillObject,
-    backgroundColor: "rgba(3, 6, 11, 0.64)",
-  },
-  sheetWrap: {
-    flex: 1,
-    justifyContent: "flex-end",
-    paddingHorizontal: 14,
-  },
-  sheet: {
-    maxHeight: "78%",
-    gap: 12,
-    borderRadius: 28,
-    borderWidth: 1,
-    borderColor: bikerMapTheme.colors.border,
-    backgroundColor: bikerMapTheme.colors.panel,
-    paddingHorizontal: 16,
-    paddingTop: 12,
-    paddingBottom: 16,
-  },
-  handle: {
-    alignSelf: "center",
-    width: 54,
-    height: 5,
-    borderRadius: 999,
-    backgroundColor: bikerMapTheme.colors.panelSoft,
-  },
-  sheetHeader: {
-    alignItems: "center",
-    flexDirection: "row",
-    justifyContent: "space-between",
-    gap: 12,
-  },
-  sheetTitle: {
-    flex: 1,
-    color: bikerMapTheme.colors.text,
-    fontSize: 18,
-    fontWeight: "800",
-    lineHeight: 24,
-  },
-  closeButton: {
-    minHeight: 44,
-    justifyContent: "center",
-    paddingHorizontal: 14,
-  },
-
-  optionList: {
-    gap: 8,
-    paddingBottom: 2,
-  },
-  option: {
-    alignItems: "center",
-    flexDirection: "row",
-    justifyContent: "space-between",
-    gap: 12,
-    minHeight: 52,
-    borderRadius: 18,
-    borderWidth: 1,
-    borderColor: "transparent",
-    backgroundColor: bikerMapTheme.colors.panelSolid,
-    paddingHorizontal: 14,
-    paddingVertical: 12,
-  },
-  optionSelected: {
-    borderColor: bikerMapTheme.colors.accent,
-    backgroundColor: bikerMapTheme.colors.panelSoft,
-  },
-  optionDanger: {
-    borderColor: "rgba(216, 91, 78, 0.22)",
-  },
-  optionDisabled: {
-    opacity: 0.45,
-  },
-  optionPressed: {
-    backgroundColor: bikerMapTheme.colors.panelSoft,
-  },
-  optionCopy: {
-    flex: 1,
-    gap: 4,
-  },
-  optionLabel: {
-    color: bikerMapTheme.colors.text,
-    fontSize: 15,
-    fontWeight: "800",
-    lineHeight: 20,
-  },
-  optionLabelDanger: {
-    color: bikerMapTheme.colors.danger,
-  },
-  optionDescription: {
-    color: bikerMapTheme.colors.muted,
-    fontSize: 12,
-    lineHeight: 17,
-  },
-  selectedDot: {
-    width: 10,
-    height: 10,
-    borderRadius: 999,
-    backgroundColor: bikerMapTheme.colors.accent,
-  },
-  emptyState: {
-    minHeight: 72,
-    justifyContent: "center",
-    borderRadius: 18,
-    borderWidth: 1,
-    borderColor: bikerMapTheme.colors.border,
-    backgroundColor: bikerMapTheme.colors.panelSolid,
-    paddingHorizontal: 14,
-  },
-  emptyText: {
-    color: bikerMapTheme.colors.muted,
-    fontSize: 14,
-    fontWeight: "600",
-    lineHeight: 20,
-    textAlign: "center",
-  },
-});
+const optionPressedStyle: ViewStyle = {
+  backgroundColor: bikerMapTheme.colors.panelSoft,
+};
