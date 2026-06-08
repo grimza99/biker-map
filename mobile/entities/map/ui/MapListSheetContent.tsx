@@ -23,66 +23,68 @@ export function MapListSheetContent({
     limit: SHEET_PAGE_SIZE,
   });
 
-  if (!placesQuery.data || !routesQuery.data) {
-    return (
-      <AppText className="text-[13px] font-bold" tone="muted">
-        데이터를 불러올 수 없습니다. 잠시후 시도해 주세요
-      </AppText>
-    );
-  }
-
   const isInitialLoading = placesQuery.isLoading || routesQuery.isLoading;
   const errorMessage = placesQuery.error?.message ?? routesQuery.error?.message;
-  const hasContent =
-    placesQuery.data?.length > 0 || routesQuery.data?.length > 0;
 
-  return (
-    <View className="h-full gap-3">
-      {isInitialLoading ? (
+  if (isInitialLoading) {
+    return (
+      <View className="h-full gap-3">
         <View className="items-center justify-center rounded-2xl border border-border bg-panel-solid py-8">
           <ActivityIndicator color={bikerMapTheme.colors.accent} size="small" />
           <AppText className="mt-3 text-[13px] font-bold" tone="muted">
             지도 목록을 불러오는 중입니다.
           </AppText>
         </View>
-      ) : (
-        <ScrollView
-          className="h-full max-h-185"
-          scrollEventThrottle={16}
-          showsVerticalScrollIndicator={false}
-        >
-          <View className="gap-4 pb-4">
-            {errorMessage && (
-              <View className="rounded-2xl border border-danger/40 bg-panel-solid p-4">
-                <AppText className="text-[13px] font-bold text-danger">
-                  {errorMessage}
-                </AppText>
-              </View>
-            )}
+      </View>
+    );
+  }
 
-            {hasContent ? (
-              <>
-                <View className="gap-2.5">
-                  {placesQuery.data?.map((place) => (
-                    <PlaceCard key={place.id} place={place} />
-                  ))}
-                </View>
-                <View className="gap-2.5">
-                  {routesQuery.data?.map((route) => (
-                    <RouteCard key={route.id} route={route} />
-                  ))}
-                </View>
-              </>
-            ) : (
-              <View className="rounded-2xl border border-border bg-panel-solid p-4">
-                <AppText className="text-[13px] font-bold" tone="muted">
-                  표시할 장소나 경로가 없습니다.
-                </AppText>
+  if (errorMessage) {
+    return (
+      <View className="h-full gap-3">
+        <View className="rounded-2xl border border-danger/40 bg-panel-solid p-4">
+          <AppText className="text-[13px] font-bold text-danger">
+            {errorMessage}
+          </AppText>
+        </View>
+      </View>
+    );
+  }
+
+  const places = placesQuery.data ?? [];
+  const routes = routesQuery.data ?? [];
+  const hasContent = places.length > 0 || routes.length > 0;
+
+  return (
+    <View className="h-full gap-3">
+      <ScrollView
+        className="h-full max-h-185"
+        scrollEventThrottle={16}
+        showsVerticalScrollIndicator={false}
+      >
+        <View className="gap-4 pb-4">
+          {hasContent ? (
+            <>
+              <View className="gap-2.5">
+                {places.map((place) => (
+                  <PlaceCard key={place.id} place={place} />
+                ))}
               </View>
-            )}
-          </View>
-        </ScrollView>
-      )}
+              <View className="gap-2.5">
+                {routes.map((route) => (
+                  <RouteCard key={route.id} route={route} />
+                ))}
+              </View>
+            </>
+          ) : (
+            <View className="rounded-2xl border border-border bg-panel-solid p-4">
+              <AppText className="text-[13px] font-bold" tone="muted">
+                표시할 장소나 경로가 없습니다.
+              </AppText>
+            </View>
+          )}
+        </View>
+      </ScrollView>
     </View>
   );
 }
