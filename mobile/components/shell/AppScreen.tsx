@@ -1,20 +1,15 @@
 import { type PropsWithChildren } from "react";
-import {
-  ScrollView,
-  StyleProp,
-  StyleSheet,
-  Text,
-  ViewStyle,
-} from "react-native";
+import { ScrollView } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
-import { bikerMapTheme } from "@package-shared/constants/theme";
+import { cn } from "@/shared";
+import { AppText } from "../common";
 
 type AppScreenProps = PropsWithChildren<{
   eyebrow?: string;
   title?: string;
   description?: string;
-  containerStyle?: StyleProp<ViewStyle>;
+  className?: string;
 }>;
 
 export function AppScreen({
@@ -22,49 +17,25 @@ export function AppScreen({
   title,
   description,
   children,
-  containerStyle,
+  className,
 }: AppScreenProps) {
   return (
-    <SafeAreaView style={[styles.container, containerStyle]} edges={["top"]}>
+    <SafeAreaView className={cn("flex-1 bg-bg", className)} edges={["top"]}>
       <ScrollView
-        contentContainerStyle={styles.content}
+        contentContainerClassName="gap-[18px] p-5 pb-7"
         showsVerticalScrollIndicator={false}
       >
-        <Text style={styles.eyebrow}>{eyebrow}</Text>
-        <Text style={styles.title}>{title}</Text>
-        <Text style={styles.description}>{description}</Text>
+        <AppText className="text-xs uppercase tracking-[1.2px] text-active">
+          {eyebrow}
+        </AppText>
+        <AppText className="text-[34px] font-extrabold leading-10">
+          {title}
+        </AppText>
+        <AppText className="text-[15px] leading-5.5" tone="muted">
+          {description}
+        </AppText>
         {children}
       </ScrollView>
     </SafeAreaView>
   );
 }
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: bikerMapTheme.colors.bg,
-  },
-  content: {
-    gap: 18,
-    padding: 20,
-    paddingBottom: 28,
-  },
-
-  eyebrow: {
-    color: bikerMapTheme.colors.active,
-    fontSize: 12,
-    letterSpacing: 1.2,
-    textTransform: "uppercase",
-  },
-  title: {
-    color: bikerMapTheme.colors.text,
-    fontSize: 34,
-    fontWeight: "800",
-    lineHeight: 40,
-  },
-  description: {
-    color: bikerMapTheme.colors.muted,
-    fontSize: 15,
-    lineHeight: 22,
-  },
-});

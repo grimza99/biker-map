@@ -1,67 +1,34 @@
-import { Pressable, StyleSheet, Text, View } from "react-native";
+import { Pressable, Text, View } from "react-native";
 
-import { bikerMapTheme } from "@package-shared/constants/theme";
 import { useSession } from "../../features/session/model";
 
+//todo 삭제 예정
 export function SessionPanel() {
   const { status, user, signOut } = useSession();
 
   const isAuthenticated = status === "authenticated";
 
   return (
-    <View style={styles.panel}>
-      <Text style={styles.label}>세션 상태</Text>
-      <Text style={styles.title}>{isAuthenticated ? "authenticated" : "anonymous"}</Text>
-      <Text style={styles.description}>
+    <View className="gap-3 rounded-[20px] border border-border bg-panel-solid p-4.5">
+      <Text className="text-lg font-bold text-text">
+        {isAuthenticated ? "authenticated" : "anonymous"}
+      </Text>
+      <Text className="text-sm leading-5.25 text-muted">
         {isAuthenticated
-          ? `${user?.name ?? "사용자"}가 로그인된 상태입니다. 탭 화면은 이 상태를 기준으로 확장됩니다.`
+          ? `${
+              user?.name ?? "사용자"
+            }가 로그인된 상태입니다. 탭 화면은 이 상태를 기준으로 확장됩니다.`
           : "로그인 전 상태입니다. 현재는 gate 구조만 열려 있습니다."}
       </Text>
 
       {isAuthenticated ? (
-        <Pressable style={styles.button} onPress={() => void signOut()}>
-          <Text style={styles.buttonText}>로그아웃</Text>
+        <Pressable
+          className="self-start rounded-full bg-text px-4 py-3"
+          onPress={() => void signOut()}
+        >
+          <Text className="text-sm font-bold text-bg">로그아웃</Text>
         </Pressable>
       ) : null}
     </View>
   );
 }
-
-const styles = StyleSheet.create({
-  panel: {
-    gap: 12,
-    borderRadius: 20,
-    borderWidth: 1,
-    borderColor: bikerMapTheme.colors.border,
-    backgroundColor: bikerMapTheme.colors.panelSolid,
-    padding: 18,
-  },
-  label: {
-    color: bikerMapTheme.colors.active,
-    fontSize: 12,
-    letterSpacing: 1.1,
-    textTransform: "uppercase",
-  },
-  title: {
-    color: bikerMapTheme.colors.text,
-    fontSize: 18,
-    fontWeight: "700",
-  },
-  description: {
-    color: bikerMapTheme.colors.muted,
-    fontSize: 14,
-    lineHeight: 21,
-  },
-  button: {
-    alignSelf: "flex-start",
-    borderRadius: 999,
-    backgroundColor: bikerMapTheme.colors.text,
-    paddingHorizontal: 16,
-    paddingVertical: 12,
-  },
-  buttonText: {
-    color: bikerMapTheme.colors.bg,
-    fontSize: 14,
-    fontWeight: "700",
-  },
-});

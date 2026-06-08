@@ -1,14 +1,10 @@
 import { forwardRef, type ReactNode, useState } from "react";
 import { StyleSheet, TextInput, View } from "react-native";
-import type {
-  StyleProp,
-  TextInputProps,
-  TextStyle,
-  ViewStyle,
-} from "react-native";
+import type { TextInputProps } from "react-native";
 
 import { bikerMapTheme } from "@package-shared/constants/theme";
 
+import { cn } from "@/shared";
 import {
   FieldShell,
   fieldSizeStyleMap,
@@ -22,8 +18,8 @@ export type InputProps = Omit<TextInputProps, "editable" | "style"> &
   FieldBaseProps & {
     disabled?: boolean;
     editable?: TextInputProps["editable"];
-    fieldStyle?: StyleProp<ViewStyle>;
-    inputStyle?: StyleProp<TextStyle>;
+    fieldClassName?: string;
+    inputClassName?: string;
     leftIcon?: ReactNode;
     rightIcon?: ReactNode;
   };
@@ -40,9 +36,10 @@ export const Input = forwardRef<TextInput, InputProps>(function Input(
     disabled = false,
     editable = true,
     errorText,
-    fieldStyle,
+    className,
+    fieldClassName,
     helperText,
-    inputStyle,
+    inputClassName,
     label,
     leftIcon,
     multiline = false,
@@ -53,7 +50,6 @@ export const Input = forwardRef<TextInput, InputProps>(function Input(
     rightIcon,
     selectionColor,
     size = "md",
-    style,
     ...props
   },
   ref
@@ -78,19 +74,19 @@ export const Input = forwardRef<TextInput, InputProps>(function Input(
       helperText={helperText}
       label={label}
       size={size}
-      style={style}
+      className={className}
     >
       <View
-        style={[
-          styles.field,
+        className={cn(
+          "flex-row items-center gap-2.5 border border-border bg-panel-solid",
           fieldSizeStyleMap[size],
-          focused ? styles.fieldFocused : null,
-          errorText ? styles.fieldError : null,
-          multiline ? styles.fieldMultiline : null,
-          fieldStyle,
-        ]}
+          focused && "border-accent bg-panel-soft",
+          errorText && "border-danger bg-danger/10",
+          multiline && "min-h-28 items-start",
+          fieldClassName
+        )}
       >
-        {leftIcon && <View style={styles.icon}>{leftIcon}</View>}
+        {leftIcon && leftIcon}
 
         <TextInput
           accessibilityLabel={accessibilityLabel ?? label ?? placeholder}
@@ -108,58 +104,23 @@ export const Input = forwardRef<TextInput, InputProps>(function Input(
           }
           ref={ref}
           selectionColor={selectionColor ?? bikerMapTheme.colors.accent}
-          style={[
-            styles.input,
-            multiline ? styles.inputMultiline : null,
-            inputStyle,
-          ]}
+          className={cn(
+            "min-w-0 flex-1 p-0 text-[15px] font-semibold leading-5 text-text",
+            multiline && "min-h-21",
+            inputClassName
+          )}
+          style={[multiline && styles.inputMultiline]}
           {...props}
         />
 
-        {rightIcon ? <View style={styles.icon}>{rightIcon}</View> : null}
+        {rightIcon && rightIcon}
       </View>
     </FieldShell>
   );
 });
 
 const styles = StyleSheet.create({
-  field: {
-    alignItems: "center",
-    flexDirection: "row",
-    gap: 10,
-    borderWidth: 1,
-    borderColor: bikerMapTheme.colors.border,
-    backgroundColor: bikerMapTheme.colors.panelSolid,
-  },
-  fieldFocused: {
-    borderColor: bikerMapTheme.colors.accent,
-    backgroundColor: bikerMapTheme.colors.panelSoft,
-  },
-  fieldError: {
-    borderColor: bikerMapTheme.colors.danger,
-    backgroundColor: "rgba(216, 91, 78, 0.1)",
-  },
-  fieldMultiline: {
-    alignItems: "flex-start",
-    minHeight: 112,
-  },
-  icon: {
-    alignItems: "center",
-    justifyContent: "center",
-    minHeight: 24,
-    minWidth: 24,
-  },
-  input: {
-    flex: 1,
-    minWidth: 0,
-    padding: 0,
-    color: bikerMapTheme.colors.text,
-    fontSize: 15,
-    fontWeight: "600",
-    lineHeight: 20,
-  },
   inputMultiline: {
-    minHeight: 84,
     textAlignVertical: "top",
   },
 });

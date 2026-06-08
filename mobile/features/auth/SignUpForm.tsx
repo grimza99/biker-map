@@ -4,8 +4,8 @@ import { ScrollView, View } from "react-native";
 import { SignUpBody } from "@package-shared/index";
 
 import { Button, Input } from "@/components/common";
-import { containerStyles } from "@/shared";
-import { formStyles } from "./form-style";
+import { formBase } from "./form-style";
+import { containerBase } from "@/shared";
 
 interface ISignUpForm {
   isSubmitting?: boolean;
@@ -20,15 +20,15 @@ export default function SignUpForm({
   const [password, setPassword] = useState("");
 
   return (
-    <ScrollView style={[containerStyles.panel]}>
-      <View style={[formStyles.formContainer]}>
+    <ScrollView className={containerBase.panel}>
+      <View className={formBase.formContainer}>
         <Input
           editable={!isSubmitting}
           label="이름"
           onChangeText={setName}
           placeholder="이름"
-          style={{ gap: 10 }}
-          fieldStyle={formStyles.fieldStyle}
+          className="gap-2.5"
+          fieldClassName="bg-panel-solid"
           value={name}
         />
         <Input
@@ -39,8 +39,8 @@ export default function SignUpForm({
           label="이메일"
           onChangeText={setEmail}
           placeholder="email@example.com"
-          style={{ gap: 10 }}
-          fieldStyle={formStyles.fieldStyle}
+          className="gap-2.5"
+          fieldClassName="bg-panel-solid"
           value={email}
         />
         <Input
@@ -51,8 +51,8 @@ export default function SignUpForm({
           onChangeText={setPassword}
           placeholder="비밀번호"
           secureTextEntry
-          style={{ gap: 10 }}
-          fieldStyle={formStyles.fieldStyle}
+          className="gap-2.5"
+          fieldClassName="bg-panel-solid"
           value={password}
         />
         <Button

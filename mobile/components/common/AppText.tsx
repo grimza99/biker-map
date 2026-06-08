@@ -3,7 +3,7 @@ import { Text } from "react-native";
 
 import { cn } from "@/shared";
 
-type AppTextTone = "default" | "muted" | "subtle";
+type AppTextTone = "default" | "muted" | "subtle" | "danger";
 
 type AppTextProps = ComponentProps<typeof Text> & {
   className?: string;
@@ -14,6 +14,7 @@ const toneClassName: Record<AppTextTone, string> = {
   default: "text-text",
   muted: "text-muted",
   subtle: "text-text/88",
+  danger: "text-danger",
 };
 
 export function AppText({
