@@ -11,7 +11,7 @@ import { SafeAreaProvider } from "react-native-safe-area-context";
 
 import { SessionProvider } from "../features/session/model";
 import "../global.css";
-import { THEME_VARS } from "@/shared";
+import { AppQueryProvider, THEME_VARS } from "@/shared";
 
 export default function RootLayout() {
   const [fontsLoaded] = useFonts({
@@ -33,9 +33,11 @@ export default function RootLayout() {
       />
       <SafeAreaProvider>
         <VariableContextProvider value={THEME_VARS}>
-          <SessionProvider>
-            <Stack screenOptions={{ headerShown: false }} />
-          </SessionProvider>
+          <AppQueryProvider>
+            <SessionProvider>
+              <Stack screenOptions={{ headerShown: false }} />
+            </SessionProvider>
+          </AppQueryProvider>
         </VariableContextProvider>
       </SafeAreaProvider>
     </GestureHandlerRootView>
