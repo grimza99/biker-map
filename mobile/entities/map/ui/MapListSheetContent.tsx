@@ -23,13 +23,18 @@ export function MapListSheetContent({
     limit: SHEET_PAGE_SIZE,
   });
 
+  if (!placesQuery.data || !routesQuery.data) {
+    return (
+      <AppText className="text-[13px] font-bold" tone="muted">
+        데이터를 불러올 수 없습니다. 잠시후 시도해 주세요
+      </AppText>
+    );
+  }
+
   const isInitialLoading = placesQuery.isLoading || routesQuery.isLoading;
   const errorMessage = placesQuery.error?.message ?? routesQuery.error?.message;
   const hasContent =
-    !placesQuery.data ||
-    !routesQuery.data ||
-    placesQuery.data.length < 1 ||
-    routesQuery.data.length < 1;
+    placesQuery.data?.length > 0 || routesQuery.data?.length > 0;
 
   return (
     <View className="h-full gap-3">
