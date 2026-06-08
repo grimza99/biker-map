@@ -5,14 +5,14 @@ import {
   ActivityIndicator,
   Image,
   Pressable,
-  StyleSheet,
-  Text,
   View,
+  type ViewStyle,
 } from "react-native";
-import type { ImageStyle, StyleProp, ViewStyle } from "react-native";
 
 import { bikerMapTheme } from "@package-shared/constants/theme";
 
+import { cn } from "@/shared";
+import { AppText } from "./AppText";
 import { Button } from "./Button";
 import { FieldShell, type FieldBaseProps, type FieldSize } from "./FieldShell";
 
@@ -40,8 +40,8 @@ export type ImageInputProps = FieldBaseProps & {
   defaultValue?: ImageInputValue;
   disabled?: boolean;
   emptyTitle?: string;
-  fieldStyle?: StyleProp<ViewStyle>;
-  imageStyle?: StyleProp<ImageStyle>;
+  fieldClassName?: string;
+  imageClassName?: string;
   maxImages?: number;
   onPickingChange?: (isPicking: boolean) => void;
   onValueChange?: (value: ImageInputAsset[] | null) => void;
@@ -57,9 +57,9 @@ export function ImageInput({
   disabled = false,
   emptyTitle = "이미지를 선택하세요",
   errorText,
-  fieldStyle,
+  fieldClassName,
   helperText,
-  imageStyle,
+  imageClassName,
   label,
   maxImages = 1,
   onPickingChange,
@@ -68,7 +68,7 @@ export function ImageInput({
   removeButtonLabel = "삭제",
   replaceButtonLabel = "교체",
   size = "md",
-  style,
+  className,
   value,
 }: ImageInputProps) {
   const [uncontrolledValue, setUncontrolledValue] = useState(
@@ -188,32 +188,32 @@ export function ImageInput({
       helperText={helperText}
       label={label}
       size={size}
-      style={style}
+      className={className}
     >
       <View
-        style={[
-          styles.surface,
-          effectiveErrorText ? styles.surfaceError : null,
-          fieldStyle,
-        ]}
+        className={cn(
+          "gap-3 rounded-[20px] border border-border bg-panel-solid p-3",
+          effectiveErrorText && "border-danger bg-danger/10",
+          fieldClassName
+        )}
       >
         {currentValue.length > 0 ? (
-          <View style={styles.previewList}>
+          <View className="gap-3">
             {currentValue.map((asset, index) => (
               <View
                 key={resolveAssetKey(asset, index)}
-                style={styles.previewCard}
+                className="gap-3 rounded-[18px] border border-border bg-panel p-2.5"
               >
-                <View style={styles.imageFrame}>
+                <View className="relative aspect-4/3 w-full overflow-hidden rounded-[14px] border border-border bg-bg">
                   <Image
                     accessibilityLabel={`${previewLabel} ${index + 1}`}
+                    className={cn("h-full w-full", imageClassName)}
                     resizeMode="cover"
                     source={{ uri: asset.uri }}
-                    style={[styles.image, imageStyle]}
                   />
 
                   {isPicking ? (
-                    <View style={styles.previewOverlay}>
+                    <View className="absolute inset-0 items-center justify-center bg-[rgba(17,19,21,0.45)]">
                       <ActivityIndicator
                         color={bikerMapTheme.colors.text}
                         size="small"
@@ -222,23 +222,32 @@ export function ImageInput({
                   ) : null}
 
                   {index === 0 && resolvedMaxImages > 1 ? (
-                    <View style={styles.badge}>
-                      <Text style={styles.badgeText}>대표</Text>
+                    <View className="absolute left-2.5 top-2.5 rounded-full bg-accent px-2.25 py-1">
+                      <AppText className="text-[11px] font-extrabold leading-3.5 text-text">
+                        대표
+                      </AppText>
                     </View>
                   ) : null}
                 </View>
 
-                <View style={styles.previewBody}>
-                  <View style={styles.previewCopy}>
-                    <Text numberOfLines={1} style={styles.previewTitle}>
+                <View className="gap-2.5">
+                  <View className="gap-0.75">
+                    <AppText
+                      className="text-sm font-extrabold leading-5"
+                      numberOfLines={1}
+                    >
                       {asset.name ?? `${previewLabel} ${index + 1}`}
-                    </Text>
-                    <Text numberOfLines={1} style={styles.previewMeta}>
+                    </AppText>
+                    <AppText
+                      className="text-xs leading-4.25"
+                      numberOfLines={1}
+                      tone="muted"
+                    >
                       {formatAssetMeta(asset)}
-                    </Text>
+                    </AppText>
                   </View>
 
-                  <View style={styles.previewActions}>
+                  <View className="flex-row gap-2">
                     <Button
                       disabled={disabled || isPicking}
                       leftIcon={
@@ -284,13 +293,13 @@ export function ImageInput({
             disabled={disabled || isPicking}
             onPress={handleAddPress}
             style={({ pressed }) => [
-              styles.emptyState,
               pressed && !disabled && !isPicking
-                ? styles.emptyStatePressed
+                ? emptyStatePressedStyle
                 : null,
             ]}
+            className="min-h-44 items-center justify-center gap-2 rounded-2xl border border-dashed border-border bg-panel p-4.5"
           >
-            <View style={styles.emptyIcon}>
+            <View className="items-center justify-center">
               {isPicking ? (
                 <ActivityIndicator
                   color={bikerMapTheme.colors.accent}
@@ -304,9 +313,9 @@ export function ImageInput({
                 />
               )}
             </View>
-            <Text style={styles.emptyTitle}>
+            <AppText className="text-center text-base font-extrabold leading-5.5">
               {isPicking ? "이미지를 불러오는 중입니다" : emptyTitle}
-            </Text>
+            </AppText>
           </Pressable>
         )}
 
@@ -383,116 +392,7 @@ function formatAssetMeta(asset: ImageInputAsset) {
   return asset.mimeType ?? asset.uri;
 }
 
-const styles = StyleSheet.create({
-  surface: {
-    gap: 12,
-    borderRadius: 20,
-    borderWidth: 1,
-    borderColor: bikerMapTheme.colors.border,
-    backgroundColor: bikerMapTheme.colors.panelSolid,
-    padding: 12,
-  },
-  surfaceError: {
-    borderColor: bikerMapTheme.colors.danger,
-    backgroundColor: "rgba(216, 91, 78, 0.1)",
-  },
-  emptyState: {
-    alignItems: "center",
-    justifyContent: "center",
-    minHeight: 176,
-    gap: 8,
-    borderRadius: 16,
-    borderWidth: 1,
-    borderColor: bikerMapTheme.colors.border,
-    borderStyle: "dashed",
-    backgroundColor: bikerMapTheme.colors.panel,
-    padding: 18,
-  },
-  emptyStatePressed: {
-    borderColor: bikerMapTheme.colors.accent,
-    backgroundColor: bikerMapTheme.colors.panelSoft,
-  },
-  emptyIcon: {
-    alignItems: "center",
-    justifyContent: "center",
-  },
-  emptyTitle: {
-    color: bikerMapTheme.colors.text,
-    fontSize: 16,
-    fontWeight: "800",
-    lineHeight: 22,
-    textAlign: "center",
-  },
-
-  previewList: {
-    gap: 12,
-  },
-  previewCard: {
-    gap: 12,
-    borderRadius: 18,
-    borderWidth: 1,
-    borderColor: bikerMapTheme.colors.border,
-    backgroundColor: bikerMapTheme.colors.panel,
-    padding: 10,
-  },
-  imageFrame: {
-    position: "relative",
-    overflow: "hidden",
-    width: "100%",
-    aspectRatio: 4 / 3,
-    borderRadius: 14,
-    borderWidth: 1,
-    borderColor: bikerMapTheme.colors.border,
-    backgroundColor: bikerMapTheme.colors.bg,
-  },
-  image: {
-    width: "100%",
-    height: "100%",
-  },
-  previewOverlay: {
-    alignItems: "center",
-    backgroundColor: "rgba(17, 19, 21, 0.45)",
-    bottom: 0,
-    justifyContent: "center",
-    left: 0,
-    position: "absolute",
-    right: 0,
-    top: 0,
-  },
-  badge: {
-    position: "absolute",
-    top: 10,
-    left: 10,
-    borderRadius: 999,
-    backgroundColor: bikerMapTheme.colors.accent,
-    paddingHorizontal: 9,
-    paddingVertical: 4,
-  },
-  badgeText: {
-    color: bikerMapTheme.colors.text,
-    fontSize: 11,
-    fontWeight: "800",
-    lineHeight: 14,
-  },
-  previewBody: {
-    gap: 10,
-  },
-  previewCopy: {
-    gap: 3,
-  },
-  previewTitle: {
-    color: bikerMapTheme.colors.text,
-    fontSize: 14,
-    fontWeight: "800",
-    lineHeight: 20,
-  },
-  previewMeta: {
-    color: bikerMapTheme.colors.muted,
-    fontSize: 12,
-    lineHeight: 17,
-  },
-  previewActions: {
-    flexDirection: "row",
-    gap: 8,
-  },
-});
+const emptyStatePressedStyle: ViewStyle = {
+  borderColor: bikerMapTheme.colors.accent,
+  backgroundColor: bikerMapTheme.colors.panelSoft,
+};
