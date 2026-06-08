@@ -1,10 +1,10 @@
 # Vercel Web Release Guide
 
-<strong>버전 : </strong> v1.1
+<strong>버전 : </strong> v1.2
 
 <strong>생성 날짜 : </strong> 2026-05-21
 
-<strong>최신 업데이트 날짜 : </strong> 2026-05-21
+<strong>최신 업데이트 날짜 : </strong> 2026-05-27
 
 이 문서는 Biker Map 웹의 Vercel 기반 릴리즈를 점검할 때 사용합니다.
 
@@ -50,12 +50,23 @@ release-manager의 현재 주 역할은 배포 명령을 직접 실행하는 것
 
 ## Vercel 배포 기준
 
+현재 레포 기준 운영 설정:
+
+- Vercel Web Project의 `Root Directory`는 `web`입니다.
+- `web`은 단독 패키지가 아니라 root workspace 아래에서 `package-shared`를 함께 참조합니다.
+- 따라서 `web/package.json`의 `dependencies`에는 `@biker-map/package-shared`가 명시되어 있어야 합니다.
+- workspace 의존성 변경이 있으면 `web/package-lock.json`이 아니라 root `package-lock.json` 반영 여부를 먼저 확인합니다.
+- `package-shared` 변경은 웹 배포 영향 범위에 포함된다고 보고, mobile 단독 변경과 동일하게 취급하지 않습니다.
+- Tailwind v4의 `@tailwindcss/oxide` optional dependency 누락 문제를 피하기 위해, Vercel의 custom `Install Command`는 `npm install --include=optional`을 사용합니다.
+
 확인 항목:
 
 - Vercel env가 dev/prod에 맞게 설정되어 있는지
 - Supabase URL/key가 올바른 환경을 가리키는지
 - Naver API key와 허용 도메인이 배포 도메인과 맞는지
 - build-time env와 runtime env 차이를 이해했는지
+- Vercel 설정에서 `web` root 기준 dependency graph가 `package-shared`까지 포함되도록 유지했는지
+- custom `Install Command`가 기본값으로 되돌아가지 않았는지
 - 배포 후 `/`, `/map`, `/routes`, `/posts`, `/me` smoke test가 가능한지
 
 Vercel 자체 배포는 자동화되어 있더라도, DB migration과 env 변경은 별도 순서로 관리해야 합니다.

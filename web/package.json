@@ -11,6 +11,7 @@
     "test:e2e:headed": "playwright test --headed"
   },
   "dependencies": {
+    "@biker-map/package-shared": "file:../package-shared",
     "@supabase/ssr": "^0.10.0",
     "@supabase/supabase-js": "^2.101.0",
     "@tailwindcss/postcss": "^4.2.2",
@@ -27,6 +28,9 @@
     "tailwind-merge": "^3.5.0",
     "tailwindcss": "^4.2.2",
     "zod": "^3.24.3"
+  },
+  "optionalDependencies": {
+    "@tailwindcss/oxide-linux-x64-gnu": "4.2.2"
   },
   "devDependencies": {
     "@playwright/test": "1.60.0",
