@@ -35,7 +35,7 @@ export function FieldShell({
   const message = resolveFieldMessage(errorText, helperText);
 
   return (
-    <View className={cn("gap-2", disabled && "opacity-5", className)}>
+    <View className={cn("gap-2", disabled && "opacity-50", className)}>
       {label && (
         <AppText
           tone={errorText ? "danger" : "default"}

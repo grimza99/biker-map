@@ -151,7 +151,7 @@ export function DropdownMenu({
             "items-center flex flex-row gap-3 min-h-12 rounded-2xl border border-border bg-panel-solid px-4 py-3",
             isVisible && "border-accent bg-panel-soft",
             errorText && "border-danger bg-[rgba(216, 91, 78, 0.1)]",
-            disabled && "opacity-5"
+            disabled && "opacity-50"
           )}
           style={(state) => [
             state.pressed && !disabled ? triggerPressedStyle : null,
