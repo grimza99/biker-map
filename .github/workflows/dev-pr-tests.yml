@@ -52,6 +52,9 @@ jobs:
         run: npx playwright install --with-deps chromium
         working-directory: web
 
+      - name: Lint web
+        run: npm run lint:web
+
       - name: Typecheck web
         run: npm exec tsc -- --noEmit --pretty false
         working-directory: web
