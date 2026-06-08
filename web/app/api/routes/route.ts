@@ -33,6 +33,8 @@ export async function GET(request: NextRequest) {
       | RouteRegion
       | undefined,
     maxDistanceKm: getNumberParam(searchParams, "maxDistanceKm"),
+    cursor: getStringParam(searchParams, "cursor"),
+    limit: getNumberParam(searchParams, "limit"),
   };
 
   const supabase = createSupabaseApiClient(request);
@@ -82,7 +84,11 @@ export async function GET(request: NextRequest) {
       return true;
     });
 
-  const { items: pagedItems, meta } = paginateByCursor(items);
+  const { items: pagedItems, meta } = paginateByCursor(
+    items,
+    query.cursor,
+    query.limit
+  );
 
   return ok({ items: pagedItems }, undefined, meta);
 }

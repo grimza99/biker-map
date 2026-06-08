@@ -12,7 +12,12 @@ import {
 
 import { openExternalUrl } from "@/shared";
 
-export function PlaceCard({ place }: { place: PlaceListItem }) {
+type PlaceCardProps = {
+  place: PlaceListItem;
+  onPressDetail?: (place: PlaceListItem) => void;
+};
+
+export function PlaceCard({ place, onPressDetail }: PlaceCardProps) {
   return (
     <DefaultCardContainer>
       <View className="flex-row items-start justify-between gap-3">
@@ -24,17 +29,16 @@ export function PlaceCard({ place }: { place: PlaceListItem }) {
         </View>
         <Chip label={place.category} />
       </View>
-      {/* 버튼 */}
       <View className="flex flex-row gap-2">
-        <Button
-          accessibilityLabel={`${place.name} 상세페이지 이동`}
-          variant="secondary"
-          onPress={() => {
-            console.log("상세페이지로 이동");
-          }}
-        >
-          <AppText className="text-[13px] font-bold">상세보기</AppText>
-        </Button>
+        {onPressDetail ? (
+          <Button
+            accessibilityLabel={`${place.name} 상세페이지 이동`}
+            variant="secondary"
+            onPress={() => onPressDetail(place)}
+          >
+            <AppText className="text-[13px] font-bold">상세보기</AppText>
+          </Button>
+        ) : null}
         <Button
           accessibilityLabel={`${place.name} 길찾기 열기`}
           variant="secondary"
