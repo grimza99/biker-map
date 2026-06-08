@@ -5,7 +5,7 @@ import type { TextareaHTMLAttributes } from "react";
 import { useEffect, useRef, useState } from "react";
 
 import { uploadImage } from "@/features/image";
-import { ApiClientError } from "@shared/api/http";
+import { ApiClientError } from "@package-shared/index";
 import { Button } from "@shared/ui/button";
 import { useToast } from "@shared/ui/toast";
 import { commands } from "@uiw/react-md-editor";

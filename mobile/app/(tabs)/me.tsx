@@ -1,21 +1,36 @@
 import { StyleSheet, Text, View } from "react-native";
 
-import { AppScreen, SessionPanel } from "../../components/shell";
+import {
+  AppScreen,
+  AuthRequiredPanel,
+  SessionPanel,
+} from "../../components/shell";
+import { useSession } from "../../features/session/model";
 
 export default function MeScreen() {
+  const { status } = useSession();
+  const isAuthenticated = status === "authenticated";
+
   return (
     <AppScreen
       eyebrow="Profile gate"
       title="내 정보"
-      description="세션과 개인 설정이 붙을 기준 화면입니다. 현재는 최소 셸 확인용 placeholder입니다."
+      description="세션과 개인 설정이 붙을 기준 화면입니다. 비로그인 상태에서는 접근 안내만 보여줍니다."
     >
-      <SessionPanel />
-      <View style={styles.hero}>
-        <Text style={styles.title}>내 정보</Text>
-        <Text style={styles.description}>
-          로그인 상태를 보여주고, 이후에는 세션 종료나 개인 설정으로 확장할 수 있습니다.
-        </Text>
-      </View>
+      {isAuthenticated ? (
+        <>
+          <SessionPanel />
+          <View style={styles.hero}>
+            <Text style={styles.title}>내 정보</Text>
+            <Text style={styles.description}>
+              로그인 상태를 보여주고, 이후에는 세션 종료나 개인 설정으로
+              확장할 수 있습니다.
+            </Text>
+          </View>
+        </>
+      ) : (
+        <AuthRequiredPanel description="프로필, 개인 설정, 내가 남긴 활동 정보는 로그인 후 확인할 수 있습니다." />
+      )}
     </AppScreen>
   );
 }

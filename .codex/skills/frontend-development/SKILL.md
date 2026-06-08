@@ -7,11 +7,11 @@ metadata:
 
 # Frontend Development Skill
 
-<strong>버전 : </strong> v1
+<strong>버전 : </strong> v2
 
 <strong>생성 날짜 : </strong> 2026-05-21
 
-<strong>최신 업데이트 날짜 : </strong> 2026-05-21
+<strong>최신 업데이트 날짜 : </strong> 2026-06-01
 
 이 skill은 Biker Map의 프론트엔드 구현 컨벤션을 따를 때 사용합니다.
 
@@ -32,6 +32,7 @@ metadata:
 - Zod 검증 규칙: `.codex/skills/frontend-development/zod.md`
 - Supabase client 사용 규칙: `.codex/skills/frontend-development/supabase-client.md`
 - 지도 사이드패널 Parallel Route 기준: `.codex/skills/frontend-development/map-panel-parallel-route.md`
+- auth 플로우 테스트: `.codex/skills/frontend-development/auth-flow-test-plan.md`
 
 ## 공통 전제
 
@@ -43,6 +44,13 @@ metadata:
 - `features`는 사용자 액션 단위 기능을 둡니다.
 - `widgets`는 여러 entity와 feature를 조합한 화면 블록을 둡니다.
 - 댓글, 반응, 즐겨찾기처럼 함께 쓰이는 기능은 세부 feature를 분리하되 화면에서는 widget에서 조합합니다.
+
+### Server Action
+
+- Next.js Server Action은 사용자 액션의 서버 실행 entrypoint로 보고 `features/{feature}/actions` 하위에 둡니다.
+- `"use server"` boundary, form submit 처리, redirect, cookie, server-side auth 호출은 `model`이 아니라 `actions`에서 시작합니다.
+- `model`에는 schema, mapper, hook, 상태, 클라이언트/서버 공용 도메인 로직을 둡니다.
+- Server Action에서 사용하는 Zod schema나 순수 helper는 재사용성이 있으면 `model`로 분리하고, action 파일에서는 흐름 조합만 담당하게 합니다.
 
 ### Server State
 
@@ -63,11 +71,20 @@ metadata:
 - 일반 데이터 접근과 비용성 외부 API 호출은 BFF API route를 통합니다.
 - Realtime 수신 후 nav, dropdown처럼 즉시성이 필요한 UI는 query cache 직접 갱신을 우선 검토합니다.
 
+### Test
+
+- Playwright `test.describe()`와 `test()` 설명은 사용자가 결과를 읽기 쉽도록 한글로 작성합니다.
+- E2E 파일명은 도구 호환성과 git 출력 가독성을 위해 영어 kebab-case를 사용합니다.
+- 인증, 회원가입, refresh, Realtime처럼 DB/Auth 데이터를 생성하는 테스트는 개발/운영 Supabase를 직접 사용하지 않습니다.
+- DB 오염 방지를 위해 실제 Supabase Auth 흐름이 필요한 테스트는 Supabase local stack과 테스트 fixture를 기준으로 작성합니다.
+- Supabase local 테스트는 `supabase db reset`으로 재현 가능한 상태를 만든 뒤 실행하고, DBeaver 확인은 local DB 포트에만 연결합니다.
+
 ## 세부 문서 역할
 
 - `.codex/skills/frontend-development/tanstack-query.md`: query/mutation hook, toast, optimistic update, cache 기준입니다.
 - `.codex/skills/frontend-development/zod.md`: API/form/env/error payload 런타임 검증 기준입니다.
 - `.codex/skills/frontend-development/supabase-client.md`: Supabase client 종류, env, browser/server 경계 기준입니다.
 - `.codex/skills/frontend-development/map-panel-parallel-route.md`: 지도 `@panel` parallel route, route-local UI, `/map/list` path 기준입니다.
+- `.codex/skills/frontend-development/auth-flow-test-plan.md`: 인증 E2E 우선순위, Supabase local 테스트 DB, DBeaver 확인 기준입니다.
 - `.codex/skills/bff-development/bff.md`: API route authorization과 response contract의 source of truth입니다.
 - `.codex/skills/db-engineering/SKILL.md`: RLS, baseline, service role 공통 전제의 source of truth입니다.

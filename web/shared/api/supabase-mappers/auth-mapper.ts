@@ -3,10 +3,12 @@ import { Session } from "@supabase/supabase-js";
 
 export function mapRefreshData(
   session: Session | null,
-  refreshed: boolean
+  refreshed: boolean,
+  refreshToken: string | null = null
 ): RefreshResponseData {
   return {
     refreshed,
     accessToken: session?.access_token ?? null,
+    refreshToken,
   };
 }

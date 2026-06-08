@@ -1,3 +1,7 @@
+import { useFonts } from "expo-font";
+import FontAwesome5 from "@expo/vector-icons/FontAwesome5";
+import Ionicons from "@expo/vector-icons/Ionicons";
+import MaterialCommunityIcons from "@expo/vector-icons/MaterialCommunityIcons";
 import { Stack } from "expo-router";
 import { StatusBar } from "react-native";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
@@ -7,6 +11,16 @@ import { bikerMapTheme } from "@package-shared/constants/theme";
 import { SessionProvider } from "../features/session/model";
 
 export default function RootLayout() {
+  const [fontsLoaded] = useFonts({
+    ...Ionicons.font,
+    ...FontAwesome5.font,
+    ...MaterialCommunityIcons.font,
+  });
+
+  if (!fontsLoaded) {
+    return null;
+  }
+
   return (
     <GestureHandlerRootView style={{ flex: 1 }}>
       <StatusBar barStyle="light-content" backgroundColor={bikerMapTheme.colors.bg} />
