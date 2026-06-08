@@ -1,2 +1,2 @@
-export { containerStyles } from "./container";
+export { containerBase } from "./container";
 export * from "./style-resolver";

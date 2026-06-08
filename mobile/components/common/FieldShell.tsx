@@ -1,8 +1,8 @@
 import { type PropsWithChildren } from "react";
-import { StyleSheet, Text, View } from "react-native";
-import type { StyleProp, TextStyle, ViewStyle } from "react-native";
+import { View } from "react-native";
 
-import { bikerMapTheme } from "@package-shared/constants/theme";
+import { cn } from "@/shared";
+import { AppText } from "./AppText";
 
 export type FieldSize = "sm" | "md" | "lg";
 
@@ -11,15 +11,15 @@ export type FieldBaseProps = {
   errorText?: string;
   helperText?: string;
   label?: string;
-  labelStyle?: StyleProp<TextStyle>;
-  messageStyle?: StyleProp<TextStyle>;
+  labelStyle?: string;
+  messageStyle?: string;
   size?: FieldSize;
-  style?: StyleProp<ViewStyle>;
+  className?: string;
 };
 
 export type FieldMessage = {
   text: string;
-  tone: "error" | "helper";
+  tone: "danger" | "muted";
 };
 
 export function FieldShell({
@@ -30,39 +30,31 @@ export function FieldShell({
   label,
   labelStyle,
   messageStyle,
-  style,
+  className,
 }: PropsWithChildren<FieldBaseProps>) {
   const message = resolveFieldMessage(errorText, helperText);
 
   return (
-    <View
-      style={[styles.container, disabled ? styles.disabled : null, style]}
-    >
+    <View className={cn("gap-2", disabled && "opacity-5", className)}>
       {label && (
-        <Text
-          style={[
-            styles.label,
-            errorText ? styles.labelError : null,
-            labelStyle,
-          ]}
+        <AppText
+          tone={errorText ? "danger" : "default"}
+          className={cn("font-extrabold text-sm", labelStyle)}
         >
           {label}
-        </Text>
+        </AppText>
       )}
 
       {children}
 
-      {message ? (
-        <Text
-          style={[
-            styles.message,
-            message.tone === "error" ? styles.messageError : null,
-            messageStyle,
-          ]}
+      {message && (
+        <AppText
+          tone={message.tone === "danger" ? "danger" : "muted"}
+          className={cn("text-xs font-semibold", messageStyle)}
         >
           {message.text}
-        </Text>
-      ) : null}
+        </AppText>
+      )}
     </View>
   );
 }
@@ -74,64 +66,21 @@ export function resolveFieldMessage(
   if (errorText) {
     return {
       text: errorText,
-      tone: "error",
+      tone: "danger",
     };
   }
 
   if (helperText) {
     return {
       text: helperText,
-      tone: "helper",
+      tone: "muted",
     };
   }
 
   return null;
 }
-
-export const fieldSizeStyleMap: Record<FieldSize, ViewStyle> = {
-  sm: {
-    minHeight: 44,
-    borderRadius: 16,
-    paddingHorizontal: 14,
-    paddingVertical: 10,
-  },
-  md: {
-    minHeight: 48,
-    borderRadius: 18,
-    paddingHorizontal: 16,
-    paddingVertical: 12,
-  },
-  lg: {
-    minHeight: 54,
-    borderRadius: 20,
-    paddingHorizontal: 18,
-    paddingVertical: 14,
-  },
+export const fieldSizeStyleMap: Record<FieldSize, string> = {
+  sm: "min-h-11 rounded-xl py-2.5 px-3.5",
+  md: "min-h-12 rounded-xl px-4 py-3",
+  lg: "min-h-[54px] rounded-xl py-3.5 px-4.5",
 };
-
-const styles = StyleSheet.create({
-  container: {
-    gap: 7,
-  },
-  disabled: {
-    opacity: 0.55,
-  },
-  label: {
-    color: bikerMapTheme.colors.text,
-    fontSize: 13,
-    fontWeight: "800",
-    lineHeight: 18,
-  },
-  labelError: {
-    color: bikerMapTheme.colors.danger,
-  },
-  message: {
-    color: bikerMapTheme.colors.muted,
-    fontSize: 12,
-    fontWeight: "600",
-    lineHeight: 17,
-  },
-  messageError: {
-    color: bikerMapTheme.colors.danger,
-  },
-});

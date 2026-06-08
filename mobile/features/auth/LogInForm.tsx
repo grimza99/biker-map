@@ -4,8 +4,8 @@ import { ScrollView, View } from "react-native";
 import { LoginBody } from "@package-shared/index";
 
 import { Button, Input } from "@/components/common";
-import { containerStyles } from "@/shared";
-import { formStyles } from "./form-style";
+import { formBase } from "./form-style";
+import { containerBase } from "@/shared";
 
 interface ILogInForm {
   isSubmitting?: boolean;
@@ -19,8 +19,8 @@ export default function LogInForm({
   const [password, setPassword] = useState("");
 
   return (
-    <ScrollView style={[containerStyles.panel]}>
-      <View style={[formStyles.formContainer]}>
+    <ScrollView className={containerBase.panel}>
+      <View className={formBase.formContainer}>
         <Input
           autoCapitalize="none"
           autoCorrect={false}
@@ -29,8 +29,8 @@ export default function LogInForm({
           label="이메일"
           onChangeText={setEmail}
           placeholder="email@example.com"
-          style={{ gap: 10 }}
-          fieldStyle={formStyles.fieldStyle}
+          className="gap-2.5"
+          fieldClassName="bg-panel-solid"
           value={email}
         />
         <Input
@@ -41,8 +41,8 @@ export default function LogInForm({
           onChangeText={setPassword}
           placeholder="비밀번호"
           secureTextEntry
-          style={{ gap: 10 }}
-          fieldStyle={formStyles.fieldStyle}
+          className="gap-2.5"
+          fieldClassName="bg-panel-solid"
           value={password}
         />
         <Button
