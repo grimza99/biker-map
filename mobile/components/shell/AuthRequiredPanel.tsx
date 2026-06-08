@@ -1,7 +1,5 @@
 import { useRouter } from "expo-router";
-import { StyleSheet, Text, View } from "react-native";
-
-import { bikerMapTheme } from "@package-shared/constants/theme";
+import { Text, View } from "react-native";
 
 import { Button } from "@/components/common";
 import { MOBILE_PATHS } from "@/shared/constants/paths";
@@ -20,11 +18,14 @@ export function AuthRequiredPanel({
   const router = useRouter();
 
   return (
-    <View style={styles.panel}>
-      <View style={styles.copyGroup}>
-        <Text style={styles.eyebrow}>Protected feature</Text>
-        <Text style={styles.title}>{title}</Text>
-        <Text style={styles.description}>{description}</Text>
+    <View className="gap-4.5 rounded-3xl border border-border bg-panel-solid p-5">
+      <View className="gap-2">
+        <Text className="text-2xl font-extrabold leading-7.5 text-text">
+          {title}
+        </Text>
+        <Text className="text-[15px] leading-5.5 text-muted">
+          {description}
+        </Text>
       </View>
 
       <Button
@@ -38,34 +39,3 @@ export function AuthRequiredPanel({
     </View>
   );
 }
-
-const styles = StyleSheet.create({
-  panel: {
-    gap: 18,
-    borderRadius: 24,
-    borderWidth: 1,
-    borderColor: bikerMapTheme.colors.border,
-    backgroundColor: bikerMapTheme.colors.panelSolid,
-    padding: 20,
-  },
-  copyGroup: {
-    gap: 8,
-  },
-  eyebrow: {
-    color: bikerMapTheme.colors.active,
-    fontSize: 11,
-    letterSpacing: 1.1,
-    textTransform: "uppercase",
-  },
-  title: {
-    color: bikerMapTheme.colors.text,
-    fontSize: 24,
-    fontWeight: "800",
-    lineHeight: 30,
-  },
-  description: {
-    color: bikerMapTheme.colors.muted,
-    fontSize: 15,
-    lineHeight: 22,
-  },
-});

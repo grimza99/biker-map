@@ -1,4 +1,4 @@
-import { StyleSheet, Text, View } from "react-native";
+import { Text, View } from "react-native";
 
 import {
   AppScreen,
@@ -20,11 +20,13 @@ export default function BikersScreen() {
       {isAuthenticated ? (
         <>
           <SessionPanel />
-          <View style={styles.hero}>
-            <Text style={styles.title}>바이커 전용 영역</Text>
-            <Text style={styles.description}>
-              이후에는 주변 라이더, 위치 공유, 채팅 진입 같은 기능이 이
-              화면 기준으로 확장됩니다.
+          <View className="gap-2.5 rounded-3xl border border-border bg-panel-solid p-5">
+            <Text className="text-[30px] font-extrabold text-text">
+              바이커 전용 영역
+            </Text>
+            <Text className="text-[15px] leading-5.5 text-muted">
+              이후에는 주변 라이더, 위치 공유, 채팅 진입 같은 기능이 이 화면
+              기준으로 확장됩니다.
             </Text>
           </View>
         </>
@@ -34,24 +36,3 @@ export default function BikersScreen() {
     </AppScreen>
   );
 }
-
-const styles = StyleSheet.create({
-  hero: {
-    borderRadius: 24,
-    borderWidth: 1,
-    borderColor: "#1c334d",
-    backgroundColor: "#0e1d31",
-    padding: 20,
-    gap: 10,
-  },
-  title: {
-    color: "#f3fbff",
-    fontSize: 30,
-    fontWeight: "800",
-  },
-  description: {
-    color: "#b5c6d8",
-    fontSize: 15,
-    lineHeight: 22,
-  },
-});
