@@ -1,5 +1,11 @@
 import { useState } from "react";
-import { ActivityIndicator, ScrollView, Text, View } from "react-native";
+import {
+  ActivityIndicator,
+  ScrollView,
+  StyleSheet,
+  View,
+} from "react-native";
+import { Ionicons } from "@expo/vector-icons";
 import { SafeAreaView } from "react-native-safe-area-context";
 
 import { bikerMapTheme } from "@package-shared/index";
@@ -15,6 +21,7 @@ import { MapCanvasWebView } from "../../features/map/ui/MapCanvasWebView";
 import { AppText, Button } from "@/components/common";
 import { cn } from "@/shared";
 import { usePlaceList } from "@/entities/place";
+import { MapListSheetContent } from "@/entities/map";
 
 export const placeCategoryOptions: { label: string; value: PlaceCategory }[] = [
   { label: "주유소", value: "gas" },
@@ -35,9 +42,13 @@ export default function MapScreen() {
   const [activeCategory, setActiveCategory] =
     useState<PlacesQuery["category"]>("all");
   const [focusedPlaceId, setFocusedPlaceId] = useState<string | null>(null);
-  const { errorMessage, isLoading, places } = usePlaceList({
+  const placesQuery = usePlaceList({
     category: activeCategory,
   });
+  const places = placesQuery.data ?? [];
+  const errorMessage =
+    placesQuery.error instanceof Error ? placesQuery.error.message : null;
+  const isLoading = placesQuery.isLoading;
 
   const handleMarkerPressed = (placeId: string) => {
     setFocusedPlaceId(placeId);
@@ -102,7 +113,17 @@ export default function MapScreen() {
         ) : null}
       </SafeAreaView>
 
-      <FloatingMapSheet sheetContent={<Text>테스트</Text>} />
+      <FloatingMapSheet
+        sheetTitle="지도 목록"
+        sheetIcon={
+          <Ionicons
+            name="map-outline"
+            size={18}
+            color={bikerMapTheme.colors.text}
+          />
+        }
+        sheetContent={<MapListSheetContent activeCategory={activeCategory} />}
+      />
     </View>
   );
 }

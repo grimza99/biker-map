@@ -17,6 +17,8 @@ export type RoutesQuery = {
   departureRegion?: RouteRegion;
   destinationRegion?: RouteRegion;
   maxDistanceKm?: number;
+  cursor?: string;
+  limit?: number;
 };
 
 export type RouteCoordinate = {
