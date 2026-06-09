@@ -1,41 +1,23 @@
+import { Ionicons } from "@expo/vector-icons";
 import { useState } from "react";
 import { ActivityIndicator, ScrollView, View } from "react-native";
-import { Ionicons } from "@expo/vector-icons";
 import { SafeAreaView } from "react-native-safe-area-context";
 
-import { bikerMapTheme } from "@package-shared/index";
+import {
+  bikerMapTheme,
+  placeCategoryOptions,
+  type AllPlaceCategory,
+} from "@biker-map/package-shared";
 
-import type {
-  AllPlaceCategory,
-  PlaceCategory,
-  PlacesQuery,
-} from "@package-shared/index";
-
+import { AppText, Button } from "@/components/common";
+import { MapListSheetContent } from "@/entities/map";
+import { usePlaceList } from "@/entities/place";
+import { cn } from "@/shared";
 import { FloatingMapSheet } from "../../components/shell";
 import { MapCanvasWebView } from "../../features/map/ui/MapCanvasWebView";
-import { AppText, Button } from "@/components/common";
-import { cn } from "@/shared";
-import { usePlaceList } from "@/entities/place";
-import { MapListSheetContent } from "@/entities/map";
-
-export const placeCategoryOptions: { label: string; value: PlaceCategory }[] = [
-  { label: "주유소", value: "gas" },
-  { label: "정비소", value: "repair" },
-  { label: "카페", value: "cafe" },
-  { label: "샵", value: "shop" },
-  { label: "휴게/쉼터", value: "rest" },
-];
-
-export type MapCategoryFilter = AllPlaceCategory | "route";
-
-export const mapCategoryOptions: Array<{
-  label: string;
-  value: MapCategoryFilter;
-}> = [...placeCategoryOptions, { label: "라이딩 경로", value: "route" }];
 
 export default function MapScreen() {
-  const [activeCategory, setActiveCategory] =
-    useState<PlacesQuery["category"]>("all");
+  const [activeCategory, setActiveCategory] = useState<AllPlaceCategory>("all");
   const [focusedPlaceId, setFocusedPlaceId] = useState<string | null>(null);
   const placesQuery = usePlaceList({
     category: activeCategory,
