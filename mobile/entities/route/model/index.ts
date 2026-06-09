@@ -1,1 +1,4 @@
-export { useRouteListQuery } from "./use-route-query";
+export {
+  useRouteListQuery,
+  useRouteListResponseQuery,
+} from "./use-route-query";
