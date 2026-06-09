@@ -16,9 +16,10 @@ export function useCommunityPosts(query: CommunityPostsQuery) {
   return useQuery({
     queryKey: queryKeys.posts(query),
     queryFn: async () => {
-      const data = await apiFetch<PostsListResponseData>(
-        `${API_PATHS.community.posts}?${postsQuery}`
-      );
+      const endpoint = postsQuery
+        ? `${API_PATHS.community.posts}?${postsQuery}`
+        : API_PATHS.community.posts;
+      const data = await apiFetch<PostsListResponseData>(endpoint);
       return data;
     },
     placeholderData: (previousData) => previousData,
