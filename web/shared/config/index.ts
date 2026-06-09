@@ -1,4 +1,4 @@
-export { queryKeys } from "./query-keys";
+export { queryKeys } from "@biker-map/package-shared";
 export {
   getSupabasePublicEnv,
   getSupabaseServerEnv,
