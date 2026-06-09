@@ -1,12 +1,12 @@
 import { Redirect, useRouter } from "expo-router";
-import { StyleSheet, Text, View } from "react-native";
+import { View } from "react-native";
 import { useState } from "react";
 
-import { bikerMapTheme, LoginBody, SignUpBody } from "@package-shared/index";
+import { LoginBody, SignUpBody } from "@package-shared/index";
 
 import { AppScreen } from "../../components/shell";
 import { useSession } from "../../features/session/model";
-import { Button } from "@/components/common";
+import { AppText, Button } from "@/components/common";
 import SignUpForm from "@/features/auth/SignUpForm";
 import LogInForm from "@/features/auth/LogInForm";
 import { MOBILE_PATHS } from "@/shared/constants/paths";
@@ -67,7 +67,7 @@ export default function AuthScreen() {
 
   return (
     <AppScreen>
-      <View style={styles.tabContainer}>
+      <View className="w-full flex-row items-center justify-evenly gap-2.5 rounded-[20px] border border-border bg-panel-solid p-4.5">
         <Button
           onPress={() => {
             handleSelectTab("logIn");
@@ -75,7 +75,7 @@ export default function AuthScreen() {
           disabled={isSubmitting}
           selected={tab === "logIn"}
           variant="secondary"
-          style={{ width: 150 }}
+          className="w-37.5"
         >
           로그인
         </Button>
@@ -85,47 +85,22 @@ export default function AuthScreen() {
           }}
           disabled={isSubmitting}
           selected={tab === "signUp"}
-          style={{ width: 150 }}
           variant="secondary"
+          className="w-37.5"
         >
           회원가입
         </Button>
       </View>
-      {errorMessage ? (
-        <Text style={styles.errorMessage}>{errorMessage}</Text>
-      ) : null}
+      {errorMessage && (
+        <AppText className="text-sm font-semibold leading-5" tone="danger">
+          {errorMessage}
+        </AppText>
+      )}
       {tab === "logIn" ? (
-        <LogInForm
-          isSubmitting={isSubmitting}
-          onSubmit={handleSignIn}
-        />
+        <LogInForm isSubmitting={isSubmitting} onSubmit={handleSignIn} />
       ) : (
-        <SignUpForm
-          isSubmitting={isSubmitting}
-          onSubmit={handleSignUp}
-        />
+        <SignUpForm isSubmitting={isSubmitting} onSubmit={handleSignUp} />
       )}
     </AppScreen>
   );
 }
-
-const styles = StyleSheet.create({
-  tabContainer: {
-    borderRadius: 20,
-    borderWidth: 1,
-    borderColor: bikerMapTheme.colors.border,
-    backgroundColor: bikerMapTheme.colors.panelSolid,
-    padding: 18,
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "space-evenly",
-    gap: 10,
-    width: "100%",
-  },
-  errorMessage: {
-    color: bikerMapTheme.colors.danger,
-    fontSize: 14,
-    fontWeight: "600",
-    lineHeight: 20,
-  },
-});

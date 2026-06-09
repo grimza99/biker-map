@@ -1,11 +1,5 @@
 import { useState } from "react";
-import {
-  ActivityIndicator,
-  ScrollView,
-  StyleSheet,
-  Text,
-  View,
-} from "react-native";
+import { ActivityIndicator, ScrollView, Text, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
 import { bikerMapTheme } from "@package-shared/index";
@@ -18,7 +12,7 @@ import type {
 
 import { FloatingMapSheet } from "../../components/shell";
 import { MapCanvasWebView } from "../../features/map/ui/MapCanvasWebView";
-import { Button } from "@/components/common";
+import { AppText, Button } from "@/components/common";
 import { cn } from "@/shared";
 import { usePlaceList } from "@/entities/place";
 
@@ -58,11 +52,14 @@ export default function MapScreen() {
         places={places}
       />
 
-      <SafeAreaView style={styles.overlayPanel} edges={["top"]}>
+      <SafeAreaView
+        className="absolute left-0 right-0 top-0 gap-2.5 px-4.5 pb-3 pt-2"
+        edges={["top"]}
+      >
         <ScrollView
           horizontal
           showsHorizontalScrollIndicator={false}
-          contentContainerStyle={styles.filterRow}
+          contentContainerClassName="gap-2.5 py-0.5"
         >
           {placeCategoryOptions.map((option) => {
             const isActive = activeCategory === option.value;
@@ -72,23 +69,22 @@ export default function MapScreen() {
                 selected={isActive}
                 onPress={() => setActiveCategory(option.value)}
                 key={option.value}
-                style={[styles.filterChip, isActive && styles.filterChipActive]}
               >
-                <Text
+                <AppText
                   className={cn(
                     "text-muted text-sm font-bold",
                     isActive && "text-bg"
                   )}
                 >
                   {option.label}
-                </Text>
+                </AppText>
               </Button>
             );
           })}
         </ScrollView>
 
         {isLoading || errorMessage ? (
-          <View style={styles.statusBadge}>
+          <View className="self-start flex-row items-center gap-2 rounded-full border border-border bg-[rgba(17,19,21,0.9)] px-3 py-2">
             {isLoading ? (
               <ActivityIndicator
                 color={bikerMapTheme.colors.accent}
@@ -96,9 +92,11 @@ export default function MapScreen() {
               />
             ) : null}
             {errorMessage ? (
-              <Text style={styles.statusText}>{errorMessage}</Text>
+              <AppText className="text-xs font-bold">{errorMessage}</AppText>
             ) : (
-              <Text style={styles.statusText}>장소를 불러오는 중입니다.</Text>
+              <AppText className="text-xs font-bold">
+                장소를 불러오는 중입니다.
+              </AppText>
             )}
           </View>
         ) : null}
@@ -108,47 +106,3 @@ export default function MapScreen() {
     </View>
   );
 }
-
-const styles = StyleSheet.create({
-  overlayPanel: {
-    position: "absolute",
-    top: 0,
-    left: 0,
-    right: 0,
-    gap: 10,
-    paddingHorizontal: 18,
-    paddingBottom: 12,
-    paddingTop: 8,
-  },
-  filterRow: {
-    gap: 10,
-    paddingVertical: 2,
-  },
-  filterChip: {
-    borderColor: bikerMapTheme.colors.border,
-    backgroundColor: bikerMapTheme.colors.panelSoft,
-    paddingHorizontal: 14,
-    paddingVertical: 10,
-  },
-  filterChipActive: {
-    borderColor: bikerMapTheme.colors.accent,
-    backgroundColor: bikerMapTheme.colors.accent,
-  },
-  statusBadge: {
-    alignSelf: "flex-start",
-    alignItems: "center",
-    flexDirection: "row",
-    gap: 8,
-    borderRadius: 999,
-    borderWidth: 1,
-    borderColor: bikerMapTheme.colors.border,
-    backgroundColor: "rgba(17, 19, 21, 0.9)",
-    paddingHorizontal: 12,
-    paddingVertical: 8,
-  },
-  statusText: {
-    color: bikerMapTheme.colors.text,
-    fontSize: 12,
-    fontWeight: "700",
-  },
-});
