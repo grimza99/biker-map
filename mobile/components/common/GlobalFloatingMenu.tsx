@@ -1,11 +1,13 @@
 import { Ionicons } from "@expo/vector-icons";
 import { type ReactNode, useState } from "react";
-import { Pressable, StyleSheet, Text, View } from "react-native";
+import { Pressable, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 import { bikerMapTheme } from "@package-shared/constants/theme";
+import { cn } from "@/shared";
 
 import { Button } from "./Button";
+import { AppText } from "./AppText";
 
 export type GlobalFloatingMenuOption<T> = {
   description?: string;
@@ -71,14 +73,10 @@ export function GlobalFloatingMenu<T>({
                   accessibilityLabel={triggerAccessibilityLabel}
                   accessibilityRole="button"
                   accessibilityState={{ expanded: isOpen }}
-                  style={[
-                    {
-                      width: 150,
-                      backgroundColor: "#ffffff",
-                      borderWidth: 2,
-                    },
-                    isDraw && styles.drawButton,
-                  ]}
+                  className={cn(
+                    "w-37.5 bg-white border-2",
+                    isDraw && "bg-[rgba(229, 87, 47, 0.2)]"
+                  )}
                   onPress={() => {
                     onSelect(option);
 
@@ -89,18 +87,24 @@ export function GlobalFloatingMenu<T>({
                 >
                   {option.icon && option.icon}
                   <View className="min-w-0 flex-1">
-                    <Text
-                      className="font-extrabold text-black"
+                    <AppText
+                      className={cn(
+                        "font-extrabold text-black",
+                        isDraw && "text-accent-strong"
+                      )}
                       numberOfLines={1}
-                      style={[isDraw && styles.drawButtonText]}
                     >
                       {option.label}
-                    </Text>
-                    {option.description ? (
-                      <Text className="text-[11px] text-muted" numberOfLines={1}>
+                    </AppText>
+                    {option.description && (
+                      <AppText
+                        className="text-[11px]"
+                        numberOfLines={1}
+                        tone="muted"
+                      >
                         {option.description}
-                      </Text>
-                    ) : null}
+                      </AppText>
+                    )}
                   </View>
                   {option.rightSlot && option.rightSlot}
                 </Button>
@@ -126,21 +130,10 @@ export function GlobalFloatingMenu<T>({
             />
           )}
           {triggerLabel && (
-            <Text className="text-sm font-extrabold text-text ">
-              {triggerLabel}
-            </Text>
+            <AppText className="text-sm font-extrabold">{triggerLabel}</AppText>
           )}
         </Pressable>
       </View>
     </>
   );
 }
-
-const styles = StyleSheet.create({
-  drawButton: {
-    backgroundColor: "rgba(229, 87, 47, 0.2)",
-  },
-  drawButtonText: {
-    color: bikerMapTheme.colors.accentStrong,
-  },
-});
