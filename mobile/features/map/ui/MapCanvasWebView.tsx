@@ -11,14 +11,14 @@ type MapCanvasWebViewProps = {
   activeFilter: string;
   focusedPlaceId?: string | null;
   onMapReady?: () => void;
-  onMarkerPressed?: (placeId: string) => void;
+  onMarkerPressed?: (place: PlaceListItem) => void;
   places: PlaceListItem[];
 };
 
 type BridgeEvent =
   | { type: "MAP_READY" }
   | { payload?: { message?: string }; type: "MAP_ERROR" }
-  | { payload: { placeId: string }; type: "MARKER_PRESSED" }
+  | { payload: { place: PlaceListItem }; type: "MARKER_PRESSED" }
   | {
       payload: {
         activeFilter: string;
@@ -87,7 +87,7 @@ export function MapCanvasWebView({
       }
 
       if (data.type === "MARKER_PRESSED") {
-        onMarkerPressed?.(data.payload.placeId);
+        onMarkerPressed?.(data.payload.place);
       }
     } catch {
       // ignore malformed bridge events
@@ -234,7 +234,7 @@ function buildMapHtml(clientId: string) {
           });
 
           naver.maps.Event.addListener(marker, 'click', function() {
-            postToNative({ type: 'MARKER_PRESSED', payload: { placeId: place.id } });
+            postToNative({ type: 'MARKER_PRESSED', payload: { place: place } });
           });
 
           activeMarkers.push(marker);

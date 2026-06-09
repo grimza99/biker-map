@@ -4,11 +4,12 @@ import { Ionicons } from "@expo/vector-icons";
 import { SafeAreaView } from "react-native-safe-area-context";
 
 import { bikerMapTheme } from "@package-shared/index";
-
 import type {
   AllPlaceCategory,
   PlaceCategory,
+  PlaceListItem,
   PlacesQuery,
+  RouteListItem,
 } from "@package-shared/index";
 
 import { FloatingMapSheet } from "../../components/shell";
@@ -16,7 +17,10 @@ import { MapCanvasWebView } from "../../features/map/ui/MapCanvasWebView";
 import { AppText, Button } from "@/components/common";
 import { cn } from "@/shared";
 import { usePlaceList } from "@/entities/place";
-import { MapListSheetContent } from "@/entities/map";
+import {
+  MapListSheetContent,
+  MapMarkerClickSheetContent,
+} from "@/entities/map";
 
 export const placeCategoryOptions: { label: string; value: PlaceCategory }[] = [
   { label: "주유소", value: "gas" },
@@ -37,6 +41,12 @@ export default function MapScreen() {
   const [activeCategory, setActiveCategory] =
     useState<PlacesQuery["category"]>("all");
   const [focusedPlaceId, setFocusedPlaceId] = useState<string | null>(null);
+  const [detailSheetItem, setDetailSheetItem] = useState<
+    | null
+    | ({ kind: "place" } & PlaceListItem)
+    | ({ kind: "route" } & RouteListItem)
+  >(null);
+
   const placesQuery = usePlaceList({
     category: activeCategory,
   });
@@ -45,8 +55,9 @@ export default function MapScreen() {
     placesQuery.error instanceof Error ? placesQuery.error.message : null;
   const isLoading = placesQuery.isLoading;
 
-  const handleMarkerPressed = (placeId: string) => {
-    setFocusedPlaceId(placeId);
+  const handleMarkerPressed = (place: PlaceListItem) => {
+    setFocusedPlaceId(place.id);
+    setDetailSheetItem({ kind: "place", ...place });
   };
 
   return (
@@ -113,15 +124,24 @@ export default function MapScreen() {
       </SafeAreaView>
 
       <FloatingMapSheet
-        sheetTitle="지도 목록"
+        sheetTitle={detailSheetItem ? undefined : "지도 목록"}
         sheetIcon={
-          <Ionicons
-            name="map-outline"
-            size={18}
-            color={bikerMapTheme.colors.text}
-          />
+          detailSheetItem ? undefined : (
+            <Ionicons
+              name="map-outline"
+              size={18}
+              color={bikerMapTheme.colors.text}
+            />
+          )
         }
-        sheetContent={<MapListSheetContent activeCategory={activeCategory} />}
+        sheetContent={
+          detailSheetItem ? (
+            <MapMarkerClickSheetContent item={detailSheetItem} />
+          ) : (
+            <MapListSheetContent activeCategory={activeCategory} />
+          )
+        }
+        contentContainerClassName={detailSheetItem ? "min-h-100" : undefined}
       />
     </View>
   );
