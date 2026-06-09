@@ -1,15 +1,16 @@
 import { type PropsWithChildren } from "react";
-import { ScrollView } from "react-native";
+import { ScrollView, StyleProp, StyleSheet, ViewStyle } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
 import { cn } from "@/shared";
 import { AppText } from "../common";
+import { bikerMapTheme } from "@package-shared/constants";
 
 type AppScreenProps = PropsWithChildren<{
   eyebrow?: string;
   title?: string;
   description?: string;
-  className?: string;
+  containerStyle?: StyleProp<ViewStyle>;
 }>;
 
 export function AppScreen({
@@ -17,10 +18,14 @@ export function AppScreen({
   title,
   description,
   children,
-  className,
+  containerStyle,
 }: AppScreenProps) {
   return (
-    <SafeAreaView className={cn("flex-1 bg-bg", className)} edges={["top"]}>
+    <SafeAreaView
+      className={cn("flex-1 bg-bg")}
+      style={[styles.container, containerStyle]}
+      edges={["top"]}
+    >
       <ScrollView
         contentContainerClassName="gap-[18px] p-5 pb-7"
         showsVerticalScrollIndicator={false}
@@ -39,3 +44,10 @@ export function AppScreen({
     </SafeAreaView>
   );
 }
+
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    backgroundColor: bikerMapTheme.colors.bg,
+  },
+});

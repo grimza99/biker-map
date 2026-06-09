@@ -54,7 +54,7 @@ const { data, isLoading, error } = useRouteDetail(routeId);
 
 ## Query Key
 
-- query key는 `web/shared/config/query-keys.ts`의 `queryKeys`를 사용합니다.
+- query key는 `package-shared/src/constants/query-keys.ts`의 `queryKeys`를 사용합니다.
 - 새로운 query key 필요시, tanstack query 사용시에 인라인으로 문자열 key를 작성하기 보다는 `queryKeys`상수에 추가해서 재사용합니다.
 
 - 목록: params 객체를 key에 포함합니다.

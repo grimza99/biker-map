@@ -1,42 +1,25 @@
 "use client";
+import { useQuery } from "@tanstack/react-query";
 
 import {
   API_PATHS,
+  buildPostsQuery,
   type CommunityPostsQuery,
   type PostsListResponseData,
 } from "@package-shared/index";
 
-import { useQuery } from "@tanstack/react-query";
-
 import { apiFetch } from "@shared/api/http";
 import { queryKeys } from "@shared/config/query-keys";
 
-function buildPostsSearchParams(filters: CommunityPostsQuery) {
-  const searchParams = new URLSearchParams();
-
-  if (filters.category) {
-    searchParams.set("category", filters.category);
-  }
-
-  if (filters.search?.trim()) {
-    searchParams.set("search", filters.search.trim());
-  }
-
-  searchParams.set("page", String(filters.page));
-  searchParams.set("pageSize", String(filters.pageSize));
-  searchParams.set("sort", String(filters.sort));
-
-  return searchParams.toString();
-}
-
-export function useCommunityPosts(filters: CommunityPostsQuery) {
-  const query = buildPostsSearchParams(filters);
+export function useCommunityPosts(query: CommunityPostsQuery) {
+  const postsQuery = buildPostsQuery(query);
   return useQuery({
-    queryKey: queryKeys.posts(filters),
+    queryKey: queryKeys.posts(query),
     queryFn: async () => {
-      const data = await apiFetch<PostsListResponseData>(
-        `${API_PATHS.community.posts}?${query}`
-      );
+      const endpoint = postsQuery
+        ? `${API_PATHS.community.posts}?${postsQuery}`
+        : API_PATHS.community.posts;
+      const data = await apiFetch<PostsListResponseData>(endpoint);
       return data;
     },
     placeholderData: (previousData) => previousData,
