@@ -13,8 +13,6 @@ import type {
   RouteMapPathItem,
 } from "@package-shared/index";
 
-import { FloatingMapSheet } from "../../components/shell";
-import { MapCanvasWebView } from "../../features/map/ui/MapCanvasWebView";
 import { AppText, Button } from "@/components/common";
 import { cn } from "@/shared";
 import { usePlaceList } from "@/entities/place";
@@ -23,6 +21,8 @@ import {
   MapMarkerClickSheetContent,
 } from "@/entities/map";
 import { useRouteMapPathsQuery } from "@/entities/route";
+import { MapCanvasWebView } from "@/features/map/ui/MapCanvasWebView";
+import { FloatingMapSheet } from "@/components/shell";
 
 export const placeCategoryOptions: { label: string; value: PlaceCategory }[] = [
   { label: "주유소", value: "gas" },
