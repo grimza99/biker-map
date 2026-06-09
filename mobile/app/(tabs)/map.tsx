@@ -1,10 +1,5 @@
 import { useState } from "react";
-import {
-  ActivityIndicator,
-  ScrollView,
-  StyleSheet,
-  View,
-} from "react-native";
+import { ActivityIndicator, ScrollView, View } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { SafeAreaView } from "react-native-safe-area-context";
 
@@ -80,6 +75,10 @@ export default function MapScreen() {
                 selected={isActive}
                 onPress={() => setActiveCategory(option.value)}
                 key={option.value}
+                className={cn(
+                  "border border-border bg-panel-soft py-2.5 px-3.5",
+                  isActive && "border-accent bg-accent"
+                )}
               >
                 <AppText
                   className={cn(
