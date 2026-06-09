@@ -9,11 +9,10 @@ import {
 import { Ionicons } from "@expo/vector-icons";
 import { SafeAreaView } from "react-native-safe-area-context";
 
-import { bikerMapTheme } from "@package-shared/index";
-import type {
+import {
   AllPlaceCategory,
-  PlaceCategory,
-  PlacesQuery,
+  bikerMapTheme,
+  placeCategoryOptions,
 } from "@package-shared/index";
 
 import { MapCanvasWebView } from "../../features/map/ui/MapCanvasWebView";
@@ -23,24 +22,8 @@ import { usePlaceList } from "@/entities/place";
 import { MapListSheetContent } from "@/entities/map";
 import { FloatingMapSheet } from "../../components/shell";
 
-export const placeCategoryOptions: { label: string; value: PlaceCategory }[] = [
-  { label: "주유소", value: "gas" },
-  { label: "정비소", value: "repair" },
-  { label: "카페", value: "cafe" },
-  { label: "샵", value: "shop" },
-  { label: "휴게/쉼터", value: "rest" },
-];
-
-export type MapCategoryFilter = AllPlaceCategory | "route";
-
-export const mapCategoryOptions: Array<{
-  label: string;
-  value: MapCategoryFilter;
-}> = [...placeCategoryOptions, { label: "라이딩 경로", value: "route" }];
-
 export default function MapScreen() {
-  const [activeCategory, setActiveCategory] =
-    useState<PlacesQuery["category"]>("all");
+  const [activeCategory, setActiveCategory] = useState<AllPlaceCategory>("all");
   const [focusedPlaceId, setFocusedPlaceId] = useState<string | null>(null);
   const placesQuery = usePlaceList({
     category: activeCategory,
