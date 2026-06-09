@@ -1,6 +1,10 @@
-import { AllPlaceCategory, PlaceCategory } from "@package-shared/index";
+import { AllPlaceCategory } from "../../types/place";
 
-export const placeCategoryOptions: { label: string; value: PlaceCategory }[] = [
+export const placeCategoryOptions: {
+  label: string;
+  value: AllPlaceCategory;
+}[] = [
+  { label: "전체", value: "all" },
   { label: "주유소", value: "gas" },
   { label: "정비소", value: "repair" },
   { label: "카페", value: "cafe" },
