@@ -1,4 +1,4 @@
-import { RoutesQuery } from "src/types/route";
+import { RoutesQuery } from "../../types/route";
 
 export function buildRouteQuery(query: RoutesQuery) {
   const searchParams = new URLSearchParams();
