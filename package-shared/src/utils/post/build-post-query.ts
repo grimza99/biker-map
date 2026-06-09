@@ -1,4 +1,4 @@
-import { CommunityPostsQuery } from "src/types/community";
+import { CommunityPostsQuery } from "../../types/community";
 
 export function buildPostsQuery(filters: CommunityPostsQuery) {
   const searchParams = new URLSearchParams();

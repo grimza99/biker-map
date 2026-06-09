@@ -1,4 +1,4 @@
-import { PlacesQuery, PlaceViewport } from "src/types/place";
+import { PlacesQuery, PlaceViewport } from "../../types/place";
 
 function serializeViewport(viewport?: PlaceViewport) {
   if (!viewport) {
