@@ -2,6 +2,8 @@ import { useQuery } from "@tanstack/react-query";
 import {
   API_PATHS,
   type RouteListItem,
+  type RouteMapPathItem,
+  type RouteMapPathsResponseData,
   type RoutesListResponseData,
   type RoutesQuery,
 } from "@package-shared/index";
@@ -36,6 +38,23 @@ export function useRouteListQuery(query: RoutesQuery) {
     ],
   });
 }
+
+/**------------------------------------- route map paths --------------------------------*/
+
+export function useRouteMapPathsQuery() {
+  return useQuery<RouteMapPathItem[], Error>({
+    queryFn: async () => {
+      const res = await apiFetch.get<RouteMapPathsResponseData>(
+        API_PATHS.routes.mapPaths
+      );
+
+      return res.data.items;
+    },
+    queryKey: ["routes", "map-paths"],
+    staleTime: 1000 * 60 * 5,
+  });
+}
+
 export function buildRouteQuery(query: RoutesQuery) {
   const searchParams = new URLSearchParams();
 
