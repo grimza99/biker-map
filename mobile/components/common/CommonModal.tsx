@@ -20,7 +20,6 @@ export type CommonModalProps = PropsWithChildren<{
   visible: boolean;
   onClose: () => void;
   title: string;
-  eyebrow?: string;
   description?: string;
   icon?: ReactNode;
   headerAction?: ReactNode;
@@ -34,13 +33,13 @@ export type CommonModalProps = PropsWithChildren<{
   contentContainerStyle?: StyleProp<ViewStyle>;
   bodyStyle?: StyleProp<ViewStyle>;
   testID?: string;
+  visibleCloseButton?: boolean;
 }>;
 
 export function CommonModal({
   visible,
   onClose,
   title,
-  eyebrow,
   description,
   icon,
   headerAction,
@@ -55,6 +54,7 @@ export function CommonModal({
   bodyStyle,
   testID,
   children,
+  visibleCloseButton = true,
 }: CommonModalProps) {
   const insets = useSafeAreaInsets();
   const resolvedAnimationType =
@@ -112,41 +112,34 @@ export function CommonModal({
               <View className="h-1.25 w-13.5 self-center rounded-full bg-panel-soft" />
             ) : null}
 
-            <View className="flex-row items-center justify-between gap-3">
-              <View className="flex-1 flex-row items-center gap-3">
-                {icon ? (
-                  <View className="h-9 w-9 items-center justify-center rounded-xl border border-border bg-panel-solid">
-                    {icon}
-                  </View>
-                ) : null}
-                <View className="flex-1">
-                  {eyebrow ? (
-                    <AppText className="text-[11px] uppercase tracking-[1.1px] text-active">
-                      {eyebrow}
-                    </AppText>
-                  ) : null}
+            <View className="flex-row items-start justify-between gap-3">
+              <View className="flex-1 flex items-center gap-3">
+                {icon && icon}
+                <View className="">
                   <AppText className="mt-1 text-[22px] font-extrabold leading-6.75">
                     {title}
                   </AppText>
                 </View>
               </View>
 
-              <View className="shrink-0 flex-row items-center gap-2">
+              <View className="shrink-0 flex-row items-center gap-2 relative">
                 {headerAction ? (
                   <View className="shrink-0">{headerAction}</View>
                 ) : null}
-                <Pressable
-                  className="h-10 w-10 items-center justify-center rounded-[14px] border border-border bg-panel-solid"
-                  onPress={onClose}
-                  accessibilityRole="button"
-                  accessibilityLabel="모달 닫기"
-                >
-                  <Ionicons
-                    name="close"
-                    size={18}
-                    color={bikerMapTheme.colors.text}
-                  />
-                </Pressable>
+                {visibleCloseButton && (
+                  <Pressable
+                    className="h-10 w-10 items-center justify-center rounded-[14px] border border-border bg-panel-solid absolute top-0 right-1"
+                    onPress={onClose}
+                    accessibilityRole="button"
+                    accessibilityLabel="모달 닫기"
+                  >
+                    <Ionicons
+                      name="close"
+                      size={18}
+                      color={bikerMapTheme.colors.text}
+                    />
+                  </Pressable>
+                )}
               </View>
             </View>
 
@@ -156,11 +149,11 @@ export function CommonModal({
               </AppText>
             ) : null}
 
-            {children ? (
+            {children && (
               <View className={cn("min-h-0", bodyClassName)} style={bodyStyle}>
                 {children}
               </View>
-            ) : null}
+            )}
 
             {footer && <View className="gap-2.5">{footer}</View>}
           </View>
