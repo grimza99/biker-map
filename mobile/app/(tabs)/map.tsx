@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { ActivityIndicator, ScrollView, View } from "react-native";
+import { ActivityIndicator, ScrollView, StyleSheet, View } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { SafeAreaView } from "react-native-safe-area-context";
 
@@ -59,8 +59,9 @@ export default function MapScreen() {
       />
 
       <SafeAreaView
-        className="absolute left-0 right-0 top-0 gap-2.5 px-4.5 pb-3 pt-2"
+        className="gap-2.5 px-4.5 pb-3 pt-2"
         edges={["top"]}
+        style={styles.filterOverlay}
       >
         <ScrollView
           horizontal
@@ -75,10 +76,7 @@ export default function MapScreen() {
                 selected={isActive}
                 onPress={() => setActiveCategory(option.value)}
                 key={option.value}
-                className={cn(
-                  "border border-border bg-panel-soft py-2.5 px-3.5",
-                  isActive && "border-accent bg-accent"
-                )}
+                style={[styles.filterChip, isActive && styles.filterChipActive]}
               >
                 <AppText
                   className={cn(
@@ -126,3 +124,23 @@ export default function MapScreen() {
     </View>
   );
 }
+
+const styles = StyleSheet.create({
+  filterOverlay: {
+    position: "absolute",
+    top: 0,
+    right: 0,
+    left: 0,
+    zIndex: 10,
+  },
+  filterChip: {
+    borderColor: bikerMapTheme.colors.border,
+    backgroundColor: bikerMapTheme.colors.panelSoft,
+    paddingHorizontal: 14,
+    paddingVertical: 10,
+  },
+  filterChipActive: {
+    borderColor: bikerMapTheme.colors.accent,
+    backgroundColor: bikerMapTheme.colors.accent,
+  },
+});
