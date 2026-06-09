@@ -10,6 +10,7 @@ import type {
   PlaceListItem,
   PlacesQuery,
   RouteListItem,
+  RouteMapPathItem,
 } from "@package-shared/index";
 
 import { FloatingMapSheet } from "../../components/shell";
@@ -21,6 +22,7 @@ import {
   MapListSheetContent,
   MapMarkerClickSheetContent,
 } from "@/entities/map";
+import { useRouteMapPathsQuery } from "@/entities/route";
 
 export const placeCategoryOptions: { label: string; value: PlaceCategory }[] = [
   { label: "주유소", value: "gas" },
@@ -39,25 +41,41 @@ export const mapCategoryOptions: Array<{
 
 export default function MapScreen() {
   const [activeCategory, setActiveCategory] =
-    useState<PlacesQuery["category"]>("all");
+    useState<MapCategoryFilter>("all");
   const [focusedPlaceId, setFocusedPlaceId] = useState<string | null>(null);
   const [detailSheetItem, setDetailSheetItem] = useState<
     | null
     | ({ kind: "place" } & PlaceListItem)
     | ({ kind: "route" } & RouteListItem)
   >(null);
+  const placeCategory: PlacesQuery["category"] =
+    activeCategory === "route" ? undefined : activeCategory;
 
   const placesQuery = usePlaceList({
-    category: activeCategory,
+    category: placeCategory,
   });
+  const routeMapPathsQuery = useRouteMapPathsQuery();
+
   const places = placesQuery.data ?? [];
+  const routes = routeMapPathsQuery.data ?? [];
+  const visiblePlaces = activeCategory === "route" ? [] : places;
+  const visibleRoutes =
+    activeCategory === "route" || activeCategory === "all" ? routes : [];
   const errorMessage =
-    placesQuery.error instanceof Error ? placesQuery.error.message : null;
-  const isLoading = placesQuery.isLoading;
+    placesQuery.error instanceof Error
+      ? placesQuery.error.message
+      : routeMapPathsQuery.error instanceof Error
+      ? routeMapPathsQuery.error.message
+      : null;
+  const isLoading = placesQuery.isLoading || routeMapPathsQuery.isLoading;
 
   const handleMarkerPressed = (place: PlaceListItem) => {
     setFocusedPlaceId(place.id);
     setDetailSheetItem({ kind: "place", ...place });
+  };
+  const handleRoutePressed = (route: RouteMapPathItem) => {
+    setFocusedPlaceId(null);
+    setDetailSheetItem({ kind: "route", ...route });
   };
 
   return (
@@ -66,7 +84,9 @@ export default function MapScreen() {
         activeFilter={activeCategory || "all"}
         focusedPlaceId={focusedPlaceId}
         onMarkerPressed={handleMarkerPressed}
-        places={places}
+        onRoutePressed={handleRoutePressed}
+        places={visiblePlaces}
+        routes={visibleRoutes}
       />
 
       <SafeAreaView
@@ -78,13 +98,19 @@ export default function MapScreen() {
           showsHorizontalScrollIndicator={false}
           contentContainerClassName="gap-2.5 py-0.5"
         >
-          {placeCategoryOptions.map((option) => {
+          {mapCategoryOptions.map((option) => {
             const isActive = activeCategory === option.value;
 
             return (
               <Button
                 selected={isActive}
-                onPress={() => setActiveCategory(option.value)}
+                onPress={() => {
+                  setActiveCategory((current) =>
+                    current === option.value ? "all" : option.value
+                  );
+                  setFocusedPlaceId(null);
+                  setDetailSheetItem(null);
+                }}
                 key={option.value}
                 className={cn(
                   "border border-border bg-panel-soft py-2.5 px-3.5",
@@ -138,7 +164,7 @@ export default function MapScreen() {
           detailSheetItem ? (
             <MapMarkerClickSheetContent item={detailSheetItem} />
           ) : (
-            <MapListSheetContent activeCategory={activeCategory} />
+            <MapListSheetContent activeCategory={placeCategory ?? "all"} />
           )
         }
         contentContainerClassName={detailSheetItem ? "min-h-100" : undefined}
