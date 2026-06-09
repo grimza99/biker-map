@@ -15,10 +15,11 @@ export function usePlaceList(query: PlacesQuery) {
   return useQuery<PlaceListItem[], Error>({
     queryFn: async () => {
       const placeQuery = buildPlaceQuery(query);
+      const endpoint = placeQuery
+        ? `${API_PATHS.places.list}?${placeQuery}`
+        : API_PATHS.places.list;
 
-      const res = await apiFetch.get<PlacesListResponseData>(
-        query ? `${API_PATHS.places.list}?${placeQuery}` : API_PATHS.places.list
-      );
+      const res = await apiFetch.get<PlacesListResponseData>(endpoint);
       return res.data.items;
     },
     queryKey: [
