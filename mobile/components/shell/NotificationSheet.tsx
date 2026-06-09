@@ -1,5 +1,5 @@
 import { Ionicons } from "@expo/vector-icons";
-import { Pressable, ScrollView, Text, View } from "react-native";
+import { Pressable, ScrollView, View } from "react-native";
 
 import { bikerMapTheme } from "@package-shared/constants/theme";
 import { cn } from "@/shared";
@@ -56,16 +56,18 @@ export function NotificationSheet({
             size={16}
             color={bikerMapTheme.colors.bg}
           />
-          <Text className="text-[13px] font-extrabold text-bg">모두 읽음</Text>
+          <AppText className="text-[13px] font-extrabold text-bg">
+            모두 읽음
+          </AppText>
         </Pressable>
       }
       variant="sheet"
-      contentContainerStyle={{ minHeight: 440 }}
-      bodyStyle={{ flex: 1, gap: 10 }}
+      contentContainerClassName="min-h-[440px]"
+      bodyClassName="flex-1 gap-2.5"
     >
-      <Text className="text-xs font-bold uppercase tracking-[1px] text-active">
+      <AppText className="text-xs font-bold uppercase tracking-[1px] text-active">
         최신 알림
-      </Text>
+      </AppText>
 
       <ScrollView
         contentContainerClassName="gap-2.5 pb-0.5 pt-1"
