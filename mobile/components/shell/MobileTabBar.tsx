@@ -4,11 +4,14 @@ import {
   MaterialCommunityIcons,
 } from "@expo/vector-icons";
 import { Link, type Href } from "expo-router";
-import { Pressable, StyleSheet, Text, View } from "react-native";
+import { Pressable, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
+import { ReactNode } from "react";
 
 import { bikerMapTheme } from "@package-shared/constants/theme";
-import { ReactNode } from "react";
+
+import { cn } from "@/shared";
+import { AppText } from "../common";
 
 type TabRoute = {
   key: string;
@@ -73,16 +76,17 @@ export function MobileTabBar({ state }: MobileTabBarProps) {
 
   return (
     <View
-      style={[styles.safeArea, { paddingBottom: Math.max(insets.bottom, 10) }]}
+      className="bg-bg"
+      style={{ paddingBottom: Math.max(insets.bottom, 10) }}
     >
-      <View style={styles.shell}>
+      <View className="min-h-18 flex-row items-center justify-between gap-1.5 bg-panel p-2">
         {TAB_ROUTES.map((route) => {
           const isActive = route.key === activeRouteName;
 
           return (
             <Link key={route.key} href={route.href} asChild>
               <Pressable
-                style={StyleSheet.flatten([styles.item])}
+                className="min-h-14 flex-1 items-center justify-center gap-1 rounded-[22px]"
                 accessibilityRole="tab"
                 accessibilityState={{ selected: isActive }}
                 accessibilityLabel={`${route.label} 탭`}
@@ -97,9 +101,14 @@ export function MobileTabBar({ state }: MobileTabBarProps) {
                     }
                   />
                 </View>
-                <Text style={[styles.label, isActive && styles.labelActive]}>
+                <AppText
+                  className={cn(
+                    "text-[11px] font-bold",
+                    isActive && "text-accent"
+                  )}
+                >
                   {route.label}
-                </Text>
+                </AppText>
               </Pressable>
             </Link>
           );
@@ -108,35 +117,3 @@ export function MobileTabBar({ state }: MobileTabBarProps) {
     </View>
   );
 }
-
-const styles = StyleSheet.create({
-  safeArea: {
-    backgroundColor: bikerMapTheme.colors.bg,
-  },
-  shell: {
-    minHeight: 72,
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "space-between",
-    gap: 6,
-    backgroundColor: bikerMapTheme.colors.panel,
-    padding: 8,
-  },
-  item: {
-    flex: 1,
-    minHeight: 56,
-    alignItems: "center",
-    justifyContent: "center",
-    gap: 4,
-    borderRadius: 22,
-  },
-
-  label: {
-    color: bikerMapTheme.colors.muted,
-    fontSize: 11,
-    fontWeight: "700",
-  },
-  labelActive: {
-    color: bikerMapTheme.colors.accent,
-  },
-});

@@ -1,9 +1,11 @@
 import type { PlaceListItem } from "@package-shared/types/place";
 import { useEffect, useMemo, useRef, useState } from "react";
-import { ActivityIndicator, StyleSheet, Text, View } from "react-native";
+import { ActivityIndicator, View } from "react-native";
+import type { ViewStyle } from "react-native";
 import { WebView, type WebViewMessageEvent } from "react-native-webview";
 
 import { bikerMapTheme } from "@package-shared/constants/theme";
+import { AppText } from "@/components/common";
 
 type MapCanvasWebViewProps = {
   activeFilter: string;
@@ -100,7 +102,7 @@ export function MapCanvasWebView({
   }
 
   return (
-    <View style={styles.container}>
+    <View className="flex-1">
       <WebView
         ref={webViewRef}
         originWhitelist={["*"]}
@@ -114,13 +116,15 @@ export function MapCanvasWebView({
         bounces={false}
         showsHorizontalScrollIndicator={false}
         showsVerticalScrollIndicator={false}
-        style={styles.webView}
+        style={webViewStyle}
       />
 
       {!isReady ? (
-        <View style={styles.loadingOverlay}>
+        <View className="absolute inset-0 items-center justify-center bg-[rgba(15,19,24,0.82)]">
           {errorMessage ? (
-            <Text style={styles.errorText}>{errorMessage}</Text>
+            <AppText className="px-7 text-center text-sm font-bold leading-5">
+              {errorMessage}
+            </AppText>
           ) : (
             <ActivityIndicator color={bikerMapTheme.colors.accent} />
           )}
@@ -300,26 +304,7 @@ function buildMapHtml(clientId: string) {
 </html>`;
 }
 
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-  },
-  loadingOverlay: {
-    ...StyleSheet.absoluteFillObject,
-    alignItems: "center",
-    backgroundColor: "rgba(15, 19, 24, 0.82)",
-    justifyContent: "center",
-  },
-  webView: {
-    backgroundColor: "transparent",
-    flex: 1,
-  },
-  errorText: {
-    color: bikerMapTheme.colors.text,
-    fontSize: 14,
-    fontWeight: "700",
-    lineHeight: 20,
-    paddingHorizontal: 28,
-    textAlign: "center",
-  },
-});
+const webViewStyle: ViewStyle = {
+  backgroundColor: "transparent",
+  flex: 1,
+};

@@ -1,6 +1,5 @@
-
 import { Feather } from "@expo/vector-icons";
-import { Alert, ScrollView, StyleSheet, View } from "react-native";
+import { Alert, ScrollView, View } from "react-native";
 import { useCallback, useEffect, useState } from "react";
 
 import {
@@ -10,7 +9,6 @@ import {
   type CommunityPost,
   bikerMapTheme,
 } from "@package-shared/index";
-
 
 import { AppText, Button, Input, Pagination } from "@/components/common";
 import { AppScreen } from "../../components/shell";
@@ -74,9 +72,9 @@ export default function CommunityScreen() {
 
   return (
     <AppScreen title="커뮤니티">
-      <View style={styles.controlsPanel}>
-        <View style={styles.searchRow}>
-          <View style={styles.searchField}>
+      <View className="gap-3.5 rounded-3xl border border-border bg-panel p-4">
+        <View className="flex-row items-start gap-3">
+          <View className="flex-1">
             <Input
               value={searchQuery}
               onChangeText={(value) => {
@@ -109,7 +107,7 @@ export default function CommunityScreen() {
         <ScrollView
           horizontal
           showsHorizontalScrollIndicator={false}
-          contentContainerStyle={styles.categoryList}
+          contentContainerClassName="gap-2.5 pr-2"
         >
           {COMMUNITY_CATEGORY_FILTERS.map((category) => (
             <Button
@@ -128,13 +126,13 @@ export default function CommunityScreen() {
         </ScrollView>
       </View>
 
-      <View style={styles.summaryRow}>
+      <View className="flex-row items-center justify-between">
         <AppText tone="subtle" className="text-sm font-semibold">
           총 {totalPostCount}개의 글
         </AppText>
       </View>
 
-      <View style={styles.communityPostList}>
+      <View className="flex-col gap-2.5">
         {postList.length > 0 ? (
           postList.map((post) => (
             <PostCard
@@ -144,7 +142,7 @@ export default function CommunityScreen() {
             />
           ))
         ) : (
-          <View style={styles.emptyState}>
+          <View className="items-center gap-2 rounded-[24px] border border-border bg-panel px-4 py-6">
             <AppText className="text-base font-semibold">
               조건에 맞는 글이 없습니다.
             </AppText>
@@ -163,45 +161,3 @@ export default function CommunityScreen() {
     </AppScreen>
   );
 }
-
-const styles = StyleSheet.create({
-  controlsPanel: {
-    gap: 14,
-    borderRadius: 24,
-    borderWidth: 1,
-    borderColor: bikerMapTheme.colors.border,
-    backgroundColor: bikerMapTheme.colors.panel,
-    padding: 16,
-  },
-  searchRow: {
-    alignItems: "flex-start",
-    flexDirection: "row",
-    gap: 12,
-  },
-  searchField: {
-    flex: 1,
-  },
-  categoryList: {
-    gap: 10,
-    paddingRight: 8,
-  },
-  summaryRow: {
-    alignItems: "center",
-    flexDirection: "row",
-    justifyContent: "space-between",
-  },
-  communityPostList: {
-    flexDirection: "column",
-    gap: 10,
-  },
-  emptyState: {
-    alignItems: "center",
-    borderRadius: 24,
-    borderWidth: 1,
-    borderColor: bikerMapTheme.colors.border,
-    backgroundColor: bikerMapTheme.colors.panel,
-    gap: 8,
-    paddingHorizontal: 16,
-    paddingVertical: 24,
-  },
-});
