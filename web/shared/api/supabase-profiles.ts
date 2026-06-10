@@ -1,11 +1,13 @@
-import type { SupabaseClient } from "@supabase/supabase-js";
 import { createSupabaseServiceClient } from "@shared/lib/supabase";
+import type { SupabaseClient } from "@supabase/supabase-js";
 
 export type ProfileStatus = {
   id: string;
   name: string;
   role: string;
   deletedAt: string | null;
+  bikeBrand: string | null;
+  bikeModel: string | null;
 };
 
 export async function loadProfileNameMap(
@@ -31,11 +33,13 @@ export async function loadProfileNameMap(
   );
 }
 
-export async function getProfileStatus(userId: string): Promise<ProfileStatus | null> {
+export async function getProfileStatus(
+  userId: string
+): Promise<ProfileStatus | null> {
   const client = createSupabaseServiceClient();
   const { data, error } = await client
     .from("profiles")
-    .select("id, name, role, deleted_at")
+    .select("id, name, role, deleted_at, bike_brand,bike_model")
     .eq("id", userId)
     .maybeSingle();
 
@@ -52,5 +56,7 @@ export async function getProfileStatus(userId: string): Promise<ProfileStatus | 
     name: String(data.name ?? ""),
     role: String(data.role ?? ""),
     deletedAt: data.deleted_at ? String(data.deleted_at) : null,
+    bikeBrand: data.bike_brand,
+    bikeModel: data.bike_model,
   };
 }
