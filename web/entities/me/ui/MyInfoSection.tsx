@@ -1,6 +1,7 @@
 "use client";
 
 import { uploadImage } from "@/features/image";
+import { useUpdateProfile } from "@/features/me";
 import {
   Button,
   DefaultCardContainer,
@@ -8,12 +9,14 @@ import {
   Input,
   ProfileImgChip,
 } from "@/shared";
-import { useUpdateProfile } from "@features/me/model/use-update-profile";
 import { AppSession } from "@package-shared/index";
 import { useEffect, useMemo, useState } from "react";
 
 export function MyInfoSection({ session }: { session: AppSession }) {
   const [name, setName] = useState(session.name);
+  const [brand, setBrand] = useState(session.bikeBrand);
+  const [model, setModel] = useState(session.bikeModel);
+
   const [avatarUrls, setAvatarUrls] = useState<string[] | null>(
     session.avatarUrl ? [session.avatarUrl] : null
   );
@@ -67,6 +70,8 @@ export function MyInfoSection({ session }: { session: AppSession }) {
             updateProfile({
               name: name.trim(),
               avatarUrl,
+              bikeBrand: brand?.trim() || null,
+              bikeModel: model?.trim() || null,
             });
           }}
         >
@@ -77,6 +82,22 @@ export function MyInfoSection({ session }: { session: AppSession }) {
             placeholder="라이더 이름"
             maxLength={40}
           />
+          <div className="flex flex-row gap-2">
+            <Input
+              label="브랜드"
+              value={brand || ""}
+              onChange={(event) => setBrand(event.target.value)}
+              placeholder="브랜드명"
+              maxLength={40}
+            />
+            <Input
+              label="이름"
+              value={model || ""}
+              onChange={(event) => setModel(event.target.value)}
+              placeholder="모델명"
+              maxLength={40}
+            />
+          </div>
           <ImageInput
             label="프로필 이미지"
             value={avatarUrls}
