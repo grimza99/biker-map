@@ -3,7 +3,9 @@ import type { Session } from "@supabase/supabase-js";
 
 export function mapSupabaseSession(
   session: Session | null,
-  role = "member"
+  role = "member",
+  bikeBrand: string | null,
+  bikeModel: string | null
 ): AppSession | null {
   const user = session?.user;
   if (!user) {
@@ -26,5 +28,7 @@ export function mapSupabaseSession(
     email: user.email || "",
     avatarUrl,
     role,
+    bikeBrand,
+    bikeModel,
   };
 }

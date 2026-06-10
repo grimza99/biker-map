@@ -1,8 +1,9 @@
-import type {
+import {
+  BUCKET_NAME,
   DeleteAccountResponseData,
   UpdateMeResponseData,
-} from "@package-shared/types/auth";
-import { BUCKET_NAME } from "@package-shared/constants/supabase";
+} from "@biker-map/package-shared";
+
 import {
   badRequest,
   createSupabaseApiClient,
@@ -16,9 +17,9 @@ import {
   clearRefreshTokenCookie,
   getSupabaseAuthSession,
 } from "@shared/api/auth";
-import { createSupabaseServiceClient } from "@shared/lib/supabase";
-import { getSupabasePublicEnv } from "@shared/config";
 import { getProfileStatus } from "@shared/api/supabase-profiles";
+import { getSupabasePublicEnv } from "@shared/config";
+import { createSupabaseServiceClient } from "@shared/lib/supabase";
 import { NextResponse } from "next/server";
 import { z } from "zod";
 
@@ -44,7 +45,14 @@ export async function GET(request: Request) {
     return unauthorized("탈퇴 처리된 계정입니다.");
   }
 
-  return ok(mapMe(session, profileStatus?.role || "member"));
+  return ok(
+    mapMe(
+      session,
+      profileStatus?.role || "member",
+      profileStatus?.bikeBrand || null,
+      profileStatus?.bikeModel || null
+    )
+  );
 }
 
 export async function PATCH(request: Request) {
@@ -117,7 +125,12 @@ export async function PATCH(request: Request) {
   }
 
   return ok<UpdateMeResponseData>({
-    session: mapMe(updatedSession, profileStatus?.role || "member").session,
+    session: mapMe(
+      updatedSession,
+      profileStatus?.role || "member",
+      profileStatus?.bikeBrand || null,
+      profileStatus?.bikeModel || null
+    ).session,
   });
 }
 
