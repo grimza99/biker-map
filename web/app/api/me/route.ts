@@ -26,6 +26,8 @@ import { z } from "zod";
 const updateMeSchema = z.object({
   name: z.string().trim().min(1).max(40),
   avatarUrl: z.string().url().nullable(),
+  bikeBrand: z.string().nullable(),
+  bikeModel: z.string().nullable(),
 });
 
 export async function GET(request: Request) {
@@ -55,6 +57,7 @@ export async function GET(request: Request) {
   );
 }
 
+/**---------------------------------name, email, bikeBrand, bikeModel edit ---------------------- */
 export async function PATCH(request: Request) {
   const session = await getSupabaseAuthSession(request);
   if (!session) {
@@ -92,6 +95,8 @@ export async function PATCH(request: Request) {
     .from("profiles")
     .update({
       name: payload.name,
+      bike_brand: payload.bikeBrand,
+      bike_model: payload.bikeModel,
     })
     .eq("id", session.user.id);
 
@@ -162,6 +167,8 @@ function extractPublicBucketPath(avatarUrl: string | null) {
     return null;
   }
 }
+
+/**---------------------------------draw user---------------------------------- */
 
 export async function DELETE(request: Request) {
   const session = await getSupabaseAuthSession(request);
