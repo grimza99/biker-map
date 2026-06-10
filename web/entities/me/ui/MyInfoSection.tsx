@@ -48,6 +48,11 @@ export function MyInfoSection({ session }: { session: AppSession }) {
                 {name}
               </h1>
               <p className="m-0 text-sm text-muted">{session.email}</p>
+              <div className="flex gap-2">
+                <span>{session.bikeBrand}</span>
+                <strong>·</strong>
+                <span> {session.bikeModel}</span>
+              </div>
             </div>
           </div>
         </div>
