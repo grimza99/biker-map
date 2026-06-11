@@ -1,8 +1,8 @@
-import { PlaceListItem } from "@package-shared/index";
 import { useRouter } from "next/navigation";
 
+import { placeCategoryOptions, PlaceListItem } from "@biker-map/package-shared";
+
 import { Button, Chip } from "@/shared";
-import { placeCategoryOptions } from "../model/map-filters";
 
 export function PlaceCard({ place }: { place: PlaceListItem }) {
   const router = useRouter();
