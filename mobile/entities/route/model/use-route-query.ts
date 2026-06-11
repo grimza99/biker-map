@@ -1,7 +1,10 @@
 import {
   API_PATHS,
   buildRouteQuery,
+  queryKeys,
   type RouteListItem,
+  type RouteMapPathItem,
+  type RouteMapPathsResponseData,
   type RoutesListResponseData,
   type RoutesQuery,
 } from "@package-shared/index";
@@ -35,5 +38,19 @@ export function useRouteListQuery(query: RoutesQuery) {
         search: query.search,
       },
     ],
+  });
+}
+
+export function useRouteMapPathsQuery() {
+  return useQuery<RouteMapPathItem[], Error>({
+    queryFn: async () => {
+      const res = await apiFetch.get<RouteMapPathsResponseData>(
+        API_PATHS.routes.mapPaths
+      );
+
+      return res.data.items;
+    },
+    queryKey: queryKeys.routeMapPaths,
+    staleTime: 1000 * 60 * 5,
   });
 }

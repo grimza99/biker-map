@@ -1,4 +1,5 @@
 import type { PlaceListItem } from "@package-shared/types/place";
+import type { RouteMapPathItem } from "@package-shared/types/route";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { ActivityIndicator, View } from "react-native";
 import type { ViewStyle } from "react-native";
@@ -11,21 +12,25 @@ type MapCanvasWebViewProps = {
   activeFilter: string;
   focusedPlaceId?: string | null;
   onMapReady?: () => void;
-  onMarkerPressed?: (placeId: string) => void;
+  onMarkerPressed?: (place: PlaceListItem) => void;
+  onRoutePressed?: (route: RouteMapPathItem) => void;
   places: PlaceListItem[];
+  routes?: RouteMapPathItem[];
 };
 
 type BridgeEvent =
   | { type: "MAP_READY" }
   | { payload?: { message?: string }; type: "MAP_ERROR" }
-  | { payload: { placeId: string }; type: "MARKER_PRESSED" }
+  | { payload: { place: PlaceListItem }; type: "MARKER_PRESSED" }
+  | { payload: { route: RouteMapPathItem }; type: "ROUTE_PRESSED" }
   | {
       payload: {
         activeFilter: string;
         focusedPlaceId: string | null;
         places: PlaceListItem[];
+        routes: RouteMapPathItem[];
       };
-      type: "SET_PLACES";
+      type: "SET_MAP_DATA";
     };
 
 type WebViewLoadErrorEvent = {
@@ -39,7 +44,9 @@ export function MapCanvasWebView({
   focusedPlaceId = null,
   onMapReady,
   onMarkerPressed,
+  onRoutePressed,
   places,
+  routes = [],
 }: MapCanvasWebViewProps) {
   const webViewRef = useRef<WebView>(null);
   const [isReady, setIsReady] = useState(false);
@@ -54,18 +61,19 @@ export function MapCanvasWebView({
     }
 
     const message: BridgeEvent = {
-      type: "SET_PLACES",
+      type: "SET_MAP_DATA",
       payload: {
         activeFilter,
         focusedPlaceId,
         places,
+        routes,
       },
     };
 
     webViewRef.current?.injectJavaScript(
       `window.__receiveFromNative?.(${JSON.stringify(message)}); true;`
     );
-  }, [activeFilter, focusedPlaceId, isReady, places]);
+  }, [activeFilter, focusedPlaceId, isReady, places, routes]);
 
   function handleMessage(event: WebViewMessageEvent) {
     try {
@@ -87,7 +95,11 @@ export function MapCanvasWebView({
       }
 
       if (data.type === "MARKER_PRESSED") {
-        onMarkerPressed?.(data.payload.placeId);
+        onMarkerPressed?.(data.payload.place);
+      }
+
+      if (data.type === "ROUTE_PRESSED") {
+        onRoutePressed?.(data.payload.route);
       }
     } catch {
       // ignore malformed bridge events
@@ -172,6 +184,7 @@ function buildMapHtml(clientId: string) {
 
       var map = null;
       var activeMarkers = [];
+      var activeRoutePolylines = [];
       var sdkScriptUrl = ${serializedScriptUrl};
 
       var CATEGORY_COLORS = {
@@ -210,13 +223,62 @@ function buildMapHtml(clientId: string) {
         activeMarkers = [];
       }
 
-      function renderMarkers(payload) {
+      function clearRoutePolylines() {
+        activeRoutePolylines.forEach(function(polyline) { polyline.setMap(null); });
+        activeRoutePolylines = [];
+      }
+
+      function extendBounds(bounds, position) {
+        if (!bounds) {
+          return new naver.maps.LatLngBounds(position, position);
+        }
+
+        bounds.extend(position);
+        return bounds;
+      }
+
+      function renderMapData(payload) {
         clearMarkers();
+        clearRoutePolylines();
         if (!map) return;
 
         var places = payload.places;
+        var routes = payload.routes || [];
         var focusedId = payload.focusedPlaceId;
         var bounds = null;
+
+        routes.forEach(function(route) {
+          var path = Array.isArray(route.path) ? route.path : [];
+          var naverPath = path
+            .filter(function(point) {
+              return Number.isFinite(Number(point.lat)) && Number.isFinite(Number(point.lng));
+            })
+            .map(function(point) {
+              return new naver.maps.LatLng(Number(point.lat), Number(point.lng));
+            });
+
+          if (naverPath.length < 2) return;
+
+          var polyline = new naver.maps.Polyline({
+            map: map,
+            path: naverPath,
+            strokeColor: '#E5572F',
+            strokeOpacity: 0.9,
+            strokeWeight: 5,
+            strokeLineCap: 'round',
+            strokeLineJoin: 'round',
+            clickable: true
+          });
+
+          naver.maps.Event.addListener(polyline, 'click', function() {
+            postToNative({ type: 'ROUTE_PRESSED', payload: { route: route } });
+          });
+
+          activeRoutePolylines.push(polyline);
+          naverPath.forEach(function(position) {
+            bounds = extendBounds(bounds, position);
+          });
+        });
 
         places.forEach(function(place) {
           var color = CATEGORY_COLORS[place.category] || '#E5572F';
@@ -234,20 +296,15 @@ function buildMapHtml(clientId: string) {
           });
 
           naver.maps.Event.addListener(marker, 'click', function() {
-            postToNative({ type: 'MARKER_PRESSED', payload: { placeId: place.id } });
+            postToNative({ type: 'MARKER_PRESSED', payload: { place: place } });
           });
 
           activeMarkers.push(marker);
-
-          if (!bounds) {
-            bounds = new naver.maps.LatLngBounds(position, position);
-          } else {
-            bounds.extend(position);
-          }
+          bounds = extendBounds(bounds, position);
         });
 
         if (bounds) {
-          if (places.length === 1) {
+          if (places.length === 1 && routes.length === 0) {
             map.setCenter(new naver.maps.LatLng(places[0].lat, places[0].lng));
           } else {
             map.fitBounds(bounds, { padding: 60 });
@@ -257,7 +314,9 @@ function buildMapHtml(clientId: string) {
 
       window.__receiveFromNative = function(message) {
         if (!message || !message.type) return;
-        if (message.type === 'SET_PLACES') renderMarkers(message.payload);
+        if (message.type === 'SET_MAP_DATA' || message.type === 'SET_PLACES') {
+          renderMapData(message.payload);
+        }
       };
 
       function initializeMap() {
