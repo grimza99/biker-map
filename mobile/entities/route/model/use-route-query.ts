@@ -1,11 +1,15 @@
-import { useQuery } from "@tanstack/react-query";
 import {
   API_PATHS,
   type ApiResponse,
+  buildRouteQuery,
+  queryKeys,
   type RouteListItem,
+  type RouteMapPathItem,
+  type RouteMapPathsResponseData,
   type RoutesListResponseData,
   type RoutesQuery,
 } from "@package-shared/index";
+import { useQuery } from "@tanstack/react-query";
 
 import { apiFetch } from "@/shared";
 
@@ -73,13 +77,16 @@ export function buildRouteQuery(query: RoutesQuery) {
     searchParams.set("maxDistanceKm", String(query.maxDistanceKm));
   }
 
-  if (query.cursor) {
-    searchParams.set("cursor", query.cursor);
-  }
+export function useRouteMapPathsQuery() {
+  return useQuery<RouteMapPathItem[], Error>({
+    queryFn: async () => {
+      const res = await apiFetch.get<RouteMapPathsResponseData>(
+        API_PATHS.routes.mapPaths
+      );
 
-  if (query.limit) {
-    searchParams.set("limit", String(query.limit));
-  }
-
-  return searchParams.toString();
+      return res.data.items;
+    },
+    queryKey: queryKeys.routeMapPaths,
+    staleTime: 1000 * 60 * 5,
+  });
 }

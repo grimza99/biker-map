@@ -1,5 +1,6 @@
 import { Ionicons } from "@expo/vector-icons";
-import { View } from "react-native";
+import { useRouter } from "expo-router";
+import { Pressable, View } from "react-native";
 
 import {
   bikerMapTheme,
@@ -13,13 +14,26 @@ import {
   Chip,
   DefaultCardContainer,
 } from "@/components/common";
-import { openExternalUrl } from "@/shared";
 import { RouteMetaRow } from "./RouteMetaRow";
 
 export function RouteCard({ route }: { route: RouteListItem }) {
+  const router = useRouter();
+
+  const handlePressDetail = () => {
+    router.push({
+      pathname: "/(tabs)/map/routes/[routeId]",
+      params: { routeId: route.id },
+    });
+  };
+
   return (
     <DefaultCardContainer>
-      <View className="gap-2">
+      <Pressable
+        accessibilityLabel={`${route.title} 상세페이지 이동`}
+        accessibilityRole="button"
+        className="gap-2"
+        onPress={handlePressDetail}
+      >
         <View className="flex-row flex-wrap items-center gap-2">
           <Chip label="큐레이션" />
           {route.tags.map((tag) => (
@@ -35,7 +49,7 @@ export function RouteCard({ route }: { route: RouteListItem }) {
         >
           {route.summary}
         </AppText>
-      </View>
+      </Pressable>
 
       <View className="gap-2 grid grid-cols-2">
         <RouteMetaRow
@@ -73,8 +87,8 @@ export function RouteCard({ route }: { route: RouteListItem }) {
       </View>
 
       <Button
-        accessibilityLabel={`${route.id} 상세페이지 이동`}
-        onPress={() => void openExternalUrl(route.externalMapUrl)}
+        accessibilityLabel={`${route.title} 상세페이지 이동`}
+        onPress={handlePressDetail}
         variant="secondary"
         leftIcon={
           <Ionicons
