@@ -4,19 +4,25 @@ import { Ionicons } from "@expo/vector-icons";
 import { SafeAreaView } from "react-native-safe-area-context";
 
 import { bikerMapTheme } from "@package-shared/index";
-
 import type {
   AllPlaceCategory,
   PlaceCategory,
+  PlaceListItem,
   PlacesQuery,
+  RouteListItem,
+  RouteMapPathItem,
 } from "@package-shared/index";
 
-import { FloatingMapSheet } from "../../components/shell";
-import { MapCanvasWebView } from "../../features/map/ui/MapCanvasWebView";
 import { AppText, Button } from "@/components/common";
 import { cn } from "@/shared";
 import { usePlaceList } from "@/entities/place";
-import { MapListSheetContent } from "@/entities/map";
+import {
+  MapListSheetContent,
+  MapMarkerClickSheetContent,
+} from "@/entities/map";
+import { useRouteMapPathsQuery } from "@/entities/route";
+import { MapCanvasWebView } from "@/features/map/ui/MapCanvasWebView";
+import { FloatingMapSheet } from "@/components/shell";
 
 export const placeCategoryOptions: { label: string; value: PlaceCategory }[] = [
   { label: "주유소", value: "gas" },
@@ -35,18 +41,41 @@ export const mapCategoryOptions: Array<{
 
 export default function MapScreen() {
   const [activeCategory, setActiveCategory] =
-    useState<PlacesQuery["category"]>("all");
+    useState<MapCategoryFilter>("all");
   const [focusedPlaceId, setFocusedPlaceId] = useState<string | null>(null);
-  const placesQuery = usePlaceList({
-    category: activeCategory,
-  });
-  const places = placesQuery.data ?? [];
-  const errorMessage =
-    placesQuery.error instanceof Error ? placesQuery.error.message : null;
-  const isLoading = placesQuery.isLoading;
+  const [detailSheetItem, setDetailSheetItem] = useState<
+    | null
+    | ({ kind: "place" } & PlaceListItem)
+    | ({ kind: "route" } & RouteListItem)
+  >(null);
+  const placeCategory: PlacesQuery["category"] =
+    activeCategory === "route" ? undefined : activeCategory;
 
-  const handleMarkerPressed = (placeId: string) => {
-    setFocusedPlaceId(placeId);
+  const placesQuery = usePlaceList({
+    category: placeCategory,
+  });
+  const routeMapPathsQuery = useRouteMapPathsQuery();
+
+  const places = placesQuery.data ?? [];
+  const routes = routeMapPathsQuery.data ?? [];
+  const visiblePlaces = activeCategory === "route" ? [] : places;
+  const visibleRoutes =
+    activeCategory === "route" || activeCategory === "all" ? routes : [];
+  const errorMessage =
+    placesQuery.error instanceof Error
+      ? placesQuery.error.message
+      : routeMapPathsQuery.error instanceof Error
+      ? routeMapPathsQuery.error.message
+      : null;
+  const isLoading = placesQuery.isLoading || routeMapPathsQuery.isLoading;
+
+  const handleMarkerPressed = (place: PlaceListItem) => {
+    setFocusedPlaceId(place.id);
+    setDetailSheetItem({ kind: "place", ...place });
+  };
+  const handleRoutePressed = (route: RouteMapPathItem) => {
+    setFocusedPlaceId(null);
+    setDetailSheetItem({ kind: "route", ...route });
   };
 
   return (
@@ -55,7 +84,9 @@ export default function MapScreen() {
         activeFilter={activeCategory || "all"}
         focusedPlaceId={focusedPlaceId}
         onMarkerPressed={handleMarkerPressed}
-        places={places}
+        onRoutePressed={handleRoutePressed}
+        places={visiblePlaces}
+        routes={visibleRoutes}
       />
 
       <SafeAreaView
@@ -68,13 +99,19 @@ export default function MapScreen() {
           showsHorizontalScrollIndicator={false}
           contentContainerClassName="gap-2.5 py-0.5"
         >
-          {placeCategoryOptions.map((option) => {
+          {mapCategoryOptions.map((option) => {
             const isActive = activeCategory === option.value;
 
             return (
               <Button
                 selected={isActive}
-                onPress={() => setActiveCategory(option.value)}
+                onPress={() => {
+                  setActiveCategory((current) =>
+                    current === option.value ? "all" : option.value
+                  );
+                  setFocusedPlaceId(null);
+                  setDetailSheetItem(null);
+                }}
                 key={option.value}
                 style={[styles.filterChip, isActive && styles.filterChipActive]}
               >
@@ -111,15 +148,24 @@ export default function MapScreen() {
       </SafeAreaView>
 
       <FloatingMapSheet
-        sheetTitle="지도 목록"
+        sheetTitle={detailSheetItem ? undefined : "지도 목록"}
         sheetIcon={
-          <Ionicons
-            name="map-outline"
-            size={18}
-            color={bikerMapTheme.colors.text}
-          />
+          detailSheetItem ? undefined : (
+            <Ionicons
+              name="map-outline"
+              size={18}
+              color={bikerMapTheme.colors.text}
+            />
+          )
         }
-        sheetContent={<MapListSheetContent activeCategory={activeCategory} />}
+        sheetContent={
+          detailSheetItem ? (
+            <MapMarkerClickSheetContent item={detailSheetItem} />
+          ) : (
+            <MapListSheetContent activeCategory={placeCategory ?? "all"} />
+          )
+        }
+        contentContainerClassName={detailSheetItem ? "min-h-100" : undefined}
       />
     </View>
   );
