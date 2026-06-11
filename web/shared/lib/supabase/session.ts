@@ -5,7 +5,9 @@ export function mapSupabaseSession(
   session: Session | null,
   role = "member",
   bikeBrand: string | null,
-  bikeModel: string | null
+  bikeModel: string | null,
+  phone: string,
+  isVerified: boolean
 ): AppSession | null {
   const user = session?.user;
   if (!user) {
@@ -30,5 +32,7 @@ export function mapSupabaseSession(
     role: role || "member",
     bikeBrand,
     bikeModel,
+    phone,
+    isVerified,
   };
 }

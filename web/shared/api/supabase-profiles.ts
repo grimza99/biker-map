@@ -8,6 +8,9 @@ export type ProfileStatus = {
   deletedAt: string | null;
   bikeBrand: string | null;
   bikeModel: string | null;
+  phone: string;
+  isVerified: boolean;
+  verificationExpiresAt: string;
 };
 
 export async function loadProfileNameMap(
@@ -50,6 +53,16 @@ export async function getProfileStatus(
   if (!data) {
     return null;
   }
+  const { data: verifyData, error: selectVerifyDataError } = await client
+    .from("sms_verifications")
+    .select("phone_number,expires_at,is_verified,created_at")
+    .eq("user_id", userId)
+    .limit(1)
+    .maybeSingle();
+
+  if (selectVerifyDataError) {
+    throw new Error(selectVerifyDataError.message);
+  }
 
   return {
     id: String(data.id),
@@ -58,5 +71,8 @@ export async function getProfileStatus(
     deletedAt: data.deleted_at ? String(data.deleted_at) : null,
     bikeBrand: data.bike_brand,
     bikeModel: data.bike_model,
+    phone: verifyData?.phone_number ?? "",
+    isVerified: verifyData?.is_verified ?? false,
+    verificationExpiresAt: verifyData?.expires_at ?? "",
   };
 }
