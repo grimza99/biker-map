@@ -1,13 +1,14 @@
-import type { AppSession } from "@package-shared/types/session";
 import type { Session, User } from "@supabase/supabase-js";
+
+import type { AppSession } from "@package-shared/types/session";
 
 import { refreshTokenCookieOptions } from "@shared/config";
 import {
   createSupabaseAuthClient,
   mapSupabaseSession,
 } from "@shared/lib/supabase";
-import { getProfileStatus } from "./supabase-profiles";
 import { unauthorized } from "./response";
+import { getProfileStatus } from "./supabase-profiles";
 
 /**
  *
@@ -76,7 +77,9 @@ async function getApiSession(request: Request): Promise<AppSession | null> {
     session,
     profileStatus?.role,
     profileStatus?.bikeBrand || null,
-    profileStatus?.bikeModel || null
+    profileStatus?.bikeModel || null,
+    profileStatus?.phone ?? "",
+    profileStatus?.isVerified ?? false
   );
 
   if (!mappedSession || !session?.access_token) {
