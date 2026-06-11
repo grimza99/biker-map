@@ -2,6 +2,7 @@ import { useQuery } from "@tanstack/react-query";
 
 import {
   API_PATHS,
+  buildPlaceQuery,
   type PlaceListItem,
   type PlacesListResponseData,
   type PlacesQuery,
@@ -14,10 +15,11 @@ export function usePlaceList(query: PlacesQuery) {
   return useQuery<PlaceListItem[], Error>({
     queryFn: async () => {
       const placeQuery = buildPlaceQuery(query);
+      const endpoint = placeQuery
+        ? `${API_PATHS.places.list}?${placeQuery}`
+        : API_PATHS.places.list;
 
-      const res = await apiFetch.get<PlacesListResponseData>(
-        query ? `${API_PATHS.places.list}?${placeQuery}` : API_PATHS.places.list
-      );
+      const res = await apiFetch.get<PlacesListResponseData>(endpoint);
       return res.data.items;
     },
     queryKey: [
@@ -31,26 +33,4 @@ export function usePlaceList(query: PlacesQuery) {
       },
     ],
   });
-}
-
-function buildPlaceQuery(query: PlacesQuery) {
-  const searchParams = new URLSearchParams();
-
-  if (query.category) {
-    searchParams.set("category", query.category);
-  }
-
-  if (query.search?.trim()) {
-    searchParams.set("search", query.search.trim());
-  }
-
-  if (query.cursor) {
-    searchParams.set("cursor", String(query.cursor));
-  }
-
-  if (query.limit) {
-    searchParams.set("limit", String(query.limit));
-  }
-
-  return searchParams.toString();
 }
