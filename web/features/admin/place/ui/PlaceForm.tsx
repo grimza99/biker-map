@@ -10,7 +10,7 @@ import {
   PlaceDetail,
   TOAST_MESSAGE,
   UpdatePlaceBody,
-  placeCategoryOptions,
+  placeCrudCategoryOptions,
 } from "@biker-map/package-shared";
 
 import { uploadImage } from "@/features/image/model/upload-image";
@@ -169,7 +169,7 @@ export function PlaceForm({
         label="카테고리"
         value={category}
         onValueChange={(nextValue) => setCategory(nextValue as PlaceCategory)}
-        options={placeCategoryOptions}
+        options={placeCrudCategoryOptions}
       />
       <Input
         label="주소"
