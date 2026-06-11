@@ -1,4 +1,4 @@
-import { AllPlaceCategory } from "../../types/place";
+import { AllPlaceCategory, PlaceCategory } from "../../types/place";
 
 export const placeCategoryOptions: {
   label: string;
@@ -11,6 +11,14 @@ export const placeCategoryOptions: {
   { label: "샵", value: "shop" },
   { label: "휴게/쉼터", value: "rest" },
 ];
+
+export const placeCrudCategoryOptions: {
+  label: string;
+  value: PlaceCategory;
+}[] = placeCategoryOptions.filter(
+  (option): option is { label: string; value: PlaceCategory } =>
+    option.value !== "all"
+);
 
 export type MapCategoryFilter = AllPlaceCategory | "route";
 
