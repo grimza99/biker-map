@@ -1,5 +1,5 @@
 import { Ionicons } from "@expo/vector-icons";
-import { useRouter } from "expo-router";
+import { type Href, useRouter } from "expo-router";
 import { Pressable, View } from "react-native";
 
 import { bikerMapTheme, PlaceListItem } from "@package-shared/index";
@@ -23,7 +23,7 @@ export function PlaceCard({ place }: PlaceCardProps) {
     router.push({
       pathname: "/(tabs)/map/places/[placeId]",
       params: { placeId: place.id },
-    });
+    } as unknown as Href);
   };
 
   return (

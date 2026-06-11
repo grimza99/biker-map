@@ -2,6 +2,7 @@ import {
   API_PATHS,
   buildRouteQuery,
   queryKeys,
+  type ApiResponse,
   type RouteListItem,
   type RouteMapPathItem,
   type RouteMapPathsResponseData,
@@ -15,29 +16,10 @@ import { apiFetch } from "@/shared";
 /**------------------------------------- route list --------------------------------*/
 
 export function useRouteListQuery(query: RoutesQuery) {
-  return useQuery<RouteListItem[], Error>({
-    queryFn: async () => {
-      const routeQuery = buildRouteQuery(query);
-
-      const res = await apiFetch.get<RoutesListResponseData>(
-        routeQuery
-          ? `${API_PATHS.routes.list}?${routeQuery}`
-          : API_PATHS.routes.list
-      );
-      return res.data.items;
-    },
-    queryKey: [
-      "routes",
-      "list",
-      {
-        cursor: query.cursor,
-        departureRegion: query.departureRegion,
-        destinationRegion: query.destinationRegion,
-        limit: query.limit,
-        maxDistanceKm: query.maxDistanceKm,
-        search: query.search,
-      },
-    ],
+  return useQuery<ApiResponse<RoutesListResponseData>, Error>({
+    placeholderData: (previousData) => previousData,
+    queryFn: async () => getRouteList(query),
+    queryKey: queryKeys.routes(query),
   });
 }
 
@@ -53,4 +35,14 @@ export function useRouteMapPathsQuery() {
     queryKey: queryKeys.routeMapPaths,
     staleTime: 1000 * 60 * 5,
   });
+}
+
+async function getRouteList(query: RoutesQuery) {
+  const routeQuery = buildRouteQuery(query);
+
+  return apiFetch.get<RoutesListResponseData>(
+    routeQuery
+      ? `${API_PATHS.routes.list}?${routeQuery}`
+      : API_PATHS.routes.list
+  );
 }

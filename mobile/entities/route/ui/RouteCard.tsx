@@ -1,5 +1,5 @@
 import { Ionicons } from "@expo/vector-icons";
-import { useRouter } from "expo-router";
+import { type Href, useRouter } from "expo-router";
 import { Pressable, View } from "react-native";
 
 import {
@@ -23,7 +23,7 @@ export function RouteCard({ route }: { route: RouteListItem }) {
     router.push({
       pathname: "/(tabs)/map/routes/[routeId]",
       params: { routeId: route.id },
-    });
+    } as unknown as Href);
   };
 
   return (
