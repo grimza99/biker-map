@@ -10,7 +10,7 @@ import {
   PlacesQuery,
   RouteListItem,
   RouteMapPathItem,
-} from "@biker-map/package-shared";
+} from "@package-shared/index";
 
 import { AppText, Button } from "@/components/common";
 import {

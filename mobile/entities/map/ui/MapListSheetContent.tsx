@@ -52,8 +52,9 @@ export function MapListSheetContent({
   }
 
   const places = placesQuery.data ?? [];
-  const routes = routesQuery.data ?? [];
-  const hasContent = places.length > 0 || routes.length > 0;
+  const routes = routesQuery.data?.data.items ?? [];
+  const hasContent =
+    places.length > 0 || (routesQuery.data?.meta?.total || 0) > 0;
 
   return (
     <View className="h-full gap-3">
