@@ -42,7 +42,14 @@ export async function POST(request: Request) {
     return badRequest(error.message);
   }
 
-  const mappedSession = mapSupabaseSession(session, "member", null, null);
+  const mappedSession = mapSupabaseSession(
+    session,
+    "member",
+    null,
+    null,
+    "",
+    false
+  );
 
   const response = created<AuthResponseData>({
     session: mappedSession,
