@@ -1,9 +1,11 @@
-import type { PlaceDetail } from "@package-shared/index";
 import { ExternalLink, MapPinned, Phone } from "lucide-react";
 
-import { Button, DefaultCardContainer, Divider } from "@shared/ui";
+import {
+  placeCategoryOptions,
+  type PlaceDetail,
+} from "@biker-map/package-shared";
 
-import { placeCategoryOptions } from "../model/map-filters";
+import { Button, DefaultCardContainer, Divider } from "@shared/ui";
 
 export function PlaceDetailContent({ place }: { place: PlaceDetail }) {
   const label = placeCategoryOptions.find(

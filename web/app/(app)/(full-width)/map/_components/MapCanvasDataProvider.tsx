@@ -1,9 +1,10 @@
 "use client";
 
-import { createContext, useContext, useMemo, useState } from "react";
 import type { Dispatch, ReactNode, SetStateAction } from "react";
+import { createContext, useContext, useMemo, useState } from "react";
 
-import type { MapCategoryFilter } from "@/entities/map";
+import { MapCategoryFilter } from "@biker-map/package-shared";
+
 import { usePlaces } from "@features/places/model/use-places";
 import { useRouteMapPaths } from "@features/routes/model/use-route-map-paths";
 
@@ -17,12 +18,14 @@ type MapCanvasDataContextValue = {
   routeMapPathsQuery: RouteMapPathsQueryResult;
 };
 
-const MapCanvasDataContext =
-  createContext<MapCanvasDataContextValue | null>(null);
+const MapCanvasDataContext = createContext<MapCanvasDataContextValue | null>(
+  null
+);
 
 export function MapCanvasDataProvider({ children }: { children: ReactNode }) {
   const [category, setCategory] = useState<MapCategoryFilter>("all");
   const placeCategory = category === "route" ? undefined : category;
+
   const filters = useMemo(
     () => ({
       category: placeCategory,
@@ -53,7 +56,9 @@ export function useMapCanvasData() {
   const value = useContext(MapCanvasDataContext);
 
   if (!value) {
-    throw new Error("useMapCanvasData must be used within MapCanvasDataProvider");
+    throw new Error(
+      "useMapCanvasData must be used within MapCanvasDataProvider"
+    );
   }
 
   return value;

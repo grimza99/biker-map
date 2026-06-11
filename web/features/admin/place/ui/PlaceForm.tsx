@@ -1,17 +1,20 @@
 "use client";
 
-import type {
+import type {} from "@package-shared/types/place";
+import { useEffect, useState } from "react";
+
+import {
+  ApiClientError,
   CreatePlaceResponseData,
   PlaceCategory,
   PlaceDetail,
+  TOAST_MESSAGE,
   UpdatePlaceBody,
-} from "@package-shared/types/place";
-import { useEffect, useState } from "react";
+  placeCrudCategoryOptions,
+} from "@biker-map/package-shared";
 
-import { placeCategoryOptions } from "@/entities/map/model/map-filters";
 import { uploadImage } from "@/features/image/model/upload-image";
-import { TOAST_MESSAGE } from "@package-shared/constants";
-import { ApiClientError } from "@package-shared/index";
+
 import {
   Button,
   ImageInput,
@@ -166,7 +169,7 @@ export function PlaceForm({
         label="카테고리"
         value={category}
         onValueChange={(nextValue) => setCategory(nextValue as PlaceCategory)}
-        options={placeCategoryOptions}
+        options={placeCrudCategoryOptions}
       />
       <Input
         label="주소"

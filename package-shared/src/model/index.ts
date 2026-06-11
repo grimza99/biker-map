@@ -3,6 +3,7 @@ export {
   categoryLabelMap,
   communityCategoryOptions,
 } from "./community";
+export * from "./map";
 export {
   notificationsfilterTabs,
   notificationskindMeta,
