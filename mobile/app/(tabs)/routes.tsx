@@ -18,7 +18,7 @@ import {
   Input,
   Pagination,
 } from "@/components/common";
-import { RouteCard, useRouteListResponseQuery } from "@/entities/route";
+import { RouteCard, useRouteListQuery } from "@/entities/route";
 import { AppScreen } from "../../components/shell";
 
 const ROUTE_PAGE_SIZE = 5;
@@ -64,7 +64,7 @@ export default function RoutesScreen() {
       searchQuery,
     ]
   );
-  const routesQuery = useRouteListResponseQuery(query);
+  const routesQuery = useRouteListQuery(query);
   const allLoadedRoutes = routesQuery.data?.data.items ?? [];
   const totalRouteCount =
     routesQuery.data?.meta?.total ?? allLoadedRoutes.length;

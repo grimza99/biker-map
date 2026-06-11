@@ -15,21 +15,11 @@ import { apiFetch } from "@/shared";
 
 /**------------------------------------- route list --------------------------------*/
 
-export function useRouteListResponseQuery(query: RoutesQuery) {
+export function useRouteListQuery(query: RoutesQuery) {
   return useQuery<ApiResponse<RoutesListResponseData>, Error>({
     placeholderData: (previousData) => previousData,
     queryFn: async () => getRouteList(query),
-    queryKey: buildRouteQueryKey(query),
-  });
-}
-
-export function useRouteListQuery(query: RoutesQuery) {
-  return useQuery<RouteListItem[], Error>({
-    queryFn: async () => {
-      const res = await getRouteList(query);
-      return res.data.items;
-    },
-    queryKey: buildRouteQueryKey(query),
+    queryKey: queryKeys.routes(query),
   });
 }
 
@@ -55,15 +45,4 @@ async function getRouteList(query: RoutesQuery) {
       ? `${API_PATHS.routes.list}?${routeQuery}`
       : API_PATHS.routes.list
   );
-}
-
-function buildRouteQueryKey(query: RoutesQuery) {
-  return queryKeys.routes({
-    cursor: query.cursor,
-    departureRegion: query.departureRegion,
-    destinationRegion: query.destinationRegion,
-    limit: query.limit,
-    maxDistanceKm: query.maxDistanceKm,
-    search: query.search,
-  });
 }
