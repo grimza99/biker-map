@@ -27,7 +27,7 @@ export function mapSupabaseSession(
     name: metadataName || "",
     email: user.email || "",
     avatarUrl,
-    role,
+    role: role || "member",
     bikeBrand,
     bikeModel,
   };
