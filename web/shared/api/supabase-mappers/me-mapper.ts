@@ -11,10 +11,19 @@ export function mapMe(
   session: Session | null,
   role = "member",
   bikeBrand: string | null,
-  bikeModel: string | null
+  bikeModel: string | null,
+  phone: string,
+  isVerified: boolean
 ): MeResponseData {
   return {
     authenticated: Boolean(session?.user),
-    session: mapSupabaseSession(session ?? null, role, bikeBrand, bikeModel),
+    session: mapSupabaseSession(
+      session ?? null,
+      role,
+      bikeBrand,
+      bikeModel,
+      phone,
+      isVerified
+    ),
   };
 }

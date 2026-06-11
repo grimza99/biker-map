@@ -48,3 +48,17 @@ export type DeleteAccountResponseData = {
   deletedAt: string;
   purgeAfter: string;
 };
+
+export type ISendVerificationCodeBody = {
+  phone: string;
+};
+export type ISendVerificationCodeResponseData = {
+  phone: string;
+  expiresAt: string;
+};
+
+export type IVerificationCodeCheckBody = {
+  phone: string;
+  code: string;
+};
+export type AuthVerifyResponseData = AppSession;

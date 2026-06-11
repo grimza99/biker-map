@@ -172,6 +172,7 @@ export const {
 
       return refreshSupabaseToken(token);
     },
+
     async session({ session, token }) {
       const userId = typeof token.userId === "string" ? token.userId : null;
       const role = typeof token.role === "string" ? token.role : "member";
@@ -203,10 +204,12 @@ export const {
             userId,
             name: session.user.name ?? "",
             email: session.user.email ?? "",
-            bikeBrand: profileStatus?.bikeBrand ?? null,
-            bikeModel: profileStatus?.bikeModel ?? null,
             avatarUrl: session.user.image ?? null,
             role,
+            bikeBrand: profileStatus?.bikeBrand ?? null,
+            bikeModel: profileStatus?.bikeModel ?? null,
+            phone: profileStatus?.phone ?? "",
+            isVerified: profileStatus?.isVerified || false,
           }
         : null;
       session.accessToken = accessToken;
