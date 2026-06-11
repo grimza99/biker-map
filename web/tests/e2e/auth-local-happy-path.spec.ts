@@ -1,4 +1,4 @@
-import { expect, test } from "@playwright/test";
+import { expect, Page, test } from "@playwright/test";
 
 import {
   createAuthFixtureAccount,
@@ -35,12 +35,12 @@ test.describe("로컬 Supabase 인증 성공 경로", () => {
 
       await expect
         .poll(async () => {
-          const session = await fetchAuthSession(context);
+          const session = await fetchAuthSession(page);
           return session.appSession?.email ?? null;
         })
         .toBe(fixture.email);
 
-      const signedUpSession = await fetchAuthSession(context);
+      const signedUpSession = await fetchAuthSession(page);
 
       expect(signedUpSession).toEqual(
         expect.objectContaining({
@@ -63,9 +63,7 @@ test.describe("로컬 Supabase 인증 성공 경로", () => {
       const signedUpCookies = await context.cookies();
       expect(findAuthSessionCookieName(signedUpCookies)).toBeTruthy();
       expect(
-        signedUpCookies.some(
-          ({ name }) => name === "biker-map-refresh-token"
-        )
+        signedUpCookies.some(({ name }) => name === "biker-map-refresh-token")
       ).toBe(false);
 
       const accessToken = signedUpSession.accessToken;
@@ -89,7 +87,9 @@ test.describe("로컬 Supabase 인증 성공 경로", () => {
       );
 
       await page.reload();
-      await expect(page.getByRole("button", { name: "로그아웃" })).toBeVisible();
+      await expect(
+        page.getByRole("button", { name: "로그아웃" })
+      ).toBeVisible();
 
       await Promise.all([
         page.waitForURL(/\/auth\?toast=logout-success$/),
@@ -98,12 +98,20 @@ test.describe("로컬 Supabase 인증 성공 경로", () => {
 
       await expect
         .poll(async () => {
+          return fetchAuthSession(page);
+        })
+        .toEqual(null);
+
+      await expect
+        .poll(async () => {
           const cookies = await context.cookies();
           return findAuthSessionCookieName(cookies);
         })
-        .toBeNull();
+        .toEqual(false);
 
-      await expect(page.getByRole("heading", { name: "바이커맵 로그인" })).toBeVisible();
+      await expect(
+        page.getByRole("heading", { name: "바이커맵 로그인" })
+      ).toBeVisible();
 
       await page.getByLabel("이메일").fill(fixture.email);
       await page.getByLabel("비밀번호").fill(fixture.password);
@@ -115,12 +123,12 @@ test.describe("로컬 Supabase 인증 성공 경로", () => {
 
       await expect
         .poll(async () => {
-          const session = await fetchAuthSession(context);
+          const session = await fetchAuthSession(page);
           return session.appSession?.email ?? null;
         })
         .toBe(fixture.email);
 
-      const loggedInSession = await fetchAuthSession(context);
+      const loggedInSession = await fetchAuthSession(page);
 
       expect(loggedInSession).toEqual(
         expect.objectContaining({
@@ -143,19 +151,13 @@ test.describe("로컬 Supabase 인증 성공 경로", () => {
   });
 });
 
-async function fetchAuthSession(context: {
-  request: {
-    get: (url: string) => Promise<{ json: () => Promise<unknown> }>;
-  };
-}) {
-  const response = await context.request.get("/api/auth/session");
-  return (await response.json()) as {
-    appSession?: {
-      email?: string;
-      name?: string;
-      userId?: string;
-    } | null;
-    accessToken?: string | null;
-    supabaseError?: string | null;
-  };
+async function fetchAuthSession(page: Page) {
+  return await page.evaluate(async () => {
+    const res = await fetch("/api/auth/session", {
+      credentials: "include",
+      cache: "no-store",
+    });
+
+    return await res.json();
+  });
 }
