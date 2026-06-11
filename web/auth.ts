@@ -187,11 +187,24 @@ export const {
         email: typeof token.email === "string" ? token.email : "",
         image: typeof token.picture === "string" ? token.picture : null,
       };
+      let profileStatus = null;
+
+      if (userId) {
+        const profileStatusResult = await resolveProfileStatus(userId);
+
+        if (profileStatusResult.ok) {
+          profileStatus = profileStatusResult.profileStatus;
+        } else {
+          session.supabaseError = "profile_status_fetch_failed";
+        }
+      }
       session.appSession = userId
         ? {
             userId,
             name: session.user.name ?? "",
             email: session.user.email ?? "",
+            bikeBrand: profileStatus?.bikeBrand ?? null,
+            bikeModel: profileStatus?.bikeModel ?? null,
             avatarUrl: session.user.image ?? null,
             role,
           }
