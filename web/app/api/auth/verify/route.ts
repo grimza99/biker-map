@@ -43,6 +43,9 @@ export async function POST(request: Request) {
     return internalServerError(error.message);
   }
 
+  if (new Date(data?.expires_at).getTime() < Date.now()) {
+    return badRequest("인증코드가 만료되었습니다");
+  }
   if (data?.otp_code !== payload.code) {
     return badRequest("인증코드가 일치하는지 확인하세요");
   }

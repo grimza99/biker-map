@@ -149,3 +149,31 @@ export function clearRefreshTokenCookie(response: Response) {
 
   cookieStore.append("Set-Cookie", parts.join("; "));
 }
+
+/**---------------------------------------------------- clear session --------------------------------------------------------*/
+export function clearAuthSessionCookies(response: Response) {
+  const cookieStore = response.headers;
+  const secure = refreshTokenCookieOptions.secure;
+  const sessionCookieNames = [
+    "authjs.session-token",
+    "__Secure-authjs.session-token",
+    "next-auth.session-token",
+    "__Secure-next-auth.session-token",
+  ];
+
+  for (const name of sessionCookieNames) {
+    const parts = [
+      `${name}=`,
+      `Path=${refreshTokenCookieOptions.path}`,
+      "Max-Age=0",
+      "HttpOnly",
+      "SameSite=Lax",
+    ];
+
+    if (secure) {
+      parts.push("Secure");
+    }
+
+    cookieStore.append("Set-Cookie", parts.join("; "));
+  }
+}
