@@ -32,7 +32,6 @@ export function NotificationSheet({
     <CommonModal
       visible={visible}
       title="알림"
-      eyebrow="Notifications"
       description={
         unreadCount > 0
           ? `읽지 않은 알림 ${unreadCount}개`
