@@ -32,6 +32,18 @@ export async function POST(request: Request) {
   const expiresAt = new Date(Date.now() + 3 * 60 * 1000).toISOString();
 
   const supabase = createSupabaseApiClient(request);
+
+  let profileStatus = null;
+  try {
+    profileStatus = await getProfileStatus(session.user.id);
+  } catch {
+    return unauthorized();
+  }
+
+  if (profileStatus?.deletedAt) {
+    return unauthorized("탈퇴 처리된 계정입니다.");
+  }
+
   const { data, error } = await supabase
     .from("sms_verifications")
     .insert({
@@ -46,16 +58,6 @@ export async function POST(request: Request) {
 
   if (error) {
     return internalServerError(error.message);
-  }
-  let profileStatus = null;
-  try {
-    profileStatus = await getProfileStatus(session.user.id);
-  } catch {
-    return unauthorized();
-  }
-
-  if (profileStatus?.deletedAt) {
-    return unauthorized("탈퇴 처리된 계정입니다.");
   }
 
   return ok(
