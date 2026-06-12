@@ -24,6 +24,7 @@ import {
 } from "@/shared";
 type SessionStatus = "loading" | "anonymous" | "authenticated";
 type SessionContextValue = {
+  clearSession: () => Promise<void>;
   status: SessionStatus;
   user: AppSession | null;
   login: (body: LoginBody) => Promise<void>;
@@ -85,6 +86,11 @@ export function SessionProvider({ children }: PropsWithChildren) {
   }, []);
 
   const value: SessionContextValue = {
+    async clearSession() {
+      await clearApiAuthState();
+      setUser(null);
+      setStatus("anonymous");
+    },
     status,
     user,
     async login(loginBody) {
@@ -107,9 +113,7 @@ export function SessionProvider({ children }: PropsWithChildren) {
       try {
         await apiFetch.post<LogoutResponseData>(API_PATHS.auth.logout);
       } finally {
-        await clearApiAuthState();
-        setUser(null);
-        setStatus("anonymous");
+        await value.clearSession();
       }
     },
   };

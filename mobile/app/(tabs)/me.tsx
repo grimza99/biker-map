@@ -107,11 +107,12 @@ export default function MeScreen() {
           <GlobalFloatingMenu<FloatingMenuOptionId>
             options={meFloatingMenuOptions}
             onSelect={(option) => {
-              if (option.id !== "delete") {
-                setActiveMenu(option.id as MeScreenContentId);
-              } else {
+              if (option.id === "delete-account") {
                 setIsDeleteAccountClicked(true);
+                return;
               }
+
+              setActiveMenu(option.id as MeScreenContentId);
             }}
           />
         </>

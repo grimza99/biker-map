@@ -1,6 +1,7 @@
 "use client";
 
 import { apiFetch } from "@/shared";
+import { useSession } from "@/features/session/model";
 import {
   API_PATHS,
   queryKeys,
@@ -12,6 +13,7 @@ import { Alert } from "react-native";
 
 export function useDeleteAccount() {
   const queryClient = useQueryClient();
+  const { clearSession } = useSession();
 
   return useMutation({
     mutationFn: () =>
@@ -19,6 +21,7 @@ export function useDeleteAccount() {
         method: "DELETE",
       }),
     onSuccess: async () => {
+      await clearSession();
       await Promise.all([
         queryClient.removeQueries({ queryKey: queryKeys.session }),
         queryClient.removeQueries({ queryKey: queryKeys.myPosts() }),
