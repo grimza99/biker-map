@@ -25,3 +25,4 @@ export { mapNotificationItem } from "./notification-mapper";
 //auth
 export { mapRefreshData } from "./auth-mapper";
 export { mapMe } from "./me-mapper";
+export * from "./verification-mapper";
