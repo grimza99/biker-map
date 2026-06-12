@@ -1,15 +1,18 @@
 "use client";
-
+import AuthVerifyDialog from "@/features/auth/ui/AuthVerifyDialog";
 import { uploadImage } from "@/features/image";
 import { useUpdateProfile } from "@/features/me";
 import {
   Button,
+  Chip,
+  cn,
   DefaultCardContainer,
   ImageInput,
   Input,
   ProfileImgChip,
 } from "@/shared";
 import { AppSession } from "@package-shared/index";
+import { ShieldHalfIcon } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
 
 export function MyInfoSection({ session }: { session: AppSession }) {
@@ -19,6 +22,8 @@ export function MyInfoSection({ session }: { session: AppSession }) {
   const [avatarUrls, setAvatarUrls] = useState<string[] | null>(
     session.avatarUrl ? [session.avatarUrl] : null
   );
+  const [isVerifyDialogOpen, setIsVerifyDialogOpen] = useState(false);
+
   const { mutateAsync: updateProfile, isPending } = useUpdateProfile();
 
   useEffect(() => {
@@ -46,7 +51,9 @@ export function MyInfoSection({ session }: { session: AppSession }) {
       session.bikeModel,
     ]
   );
-
+  const verifiedLabel = session.isVerified
+    ? "본인 인증 완료"
+    : "본인 인증 미완료";
   return (
     <DefaultCardContainer>
       <div className="flex flex-wrap items-start justify-between gap-6">
@@ -70,6 +77,22 @@ export function MyInfoSection({ session }: { session: AppSession }) {
                 <strong>·</strong>
                 <span> {session.bikeModel}</span>
               </div>
+              <button
+                className="w-fit h-fit"
+                disabled={!!session.isVerified}
+                onClick={() => {
+                  setIsVerifyDialogOpen(true);
+                }}
+              >
+                <Chip
+                  icon={<ShieldHalfIcon className="size-4" />}
+                  label={verifiedLabel}
+                  className={cn(
+                    session.isVerified &&
+                      "bg-green-300/10 border-green-300/20 text-green-300"
+                  )}
+                />
+              </button>
             </div>
           </div>
         </div>
@@ -132,6 +155,10 @@ export function MyInfoSection({ session }: { session: AppSession }) {
             </Button>
           </div>
         </form>
+        <AuthVerifyDialog
+          open={isVerifyDialogOpen}
+          onOpenChange={() => setIsVerifyDialogOpen(false)}
+        />
       </div>
     </DefaultCardContainer>
   );
