@@ -9,6 +9,7 @@ import { useSession } from "@features/session";
 import { cn } from "@shared/lib";
 import { NotificationsRealtimeBridge } from "@widgets/notification-bell";
 import { signOut } from "next-auth/react";
+import { Footer } from "./Footer";
 
 export function AppShell({ children }: { children: ReactNode }) {
   const { session, status } = useSession();
@@ -64,6 +65,7 @@ export function AppShell({ children }: { children: ReactNode }) {
         </div>
       </header>
       {children}
+      <Footer />
     </>
   );
 }

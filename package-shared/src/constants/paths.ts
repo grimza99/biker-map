@@ -5,5 +5,10 @@ export const PATHS = {
     detailPlace: (placeId: string) => `/map/places/${placeId}`,
     detailRoute: (routeId: string) => `/map/routes/${routeId}`,
   },
+  policy: {
+    location: "/policy/location",
+    privacy: "/policy/privacy",
+    terms: "/policy/terms",
+  },
   auth: "/auth" as const,
 };
