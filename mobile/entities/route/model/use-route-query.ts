@@ -2,6 +2,7 @@ import {
   API_PATHS,
   buildRouteQuery,
   queryKeys,
+  RouteDetail,
   type ApiResponse,
   type RouteListItem,
   type RouteMapPathItem,
@@ -45,4 +46,15 @@ async function getRouteList(query: RoutesQuery) {
       ? `${API_PATHS.routes.list}?${routeQuery}`
       : API_PATHS.routes.list
   );
+}
+
+/**------------------------------------- route-detail --------------------------------*/
+export function useRouteDetailQuery(routeId: string) {
+  return useQuery<ApiResponse<RouteDetail>, Error>({
+    queryKey: queryKeys.route(routeId),
+    placeholderData: (previousData) => previousData,
+    queryFn: async () => {
+      return apiFetch.get<RouteDetail>(API_PATHS.routes.detail(routeId));
+    },
+  });
 }
