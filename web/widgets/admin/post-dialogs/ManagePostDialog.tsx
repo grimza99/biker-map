@@ -9,6 +9,7 @@ import {
   useUpdateCommunityPost,
 } from "@/features/community/model/use-post";
 import { CommunityPostForm } from "@/features/community/ui/community-post-form";
+import { useDebouncedValue } from "@/shared/hooks";
 import { ManageEntityDialogLayout } from "@/widgets/admin/manage-entity-dialog";
 import {
   Button,
@@ -20,7 +21,6 @@ import {
   Input,
   Pagination,
 } from "@shared/ui";
-import { useDebouncedValue } from "@/shared";
 
 interface ManagePostDialogProps {
   openModalId: AdminModalId | null;
@@ -124,7 +124,9 @@ export function ManagePostDialog({
                 post={post}
                 onClickEdit={(id) => setEditingPostId(id)}
                 onClickDelete={handleDeletePost}
-                isMutating={deleteMutation.isPending && editingPostId === post.id}
+                isMutating={
+                  deleteMutation.isPending && editingPostId === post.id
+                }
               />
             ))}
             listFooter={

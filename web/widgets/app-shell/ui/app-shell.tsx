@@ -9,6 +9,7 @@ import { MainNav } from "@/widgets/navs";
 import { useSession } from "@features/session";
 import { cn } from "@shared/lib";
 import { NotificationsRealtimeBridge } from "@widgets/notification-bell";
+import { Footer } from "./Footer";
 
 export function AppShell({ children }: { children: ReactNode }) {
   const router = useRouter();
@@ -65,6 +66,7 @@ export function AppShell({ children }: { children: ReactNode }) {
         </div>
       </header>
       {children}
+      <Footer />
     </>
   );
 }

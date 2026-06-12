@@ -6,6 +6,7 @@ import { useDeletePlace } from "@/features/admin/place/model/use-place";
 import { PlaceForm } from "@/features/admin/place/ui/PlaceForm";
 import { usePlaceDetail } from "@/features/places/model/use-place-detail";
 import { usePlaces } from "@/features/places/model/use-places";
+import { useDebouncedValue } from "@/shared/hooks";
 import { ManageEntityDialogLayout } from "@/widgets/admin/manage-entity-dialog";
 import { buildCursor } from "@shared/api";
 import {
@@ -18,7 +19,6 @@ import {
   Input,
   Pagination,
 } from "@shared/ui";
-import { useDebouncedValue } from "@/shared";
 
 interface ManagePlaceDialogProps {
   openModalId: AdminModalId | null;
