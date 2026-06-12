@@ -1,6 +1,6 @@
 import { Feather, FontAwesome5, Ionicons } from "@expo/vector-icons";
 import { type ReactNode, useState } from "react";
-import { Text, View } from "react-native";
+import { View } from "react-native";
 
 import { bikerMapTheme } from "@package-shared/constants";
 import {
@@ -11,6 +11,9 @@ import {
 } from "@/components/common";
 import { AppScreen } from "../../components/shell";
 import { useSession } from "../../features/session/model";
+import { Redirect } from "expo-router";
+import { MyFavoriteSection, SummaryProfile } from "@/entities/me";
+import { MyPostSection } from "@/entities/me/ui/MyPostSection";
 
 type FloatingMenuOptionId = "favorite" | "my-post" | "my-info" | "draw";
 type MeScreenContentId = "favorite" | "my-post" | "my-info";
@@ -58,29 +61,34 @@ const meFloatingMenuOptions: Array<{
   },
 ];
 
-const activeMenuContent: Record<
+type IActiveMenuContent = Record<
   MeScreenContentId,
-  { description: string; title: string }
-> = {
-  favorite: {
-    title: "즐겨찾기",
-    description: "저장한 장소와 경로 목록은 후속 API 연결에서 표시합니다.",
-  },
-  "my-post": {
-    title: "내가 쓴글",
-    description: "작성한 커뮤니티 글 목록은 마이페이지 API 연결 후 표시합니다.",
-  },
-  "my-info": {
-    title: "내 정보",
-    description: "현재 로그인 세션과 프로필 정보를 기준으로 확장합니다.",
-  },
-};
-
+  {
+    title: string;
+    rightHandle?: ReactNode;
+    content: ReactNode;
+  }
+>;
 export default function MeScreen() {
   const { status } = useSession();
   const isAuthenticated = status === "authenticated";
   const [isDrawMenuClicked, setIsDrawMenuClicked] = useState(false);
   const [activeMenu, setActiveMenu] = useState<MeScreenContentId>("my-info");
+
+  const activeMenuContent: IActiveMenuContent = {
+    "my-info": {
+      title: "상세 계정 정보",
+      content: <></>,
+    },
+    favorite: {
+      title: "즐겨찾기",
+      content: <MyFavoriteSection />,
+    },
+    "my-post": {
+      title: "내가 쓴 커뮤니티 게시글",
+      content: <MyPostSection />,
+    },
+  };
   const activeContent = activeMenuContent[activeMenu];
 
   return (
@@ -88,14 +96,14 @@ export default function MeScreen() {
       {/* todo : authenticated 에 따라서 tab 자체를 보호 */}
       {isAuthenticated ? (
         <>
-          <View className="gap-2 rounded-3xl border border-border bg-panel-solid p-5">
-            <Text className="text-[28px] font-extrabold leading-9 text-text">
+          <SummaryProfile />
+          <View className="w-full flex flex-row justify-between">
+            <AppText className="font-bold" tone="muted">
               {activeContent.title}
-            </Text>
-            <Text className="text-[15px] leading-5.5 text-muted">
-              {activeContent.description}
-            </Text>
+            </AppText>
+            {activeContent.rightHandle && activeContent.rightHandle}
           </View>
+          {activeContent.content}
 
           <GlobalFloatingMenu<FloatingMenuOptionId>
             options={meFloatingMenuOptions}
@@ -108,7 +116,11 @@ export default function MeScreen() {
             }}
           />
         </>
-      ) : null}
+      ) : (
+        <>
+          <Redirect href="/auth" />
+        </>
+      )}
       <CommonModal
         icon={
           <View className="border-danger border rounded-2xl py-3.5 px-3.5 bg-danger/25">
