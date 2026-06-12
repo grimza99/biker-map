@@ -13,6 +13,7 @@ on public.sms_verifications;
 create policy "Users can view own sms verifications"
 on public.sms_verifications
 for select
+to authenticated
 using (
   auth.uid() = user_id
 );
@@ -20,6 +21,7 @@ using (
 create policy "Users can insert own sms verifications"
 on public.sms_verifications
 for insert
+to authenticated
 with check (
   auth.uid() = user_id
 );
@@ -27,6 +29,7 @@ with check (
 create policy "Users can update own sms verifications"
 on public.sms_verifications
 for update
+to authenticated
 using (
   auth.uid() = user_id
 )
