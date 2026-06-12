@@ -11,17 +11,11 @@ import {
 } from "@package-shared/index";
 import { useEffect, useState } from "react";
 
-import { useDebouncedValue } from "@/shared";
+import { useDebouncedValue } from "@/shared/hooks";
 import { useSession } from "@features/session";
 import { addressRegionMap } from "@package-shared/model/route";
 import { apiFetch } from "@shared/api/http";
-import {
-  Button,
-  Input,
-  MarkdownEditor,
-  SelectInput,
-  Toast,
-} from "@shared/ui";
+import { Button, Input, MarkdownEditor, SelectInput, Toast } from "@shared/ui";
 import { useCreateRouteMutate, useEditRouteMutate } from "../model/use-route";
 
 const sourceTypeOptions: Array<{ value: RouteSourceType; label: string }> = [
@@ -466,8 +460,7 @@ export function RouteForm({
         />
         <p className="m-0 text-xs leading-5 text-muted">
           경로 이미지는 에디터 우측 상단의 이미지 업로드 버튼으로 본문에
-          삽입됩니다. 첫 번째 본문 이미지는 경로 카드의 썸네일로도
-          재사용됩니다.
+          삽입됩니다. 첫 번째 본문 이미지는 경로 카드의 썸네일로도 재사용됩니다.
         </p>
       </div>
       <div className="grid gap-4 md:grid-cols-2">

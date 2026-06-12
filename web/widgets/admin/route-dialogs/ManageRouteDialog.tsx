@@ -5,8 +5,9 @@ import { RouteForm } from "@/features/routes/ui/route-form";
 import { useMemo, useState } from "react";
 
 import { ManageRouteItem } from "@/features/admin/route";
-import { ManageEntityDialogLayout } from "@/widgets/admin/manage-entity-dialog";
 import { useDeleteRouteMutate } from "@/features/routes";
+import { useDebouncedValue } from "@/shared/hooks";
+import { ManageEntityDialogLayout } from "@/widgets/admin/manage-entity-dialog";
 import {
   Button,
   Dialog,
@@ -16,7 +17,6 @@ import {
   DialogTrigger,
   Input,
 } from "@shared/ui";
-import { useDebouncedValue } from "@/shared";
 
 interface ManageRouteDialogProps {
   openModalId: AdminModalId | null;
