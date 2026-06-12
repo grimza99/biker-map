@@ -1,5 +1,5 @@
 "use client";
-import AuthVerifyDialog from "@/features/auth/ui/AuthVerifyDialog";
+import { AuthVerifyDialog } from "@/features/auth";
 import { uploadImage } from "@/features/image";
 import { useUpdateProfile } from "@/features/me";
 import {
