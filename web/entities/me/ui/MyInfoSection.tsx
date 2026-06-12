@@ -16,7 +16,6 @@ export function MyInfoSection({ session }: { session: AppSession }) {
   const [name, setName] = useState(session.name);
   const [brand, setBrand] = useState(session.bikeBrand);
   const [model, setModel] = useState(session.bikeModel);
-
   const [avatarUrls, setAvatarUrls] = useState<string[] | null>(
     session.avatarUrl ? [session.avatarUrl] : null
   );
@@ -25,12 +24,27 @@ export function MyInfoSection({ session }: { session: AppSession }) {
   useEffect(() => {
     setName(session.name);
     setAvatarUrls(session.avatarUrl ? [session.avatarUrl] : null);
-  }, [session.avatarUrl, session.name]);
+    setBrand(session.bikeBrand);
+    setModel(session.bikeModel);
+  }, [session.avatarUrl, session.name, session.bikeBrand, session.bikeModel]);
 
   const avatarUrl = avatarUrls?.[0] ?? null;
   const isDirty = useMemo(
-    () => name.trim() !== session.name || avatarUrl !== session.avatarUrl,
-    [avatarUrl, name, session.avatarUrl, session.name]
+    () =>
+      name !== session.name ||
+      avatarUrl !== session.avatarUrl ||
+      session.bikeBrand !== brand ||
+      model !== session.bikeModel,
+    [
+      avatarUrl,
+      name,
+      session.avatarUrl,
+      session.name,
+      brand,
+      model,
+      session.bikeBrand,
+      session.bikeModel,
+    ]
   );
 
   return (
@@ -48,7 +62,7 @@ export function MyInfoSection({ session }: { session: AppSession }) {
             />
             <div className="grid gap-1">
               <h1 className="m-0 text-[clamp(28px,4vw,42px)] font-semibold tracking-[-0.04em] text-text">
-                {name}
+                {session.name}
               </h1>
               <p className="m-0 text-sm text-muted">{session.email}</p>
               <div className="flex gap-2">
@@ -68,17 +82,17 @@ export function MyInfoSection({ session }: { session: AppSession }) {
             }
 
             updateProfile({
-              name: name.trim(),
+              name: name,
               avatarUrl,
-              bikeBrand: brand?.trim() || null,
-              bikeModel: model?.trim() || null,
+              bikeBrand: brand || null,
+              bikeModel: model || null,
             });
           }}
         >
           <Input
             label="이름"
             value={name}
-            onChange={(event) => setName(event.target.value)}
+            onChange={(event) => setName(event.target.value.trim())}
             placeholder="라이더 이름"
             maxLength={40}
           />
@@ -86,14 +100,14 @@ export function MyInfoSection({ session }: { session: AppSession }) {
             <Input
               label="브랜드"
               value={brand || ""}
-              onChange={(event) => setBrand(event.target.value)}
+              onChange={(event) => setBrand(event.target.value.trim())}
               placeholder="브랜드명"
               maxLength={40}
             />
             <Input
-              label="이름"
+              label="모델명"
               value={model || ""}
-              onChange={(event) => setModel(event.target.value)}
+              onChange={(event) => setModel(event.target.value.trim())}
               placeholder="모델명"
               maxLength={40}
             />
@@ -114,7 +128,7 @@ export function MyInfoSection({ session }: { session: AppSession }) {
               loading={isPending}
               disabled={!isDirty || !name.trim() || isPending}
             >
-              프로필 저장
+              저장
             </Button>
           </div>
         </form>
