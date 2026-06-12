@@ -2,7 +2,10 @@ import type { AppSession } from "@package-shared/types/session";
 import type { Session, User } from "@supabase/supabase-js";
 
 import { refreshTokenCookieOptions } from "@shared/config";
-import { createSupabaseAuthClient, mapSupabaseSession } from "@shared/lib/supabase";
+import {
+  createSupabaseAuthClient,
+  mapSupabaseSession,
+} from "@shared/lib/supabase";
 import { getProfileStatus } from "./supabase-profiles";
 import { unauthorized } from "./response";
 
@@ -54,26 +57,31 @@ export async function getSupabaseAuthSession(
  */
 async function getApiSession(request: Request): Promise<AppSession | null> {
   const session = await getSupabaseAuthSession(request);
-  const mappedSession = mapSupabaseSession(session ?? null);
 
-  if (!mappedSession || !session?.access_token) {
-    return mappedSession;
+  if (!session?.access_token) {
+    return null;
   }
 
+  let profileStatus;
   try {
-    const profileStatus = await getProfileStatus(mappedSession.userId);
+    profileStatus = await getProfileStatus(session.user.id);
     if (profileStatus?.deletedAt) {
       return null;
     }
-
-    return {
-      ...mappedSession,
-      role: profileStatus?.role || "member",
-    };
   } catch {
     return null;
   }
 
+  const mappedSession = mapSupabaseSession(
+    session,
+    profileStatus?.role,
+    profileStatus?.bikeBrand || null,
+    profileStatus?.bikeModel || null
+  );
+
+  if (!mappedSession || !session?.access_token) {
+    return mappedSession;
+  }
   return mappedSession;
 }
 

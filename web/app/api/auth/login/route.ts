@@ -24,6 +24,7 @@ const loginSchema = z.object({
   password: z.string().min(6),
 });
 
+/**--------------------------login------------------------------- */
 export async function POST(request: Request) {
   const isMobileClient = isMobileClientRequest(request);
   let payload: LoginBody;
@@ -50,14 +51,9 @@ export async function POST(request: Request) {
     return badRequest("로그인 세션을 확인할 수 없습니다.");
   }
 
-  const mappedSession = mapSupabaseSession(session);
-  if (!mappedSession) {
-    return badRequest("로그인 사용자 정보를 확인할 수 없습니다.");
-  }
-
   let profileStatus = null;
   try {
-    profileStatus = await getProfileStatus(mappedSession.userId);
+    profileStatus = await getProfileStatus(session.user.id);
   } catch (profileError) {
     return internalServerError(
       profileError instanceof Error
@@ -74,6 +70,15 @@ export async function POST(request: Request) {
     return response;
   }
 
+  const mappedSession = mapSupabaseSession(
+    session,
+    profileStatus?.role,
+    profileStatus?.bikeBrand ?? null,
+    profileStatus?.bikeModel ?? null
+  );
+  if (!mappedSession) {
+    return badRequest("로그인 사용자 정보를 확인할 수 없습니다.");
+  }
   const response = ok<AuthResponseData>({
     session: {
       ...mappedSession,

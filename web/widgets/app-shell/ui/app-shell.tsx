@@ -5,10 +5,10 @@ import type { ReactNode } from "react";
 
 import { Profile } from "@/shared";
 import { MainNav } from "@/widgets/navs";
-import { logoutAction } from "@features/auth/actions";
 import { useSession } from "@features/session";
 import { cn } from "@shared/lib";
 import { NotificationsRealtimeBridge } from "@widgets/notification-bell";
+import { signOut } from "next-auth/react";
 
 export function AppShell({ children }: { children: ReactNode }) {
   const { session, status } = useSession();
@@ -30,7 +30,13 @@ export function AppShell({ children }: { children: ReactNode }) {
                   href="/me"
                   avatarUrl={session?.avatarUrl}
                 />
-                <form action={logoutAction}>
+                <form
+                  action={async () =>
+                    await signOut({
+                      redirectTo: "/auth?toast=logout-success",
+                    })
+                  }
+                >
                   <button
                     className="inline-flex items-center justify-center rounded-full border border-border bg-panel-solid px-3.5 py-2 text-sm font-medium transition duration-150 ease-out hover:-translate-y-0.5 whitespace-nowrap"
                     type="submit"
