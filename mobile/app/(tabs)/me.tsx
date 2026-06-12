@@ -7,11 +7,7 @@ import { bikerMapTheme } from "@package-shared/constants";
 import { AppText, GlobalFloatingMenu } from "@/components/common";
 import { AppScreen } from "../../components/shell";
 import { useSession } from "../../features/session/model";
-import {
-  MyFavoriteSection,
-  SummaryProfile,
-  MyPostSection,
-} from "@/entities/me";
+import { MyFavoriteSection, MyPostSection } from "@/entities/me";
 import { DeleteAccountModal } from "@/features/me";
 
 type FloatingMenuOptionId =
@@ -100,7 +96,6 @@ export default function MeScreen() {
       {/* todo : authenticated 에 따라서 tab 자체를 보호 */}
       {isAuthenticated ? (
         <>
-          <SummaryProfile />
           <View className="w-full flex flex-row justify-between">
             <AppText className="font-bold" tone="muted">
               {activeContent.title}
