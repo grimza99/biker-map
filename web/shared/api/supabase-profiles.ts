@@ -57,6 +57,9 @@ export async function getProfileStatus(
     .from("sms_verifications")
     .select("phone_number,expires_at,is_verified,created_at")
     .eq("user_id", userId)
+    .eq("is_verified", true)
+    .order("created_at", { ascending: false })
+    .order("id", { ascending: false })
     .limit(1)
     .maybeSingle();
 
