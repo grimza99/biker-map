@@ -1,21 +1,24 @@
 import { Feather, FontAwesome5, Ionicons } from "@expo/vector-icons";
 import { type ReactNode, useState } from "react";
 import { View } from "react-native";
+import { Redirect } from "expo-router";
 
 import { bikerMapTheme } from "@package-shared/constants";
-import {
-  AppText,
-  Button,
-  CommonModal,
-  GlobalFloatingMenu,
-} from "@/components/common";
+import { AppText, GlobalFloatingMenu } from "@/components/common";
 import { AppScreen } from "../../components/shell";
 import { useSession } from "../../features/session/model";
-import { Redirect } from "expo-router";
-import { MyFavoriteSection, SummaryProfile } from "@/entities/me";
-import { MyPostSection } from "@/entities/me/ui/MyPostSection";
+import {
+  MyFavoriteSection,
+  SummaryProfile,
+  MyPostSection,
+} from "@/entities/me";
+import { DeleteAccountModal } from "@/features/me";
 
-type FloatingMenuOptionId = "favorite" | "my-post" | "my-info" | "draw";
+type FloatingMenuOptionId =
+  | "favorite"
+  | "my-post"
+  | "my-info"
+  | "delete-account";
 type MeScreenContentId = "favorite" | "my-post" | "my-info";
 
 const meFloatingMenuOptions: Array<{
@@ -56,7 +59,7 @@ const meFloatingMenuOptions: Array<{
         color={bikerMapTheme.colors.accent}
       />
     ),
-    id: "draw",
+    id: "delete-account",
     label: "회원 탈퇴",
   },
 ];
@@ -72,12 +75,13 @@ type IActiveMenuContent = Record<
 export default function MeScreen() {
   const { status } = useSession();
   const isAuthenticated = status === "authenticated";
-  const [isDrawMenuClicked, setIsDrawMenuClicked] = useState(false);
+  const [isDeleteAccountClicked, setIsDeleteAccountClicked] = useState(false);
   const [activeMenu, setActiveMenu] = useState<MeScreenContentId>("my-info");
 
   const activeMenuContent: IActiveMenuContent = {
     "my-info": {
       title: "상세 계정 정보",
+
       content: <></>,
     },
     favorite: {
@@ -108,10 +112,10 @@ export default function MeScreen() {
           <GlobalFloatingMenu<FloatingMenuOptionId>
             options={meFloatingMenuOptions}
             onSelect={(option) => {
-              if (option.id !== "draw") {
+              if (option.id !== "delete") {
                 setActiveMenu(option.id as MeScreenContentId);
               } else {
-                setIsDrawMenuClicked(true);
+                setIsDeleteAccountClicked(true);
               }
             }}
           />
@@ -121,39 +125,9 @@ export default function MeScreen() {
           <Redirect href="/auth" />
         </>
       )}
-      <CommonModal
-        icon={
-          <View className="border-danger border rounded-2xl py-3.5 px-3.5 bg-danger/25">
-            <Ionicons
-              name="warning"
-              size={24}
-              color={bikerMapTheme.colors.accent}
-            />
-          </View>
-        }
-        visibleCloseButton={false}
-        visible={isDrawMenuClicked}
-        title="회원 탈퇴를 진행할까요?"
-        description="탈퇴 시 저장된 추천 경로, 작성하신 게시글의 소유 권한이 삭제되며 복구할 수 없습니다. 정말로 탈퇴 절차를 진행할까요?"
-        onClose={() => setIsDrawMenuClicked(false)}
-        footer={
-          <View className="flex flex-row gap-2 items-center">
-            <Button
-              variant="secondary"
-              onPress={() => setIsDrawMenuClicked(false)}
-            >
-              <AppText>취소</AppText>
-            </Button>
-            {/* todo : 탈퇴 핸들러  */}
-            <Button
-              onPress={() => {
-                console.log("탈퇴");
-              }}
-            >
-              <AppText className="text-white">탈퇴하기</AppText>
-            </Button>
-          </View>
-        }
+      <DeleteAccountModal
+        isOpen={isDeleteAccountClicked}
+        onClose={() => setIsDeleteAccountClicked(false)}
       />
     </AppScreen>
   );
