@@ -6,6 +6,7 @@ export const API_PATHS = {
     logout: `${BASE_URL}/auth/logout`,
     refresh: `${BASE_URL}/auth/refresh`,
     sendVerificationCode: `${BASE_URL}/auth/verify/send-code`,
+    verify: `${BASE_URL}/auth/verify`,
   },
   me: {
     profile: `${BASE_URL}/me`,
