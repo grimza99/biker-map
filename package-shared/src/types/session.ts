@@ -6,6 +6,8 @@ export type AppSession = {
   role: string;
   bikeBrand: string | null;
   bikeModel: string | null;
+  phone: string;
+  isVerified: boolean;
 };
 
 export type InitialSessionData = {

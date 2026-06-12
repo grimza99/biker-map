@@ -52,7 +52,9 @@ export async function GET(request: Request) {
       session,
       profileStatus?.role || "member",
       profileStatus?.bikeBrand || null,
-      profileStatus?.bikeModel || null
+      profileStatus?.bikeModel || null,
+      profileStatus?.phone || "",
+      profileStatus?.isVerified || false
     )
   );
 }
@@ -134,7 +136,9 @@ export async function PATCH(request: Request) {
       updatedSession,
       profileStatus?.role || "member",
       profileStatus?.bikeBrand || null,
-      profileStatus?.bikeModel || null
+      profileStatus?.bikeModel || null,
+      profileStatus?.phone || "",
+      profileStatus?.isVerified || false
     ).session,
   });
 }
