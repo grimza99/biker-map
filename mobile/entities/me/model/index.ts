@@ -1,2 +1,2 @@
-export * from "./use-my-favorite-post";
+export * from "./use-my-favorites";
 export * from "./use-my-post";
