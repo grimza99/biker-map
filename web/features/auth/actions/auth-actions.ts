@@ -3,7 +3,7 @@
 import { AuthError } from "next-auth";
 import { redirect } from "next/navigation";
 
-import { signIn, signOut } from "@/auth";
+import { signIn } from "@/auth";
 import { createSupabaseAuthClient } from "@shared/lib/supabase";
 import { loginFormSchema, signUpFormSchema } from "../model/auth-schemas";
 
@@ -22,7 +22,8 @@ export async function loginAction(
 
   if (!parsed.success) {
     return {
-      message: parsed.error.issues[0]?.message ?? "로그인 정보가 올바르지 않습니다.",
+      message:
+        parsed.error.issues[0]?.message ?? "로그인 정보가 올바르지 않습니다.",
     };
   }
 
@@ -95,10 +96,4 @@ export async function signUpAction(
   }
 
   redirect("/map?toast=signup-success");
-}
-
-export async function logoutAction() {
-  await signOut({
-    redirectTo: "/auth?toast=logout-success",
-  });
 }

@@ -4,6 +4,8 @@ export type AppSession = {
   email: string;
   avatarUrl: string | null;
   role: string;
+  bikeBrand: string | null;
+  bikeModel: string | null;
 };
 
 export type InitialSessionData = {

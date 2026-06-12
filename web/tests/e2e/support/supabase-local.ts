@@ -60,11 +60,15 @@ export async function markAuthUserProfileDeleted(userId: string) {
   }
 }
 
-export function findAuthSessionCookieName(
-  cookies: Array<{ name: string }>
-) {
+export function findAuthSessionCookieName(cookies: Array<{ name: string }>) {
   return (
-    cookies.find(({ name }) => name.includes("authjs.session-token"))?.name ??
-    null
+    cookies.some((cookie) =>
+      [
+        "authjs.session-token",
+        "__Secure-authjs.session-token",
+        "next-auth.session-token",
+        "__Secure-next-auth.session-token",
+      ].includes(cookie.name)
+    ) ?? null
   );
 }

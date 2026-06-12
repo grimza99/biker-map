@@ -14,6 +14,8 @@ export type SignUpBody = {
 export type UpdateMeBody = {
   name: string;
   avatarUrl: string | null;
+  bikeBrand: string | null;
+  bikeModel: string | null;
 };
 
 export type AuthResponseData = {
