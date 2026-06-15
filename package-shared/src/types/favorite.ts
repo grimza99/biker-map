@@ -1,7 +1,6 @@
 export type FavoriteTargetType = "post" | "route";
 
 export type FavoritesQuery = {
-  type?: FavoriteTargetType;
   page?: number;
   pageSize?: number;
 };
