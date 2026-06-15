@@ -25,7 +25,7 @@ export function useDeleteAccount() {
         queryClient.removeQueries({ queryKey: queryKeys.session }),
         queryClient.removeQueries({ queryKey: queryKeys.myPosts() }),
         queryClient.removeQueries({ queryKey: queryKeys.myRoutes() }),
-        queryClient.removeQueries({ queryKey: queryKeys.meFavoritesRoot }),
+        queryClient.removeQueries({ queryKey: queryKeys.favoritesRoot }),
         queryClient.removeQueries({ queryKey: queryKeys.notificationsRoot }),
       ]);
       showToast({

@@ -19,7 +19,7 @@ export function useMyFavorites<T extends FavoriteType>(
   enabled = true
 ): UseQueryResult<ApiResponse<FavoriteResponse<T>>, Error> {
   return useQuery({
-    queryKey: [...queryKeys.myFavoritePosts, type],
+    queryKey: queryKeys.favorites(type, {}),
     queryFn: () =>
       apiFetch<FavoriteResponse<T>>(`${API_PATHS.me.favorites}?type=${type}`),
     enabled,
