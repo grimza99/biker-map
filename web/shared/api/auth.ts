@@ -79,7 +79,8 @@ async function getApiSession(request: Request): Promise<AppSession | null> {
     profileStatus?.bikeBrand || null,
     profileStatus?.bikeModel || null,
     profileStatus?.phone ?? "",
-    profileStatus?.isVerified ?? false
+    profileStatus?.isVerified ?? false,
+    profileStatus?.proficiency ?? null
   );
 
   if (!mappedSession || !session?.access_token) {

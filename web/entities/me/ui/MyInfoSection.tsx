@@ -2,7 +2,11 @@
 import { AuthVerifyDialog } from "@/features/auth";
 import { ProfileForm } from "@/features/me";
 import { Chip, cn, DefaultCardContainer, ProfileImgChip } from "@/shared";
-import { AppSession } from "@package-shared/index";
+import {
+  AppSession,
+  proficiencyClassNameMap,
+  proficiencyMap,
+} from "@package-shared/index";
 import { ShieldHalfIcon } from "lucide-react";
 import { useState } from "react";
 
@@ -11,10 +15,20 @@ export function MyInfoSection({ session }: { session: AppSession }) {
 
   if (!session) return null;
 
-  const { name, avatarUrl, email, bikeBrand, bikeModel, isVerified } = session;
+  const {
+    name,
+    avatarUrl,
+    email,
+    bikeBrand,
+    bikeModel,
+    isVerified,
+    proficiency,
+  } = session;
 
   const verifiedLabel = isVerified ? "본인 인증 완료" : "본인 인증 미완료";
-  const proficiency = "초급자";
+  const proficiencyLabel = proficiency
+    ? proficiencyMap[proficiency]
+    : "정보 없음";
 
   return (
     <DefaultCardContainer>
@@ -39,29 +53,28 @@ export function MyInfoSection({ session }: { session: AppSession }) {
                 <strong>·</strong>
                 <span> {bikeModel}</span>
               </div>
-              <button
-                className="w-fit h-fit"
-                disabled={!!isVerified}
-                onClick={() => {
-                  setIsVerifyDialogOpen(true);
-                }}
-              >
+              <div className="flex flex-row gap-3">
+                <button
+                  className="w-fit h-fit"
+                  disabled={!!isVerified}
+                  onClick={() => {
+                    setIsVerifyDialogOpen(true);
+                  }}
+                >
+                  <Chip
+                    icon={<ShieldHalfIcon className="size-4" />}
+                    label={verifiedLabel}
+                    className={cn(
+                      isVerified &&
+                        "bg-green-300/10 border-green-300/20 text-green-300"
+                    )}
+                  />
+                </button>
                 <Chip
-                  icon={<ShieldHalfIcon className="size-4" />}
-                  label={verifiedLabel}
-                  className={cn(
-                    isVerified &&
-                      "bg-green-300/10 border-green-300/20 text-green-300"
-                  )}
+                  label={proficiencyLabel}
+                  className={proficiencyClassNameMap(proficiency)}
                 />
-              </button>
-              <Chip
-                label={proficiency}
-                className={cn(
-                  proficiency &&
-                    "bg-green-300/10 border-green-300/20 text-green-300"
-                )}
-              />
+              </div>
             </div>
           </div>
         </div>

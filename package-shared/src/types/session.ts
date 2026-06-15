@@ -1,3 +1,5 @@
+import { Tproficiency } from "./me";
+
 export type AppSession = {
   userId: string;
   name: string;
@@ -8,6 +10,7 @@ export type AppSession = {
   bikeModel: string | null;
   phone: string;
   isVerified: boolean;
+  proficiency: Tproficiency | null;
 };
 
 export type InitialSessionData = {

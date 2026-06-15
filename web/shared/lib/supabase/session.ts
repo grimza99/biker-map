@@ -1,3 +1,4 @@
+import { Tproficiency } from "@package-shared/types";
 import type { AppSession } from "@package-shared/types/session";
 import type { Session } from "@supabase/supabase-js";
 
@@ -7,7 +8,8 @@ export function mapSupabaseSession(
   bikeBrand: string | null,
   bikeModel: string | null,
   phone: string,
-  isVerified: boolean
+  isVerified: boolean,
+  proficiency: Tproficiency | null
 ): AppSession | null {
   const user = session?.user;
   if (!user) {
@@ -34,5 +36,6 @@ export function mapSupabaseSession(
     bikeModel,
     phone,
     isVerified,
+    proficiency: proficiency || null,
   };
 }
