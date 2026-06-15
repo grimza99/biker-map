@@ -8,4 +8,5 @@ export {
   notificationskindMeta,
   notificationSourceTabs,
 } from "./notification";
+export * from "./profile";
 export { distanceOptions, regionLabel, routeRegionOptions } from "./route";

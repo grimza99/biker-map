@@ -210,6 +210,7 @@ export const {
             bikeModel: profileStatus?.bikeModel ?? null,
             phone: profileStatus?.phone ?? "",
             isVerified: profileStatus?.isVerified || false,
+            proficiency: profileStatus?.proficiency || null,
           }
         : null;
       session.accessToken = accessToken;

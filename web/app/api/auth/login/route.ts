@@ -76,7 +76,8 @@ export async function POST(request: Request) {
     profileStatus?.bikeBrand ?? null,
     profileStatus?.bikeModel ?? null,
     profileStatus?.phone ?? "",
-    profileStatus?.isVerified || false
+    profileStatus?.isVerified || false,
+    profileStatus?.proficiency ?? null
   );
   if (!mappedSession) {
     return badRequest("로그인 사용자 정보를 확인할 수 없습니다.");
