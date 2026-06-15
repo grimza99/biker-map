@@ -4,6 +4,7 @@ import type { RouteListItem, RoutesListResponseData } from "@package-shared/type
 import {
   badRequest,
   createSupabaseApiClient,
+  getNumberParam,
   getStringParam,
   internalServerError,
   loadProfileNameMap,
@@ -26,18 +27,26 @@ export async function GET(request: Request) {
 
   const searchParams = new URL(request.url).searchParams;
   const type = getStringParam(searchParams, "type");
+  const page = Math.max(getNumberParam(searchParams, "page") ?? 1, 1);
+  const pageSize = Math.min(
+    Math.max(getNumberParam(searchParams, "pageSize") ?? 10, 1),
+    50
+  );
 
   if (!isFavoriteTargetType(type)) {
     return badRequest("favorite type이 필요합니다.");
   }
 
   const supabase = createSupabaseApiClient(request);
-  const { data: favoriteRows, error: favoriteError } = await supabase
+  const from = (page - 1) * pageSize;
+  const to = from + pageSize - 1;
+  const { data: favoriteRows, count, error: favoriteError } = await supabase
     .from("favorites")
-    .select("target_id, created_at")
+    .select("target_id, created_at", { count: "exact" })
     .eq("user_id", session.userId)
     .eq("target_type", type)
-    .order("created_at", { ascending: false });
+    .order("created_at", { ascending: false })
+    .range(from, to);
 
   if (favoriteError) {
     return internalServerError(favoriteError.message);
@@ -45,7 +54,11 @@ export async function GET(request: Request) {
 
   const targetIds = (favoriteRows ?? []).map((row) => String(row.target_id));
   if (!targetIds.length) {
-    return ok({ items: [] } satisfies PostsListResponseData | RoutesListResponseData);
+    return ok(
+      { items: [] } satisfies PostsListResponseData | RoutesListResponseData,
+      undefined,
+      { total: count ?? 0 }
+    );
   }
 
   if (type === "post") {
@@ -90,7 +103,9 @@ export async function GET(request: Request) {
       .map((targetId) => postMap.get(targetId))
       .filter((item): item is CommunityPost => Boolean(item));
 
-    return ok({ items } satisfies PostsListResponseData);
+    return ok({ items } satisfies PostsListResponseData, undefined, {
+      total: count ?? items.length,
+    });
   }
 
   const { data, error } = await supabase
@@ -113,5 +128,7 @@ export async function GET(request: Request) {
     .map((targetId) => routeMap.get(targetId))
     .filter((item): item is RouteListItem => Boolean(item));
 
-  return ok({ items } satisfies RoutesListResponseData);
+  return ok({ items } satisfies RoutesListResponseData, undefined, {
+    total: count ?? items.length,
+  });
 }
