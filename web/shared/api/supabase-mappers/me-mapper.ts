@@ -1,4 +1,4 @@
-import { MeResponseData } from "@biker-map/package-shared";
+import { MeResponseData, Tproficiency } from "@biker-map/package-shared";
 import { mapSupabaseSession } from "@shared/lib/supabase";
 import { Session } from "@supabase/supabase-js";
 
@@ -13,7 +13,8 @@ export function mapMe(
   bikeBrand: string | null,
   bikeModel: string | null,
   phone: string,
-  isVerified: boolean
+  isVerified: boolean,
+  proficiency: Tproficiency | null
 ): MeResponseData {
   return {
     authenticated: Boolean(session?.user),
@@ -23,7 +24,8 @@ export function mapMe(
       bikeBrand,
       bikeModel,
       phone,
-      isVerified
+      isVerified,
+      proficiency
     ),
   };
 }

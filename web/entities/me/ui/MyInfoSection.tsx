@@ -1,59 +1,35 @@
 "use client";
 import { AuthVerifyDialog } from "@/features/auth";
-import { uploadImage } from "@/features/image";
-import { useUpdateProfile } from "@/features/me";
+import { ProfileForm } from "@/features/me";
+import { Chip, cn, DefaultCardContainer, ProfileImgChip } from "@/shared";
 import {
-  Button,
-  Chip,
-  cn,
-  DefaultCardContainer,
-  ImageInput,
-  Input,
-  ProfileImgChip,
-} from "@/shared";
-import { AppSession } from "@package-shared/index";
+  AppSession,
+  proficiencyClassNameMap,
+  proficiencyMap,
+} from "@package-shared/index";
 import { ShieldHalfIcon } from "lucide-react";
-import { useEffect, useMemo, useState } from "react";
+import { useState } from "react";
 
 export function MyInfoSection({ session }: { session: AppSession }) {
-  const [name, setName] = useState(session.name);
-  const [brand, setBrand] = useState(session.bikeBrand);
-  const [model, setModel] = useState(session.bikeModel);
-  const [avatarUrls, setAvatarUrls] = useState<string[] | null>(
-    session.avatarUrl ? [session.avatarUrl] : null
-  );
   const [isVerifyDialogOpen, setIsVerifyDialogOpen] = useState(false);
 
-  const { mutateAsync: updateProfile, isPending } = useUpdateProfile();
+  if (!session) return null;
 
-  useEffect(() => {
-    setName(session.name);
-    setAvatarUrls(session.avatarUrl ? [session.avatarUrl] : null);
-    setBrand(session.bikeBrand);
-    setModel(session.bikeModel);
-  }, [session.avatarUrl, session.name, session.bikeBrand, session.bikeModel]);
+  const {
+    name,
+    avatarUrl,
+    email,
+    bikeBrand,
+    bikeModel,
+    isVerified,
+    proficiency,
+  } = session;
 
-  const avatarUrl = avatarUrls?.[0] ?? null;
-  const isDirty = useMemo(
-    () =>
-      name !== session.name ||
-      avatarUrl !== session.avatarUrl ||
-      session.bikeBrand !== brand ||
-      model !== session.bikeModel,
-    [
-      avatarUrl,
-      name,
-      session.avatarUrl,
-      session.name,
-      brand,
-      model,
-      session.bikeBrand,
-      session.bikeModel,
-    ]
-  );
-  const verifiedLabel = session.isVerified
-    ? "본인 인증 완료"
-    : "본인 인증 미완료";
+  const verifiedLabel = isVerified ? "본인 인증 완료" : "본인 인증 미완료";
+  const proficiencyLabel = proficiency
+    ? proficiencyMap[proficiency]
+    : "정보 없음";
+
   return (
     <DefaultCardContainer>
       <div className="flex flex-wrap items-start justify-between gap-6">
@@ -69,92 +45,40 @@ export function MyInfoSection({ session }: { session: AppSession }) {
             />
             <div className="grid gap-1">
               <h1 className="m-0 text-[clamp(28px,4vw,42px)] font-semibold tracking-[-0.04em] text-text">
-                {session.name}
+                {name}
               </h1>
-              <p className="m-0 text-sm text-muted">{session.email}</p>
+              <p className="m-0 text-sm text-muted">{email}</p>
               <div className="flex gap-2">
-                <span>{session.bikeBrand}</span>
+                <span>{bikeBrand}</span>
                 <strong>·</strong>
-                <span> {session.bikeModel}</span>
+                <span> {bikeModel}</span>
               </div>
-              <button
-                className="w-fit h-fit"
-                disabled={!!session.isVerified}
-                onClick={() => {
-                  setIsVerifyDialogOpen(true);
-                }}
-              >
+              <div className="flex flex-row gap-3">
+                <button
+                  className="w-fit h-fit"
+                  disabled={!!isVerified}
+                  onClick={() => {
+                    setIsVerifyDialogOpen(true);
+                  }}
+                >
+                  <Chip
+                    icon={<ShieldHalfIcon className="size-4" />}
+                    label={verifiedLabel}
+                    className={cn(
+                      isVerified &&
+                        "bg-green-300/10 border-green-300/20 text-green-300"
+                    )}
+                  />
+                </button>
                 <Chip
-                  icon={<ShieldHalfIcon className="size-4" />}
-                  label={verifiedLabel}
-                  className={cn(
-                    session.isVerified &&
-                      "bg-green-300/10 border-green-300/20 text-green-300"
-                  )}
+                  label={proficiencyLabel}
+                  className={proficiencyClassNameMap(proficiency)}
                 />
-              </button>
+              </div>
             </div>
           </div>
         </div>
-        <form
-          className="grid w-full max-w-105 gap-4"
-          onSubmit={(event) => {
-            event.preventDefault();
-            if (isPending || !isDirty || !name.trim()) {
-              return;
-            }
-
-            updateProfile({
-              name: name,
-              avatarUrl,
-              bikeBrand: brand || null,
-              bikeModel: model || null,
-            });
-          }}
-        >
-          <Input
-            label="이름"
-            value={name}
-            onChange={(event) => setName(event.target.value.trim())}
-            placeholder="라이더 이름"
-            maxLength={40}
-          />
-          <div className="flex flex-row gap-2">
-            <Input
-              label="브랜드"
-              value={brand || ""}
-              onChange={(event) => setBrand(event.target.value.trim())}
-              placeholder="브랜드명"
-              maxLength={40}
-            />
-            <Input
-              label="모델명"
-              value={model || ""}
-              onChange={(event) => setModel(event.target.value.trim())}
-              placeholder="모델명"
-              maxLength={40}
-            />
-          </div>
-          <ImageInput
-            label="프로필 이미지"
-            value={avatarUrls}
-            maxImages={1}
-            onValueChange={(urls) => setAvatarUrls(urls)}
-            onUpload={async (file) => {
-              const uploaded = await uploadImage(file);
-              return uploaded.url;
-            }}
-          />
-          <div className="flex justify-end">
-            <Button
-              type="submit"
-              loading={isPending}
-              disabled={!isDirty || !name.trim() || isPending}
-            >
-              저장
-            </Button>
-          </div>
-        </form>
+        <ProfileForm />
         <AuthVerifyDialog
           open={isVerifyDialogOpen}
           onOpenChange={() => setIsVerifyDialogOpen(false)}

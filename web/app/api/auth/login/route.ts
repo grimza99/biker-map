@@ -2,7 +2,6 @@ import { AuthResponseData, type LoginBody } from "@package-shared/types/auth";
 import {
   badRequest,
   forbidden,
-  internalServerError,
   ok,
   parseRequestBody,
 } from "@shared/api";
@@ -54,12 +53,8 @@ export async function POST(request: Request) {
   let profileStatus = null;
   try {
     profileStatus = await getProfileStatus(session.user.id);
-  } catch (profileError) {
-    return internalServerError(
-      profileError instanceof Error
-        ? profileError.message
-        : "프로필 상태를 확인하지 못했습니다."
-    );
+  } catch {
+    profileStatus = null;
   }
 
   if (profileStatus?.deletedAt) {
@@ -76,7 +71,8 @@ export async function POST(request: Request) {
     profileStatus?.bikeBrand ?? null,
     profileStatus?.bikeModel ?? null,
     profileStatus?.phone ?? "",
-    profileStatus?.isVerified || false
+    profileStatus?.isVerified || false,
+    profileStatus?.proficiency ?? null
   );
   if (!mappedSession) {
     return badRequest("로그인 사용자 정보를 확인할 수 없습니다.");
