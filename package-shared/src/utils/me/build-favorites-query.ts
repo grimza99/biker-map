@@ -1,4 +1,4 @@
-import { FavoritesQuery } from "src/types/favorite";
+import type { FavoritesQuery } from "../../types/favorite";
 
 export function buildFavoritesQuery(querys: FavoritesQuery) {
   const searchParams = new URLSearchParams();
