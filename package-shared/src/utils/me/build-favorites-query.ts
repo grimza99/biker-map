@@ -11,9 +11,5 @@ export function buildFavoritesQuery(querys: FavoritesQuery) {
     searchParams.set("pageSize", String(querys.pageSize));
   }
 
-  if (querys.type) {
-    searchParams.set("type", querys.type);
-  }
-
   return searchParams.toString();
 }
