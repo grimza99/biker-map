@@ -1,3 +1,4 @@
+export * from "./model";
 export { useMe } from "./model/use-me";
 export { MyFavoritesSection } from "./ui/MyFavoritesSection";
 export { MyInfoSection } from "./ui/MyInfoSection";
