@@ -2,8 +2,8 @@ export type FavoriteTargetType = "post" | "route";
 
 export type FavoritesQuery = {
   type?: FavoriteTargetType;
-  cursor?: string;
-  limit?: number;
+  page?: number;
+  pageSize?: number;
 };
 
 export type FavoriteItem = {
