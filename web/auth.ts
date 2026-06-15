@@ -71,11 +71,9 @@ export const {
         }
 
         const profileStatusResult = await resolveProfileStatus(session.user.id);
-        if (!profileStatusResult.ok) {
-          return null;
-        }
-
-        const profileStatus = profileStatusResult.profileStatus;
+        const profileStatus = profileStatusResult.ok
+          ? profileStatusResult.profileStatus
+          : null;
         if (profileStatus?.deletedAt) {
           return null;
         }
