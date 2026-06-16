@@ -7,7 +7,12 @@ import { bikerMapTheme } from "@package-shared/constants";
 import { AppText, GlobalFloatingMenu } from "@/components/common";
 import { AppScreen } from "../../components/shell";
 import { useSession } from "../../features/session/model";
-import { MyFavoriteSection, MyPostSection } from "@/entities/me";
+import {
+  MyFavoriteSection,
+  ProfileSection,
+  MyPostSection,
+  SummaryProfile,
+} from "@/entities/me";
 import { DeleteAccountModal } from "@/features/me";
 
 type FloatingMenuOptionId =
@@ -73,12 +78,31 @@ export default function MeScreen() {
   const isAuthenticated = status === "authenticated";
   const [isDeleteAccountClicked, setIsDeleteAccountClicked] = useState(false);
   const [activeMenu, setActiveMenu] = useState<MeScreenContentId>("my-info");
+  const [isProfileEdit, setIsProfileEdit] = useState(false);
 
   const activeMenuContent: IActiveMenuContent = {
     "my-info": {
       title: "상세 계정 정보",
-
-      content: <></>,
+      rightHandle: (
+        <>
+          {isProfileEdit ? (
+            <Ionicons
+              name="reload-circle-outline"
+              size={24}
+              color={bikerMapTheme.colors.accent}
+              onPress={() => setIsProfileEdit(false)}
+            />
+          ) : (
+            <Feather
+              name="edit"
+              size={24}
+              color={bikerMapTheme.colors.accent}
+              onPress={() => setIsProfileEdit(true)}
+            />
+          )}
+        </>
+      ),
+      content: <ProfileSection isEdit={isProfileEdit} />,
     },
     favorite: {
       title: "즐겨찾기",
@@ -96,10 +120,12 @@ export default function MeScreen() {
       {/* todo : authenticated 에 따라서 tab 자체를 보호 */}
       {isAuthenticated ? (
         <>
+          <SummaryProfile />
           <View className="w-full flex flex-row justify-between">
             <AppText className="font-bold" tone="muted">
               {activeContent.title}
             </AppText>
+
             {activeContent.rightHandle && activeContent.rightHandle}
           </View>
           {activeContent.content}

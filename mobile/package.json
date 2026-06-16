@@ -19,6 +19,7 @@
     "expo-font": "~55.0.8",
     "expo-image-picker": "~55.0.20",
     "expo-linking": "~55.0.15",
+    "expo-location": "~19.0.7",
     "expo-router": "~55.0.16",
     "expo-secure-store": "~55.0.14",
     "lightningcss": "^1.30.1",

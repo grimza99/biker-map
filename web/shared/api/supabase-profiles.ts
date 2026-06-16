@@ -1,5 +1,7 @@
-import { createSupabaseServiceClient } from "@shared/lib/supabase";
 import type { SupabaseClient } from "@supabase/supabase-js";
+
+import { Tproficiency } from "@package-shared/types";
+import { createSupabaseServiceClient } from "@shared/lib/supabase";
 
 export type ProfileStatus = {
   id: string;
@@ -10,7 +12,7 @@ export type ProfileStatus = {
   bikeModel: string | null;
   phone: string;
   isVerified: boolean;
-  verificationExpiresAt: string;
+  proficiency: Tproficiency;
 };
 
 export async function loadProfileNameMap(
@@ -42,7 +44,7 @@ export async function getProfileStatus(
   const client = createSupabaseServiceClient();
   const { data, error } = await client
     .from("profiles")
-    .select("id, name, role, deleted_at, bike_brand,bike_model")
+    .select("id, name, role, deleted_at, bike_brand,bike_model,proficiency")
     .eq("id", userId)
     .maybeSingle();
 
@@ -76,6 +78,6 @@ export async function getProfileStatus(
     bikeModel: data.bike_model,
     phone: verifyData?.phone_number ?? "",
     isVerified: verifyData?.is_verified ?? false,
-    verificationExpiresAt: verifyData?.expires_at ?? "",
+    proficiency: data?.proficiency ?? null,
   };
 }

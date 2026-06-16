@@ -2,27 +2,54 @@
 
 import { CommunityPostCard } from "@/entities/community";
 import { RouteCard } from "@/entities/route/ui/RouteCard";
-import { useMyFavoritePosts } from "@features/me/model/use-my-favorite-posts";
-import { useMyFavoriteRoutes } from "@features/me/model/use-my-favorite-routes";
+import { FavoriteTargetType } from "@package-shared/index";
 import { categoryLabelMap } from "@package-shared/model";
 import {
   EmptyState,
   ErrorState,
   LoadingState,
+  Pagination,
   Tabs,
   TabsContent,
   TabsList,
 } from "@shared/ui";
+import { useState } from "react";
+import { useMyFavorites } from "../model";
+
+const FAVORITE_PAGE_SIZE = 4;
 
 export function MyFavoritesSection() {
-  const favoritePostsQuery = useMyFavoritePosts(true);
-  const favoriteRoutesQuery = useMyFavoriteRoutes(true);
+  const [page, setPage] = useState(1);
+  const [favoriteType, setFavoriteType] = useState<FavoriteTargetType>("post");
+  const currentPage = Math.max(page, 1);
+  const favoritePostsQuery = useMyFavorites(
+    { page: currentPage, pageSize: FAVORITE_PAGE_SIZE },
+    "post",
+    favoriteType === "post"
+  );
+  const favoriteRoutesQuery = useMyFavorites(
+    { page: currentPage, pageSize: FAVORITE_PAGE_SIZE },
+    "route",
+    favoriteType === "route"
+  );
   const posts = favoritePostsQuery.data?.data.items ?? [];
   const routes = favoriteRoutesQuery.data?.data.items ?? [];
+  const activeTotal =
+    favoriteType === "post"
+      ? favoritePostsQuery.data?.meta?.total ?? 0
+      : favoriteRoutesQuery.data?.meta?.total ?? 0;
+  const totalPages = Math.max(1, Math.ceil(activeTotal / FAVORITE_PAGE_SIZE));
 
   return (
     <div className="grid gap-4">
-      <Tabs defaultValue="post" className="gap-5">
+      <Tabs
+        defaultValue="post"
+        className="gap-5"
+        onValueChange={(type) => {
+          setFavoriteType(type as FavoriteTargetType);
+          setPage(1);
+        }}
+      >
         <TabsList
           items={[
             { value: "post", label: "게시글" },
@@ -85,6 +112,11 @@ export function MyFavoritesSection() {
           )}
         </TabsContent>
       </Tabs>
+      <Pagination
+        page={currentPage}
+        onPageChange={(nextPage) => setPage(nextPage)}
+        totalPages={totalPages}
+      />
     </div>
   );
 }

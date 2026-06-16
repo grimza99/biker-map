@@ -80,7 +80,8 @@ export async function POST(request: Request) {
       profileStatus?.bikeBrand || null,
       profileStatus?.bikeModel || null,
       data?.phone_number || "",
-      verifiedData?.is_verified || false
+      verifiedData?.is_verified || false,
+      profileStatus?.proficiency || null
     )
   );
 }

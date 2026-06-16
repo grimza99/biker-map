@@ -28,6 +28,7 @@ const updateMeSchema = z.object({
   avatarUrl: z.string().url().nullable(),
   bikeBrand: z.string().nullable(),
   bikeModel: z.string().nullable(),
+  proficiency: z.enum(["beginner", "intermediate", "advanced"]).nullable(),
 });
 
 export async function GET(request: Request) {
@@ -54,7 +55,8 @@ export async function GET(request: Request) {
       profileStatus?.bikeBrand || null,
       profileStatus?.bikeModel || null,
       profileStatus?.phone || "",
-      profileStatus?.isVerified || false
+      profileStatus?.isVerified || false,
+      profileStatus?.proficiency || null
     )
   );
 }
@@ -99,6 +101,7 @@ export async function PATCH(request: Request) {
       name: payload.name,
       bike_brand: payload.bikeBrand,
       bike_model: payload.bikeModel,
+      proficiency: payload.proficiency,
     })
     .eq("id", session.user.id);
 
@@ -138,7 +141,8 @@ export async function PATCH(request: Request) {
       profileStatus?.bikeBrand || null,
       profileStatus?.bikeModel || null,
       profileStatus?.phone || "",
-      profileStatus?.isVerified || false
+      profileStatus?.isVerified || false,
+      profileStatus?.proficiency || null
     ).session,
   });
 }
