@@ -11,9 +11,9 @@ import {
 } from "@package-shared/index";
 
 import { AppText, Button, Input, Pagination } from "@/components/common";
-import { AppScreen } from "../../components/shell";
 import { getCommunityPostList } from "@/entities/community/model/community-post-api";
 import { PostCard } from "@/entities/community/ui/PostCard";
+import { AppScreen } from "@/components/shell";
 
 const COMMUNITY_PAGE_SIZE = 5;
 const COMMUNITY_CATEGORY_FILTERS: Array<{
@@ -142,7 +142,7 @@ export default function CommunityScreen() {
             />
           ))
         ) : (
-          <View className="items-center gap-2 rounded-[24px] border border-border bg-panel px-4 py-6">
+          <View className="items-center gap-2 rounded-3xl border border-border bg-panel px-4 py-6">
             <AppText className="text-base font-semibold">
               조건에 맞는 글이 없습니다.
             </AppText>
