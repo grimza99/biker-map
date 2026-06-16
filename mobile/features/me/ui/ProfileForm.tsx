@@ -36,12 +36,14 @@ export function ProfileForm({ currenValue }: IProfileFormProps) {
       profile.name !== (currenValue?.name || "") ||
       profile.avatarUrl !== (currenValue?.avatarUrl || "") ||
       profile.bikeBrand !== (currenValue?.bikeBrand || "") ||
-      profile.bikeModel !== (currenValue?.bikeModel || ""),
+      profile.bikeModel !== (currenValue?.bikeModel || "") ||
+      profile.proficiency !== (currenValue?.proficiency || null),
     [
       profile.name,
       profile.avatarUrl,
       profile.bikeBrand,
       profile.bikeModel,
+      profile.proficiency,
       currenValue,
     ]
   );
@@ -104,7 +106,13 @@ export function ProfileForm({ currenValue }: IProfileFormProps) {
       <SelectInput
         options={proficiencySelectOptions}
         placeholder="라이딩 숙련도"
-        value={currenValue?.proficiency ?? ""}
+        value={profile.proficiency ?? ""}
+        onValueChange={(value) =>
+          setProfile((prev) => ({
+            ...prev,
+            proficiency: value ? (value as UpdateMeBody["proficiency"]) : null,
+          }))
+        }
       />
       <Button
         disabled={!profile.name || !isDirty}
