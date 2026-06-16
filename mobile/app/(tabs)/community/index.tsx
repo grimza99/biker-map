@@ -3,9 +3,10 @@ import { useCallback, useEffect, useState } from "react";
 
 import { CommunityPost, categoryLabelMap } from "@package-shared/index";
 
-import { AppScreen } from "../../components/shell";
+import { AppText, Button, Input, Pagination } from "@/components/common";
 import { getCommunityPostList } from "@/entities/community/model/community-post-api";
 import { PostCard } from "@/entities/community/ui/PostCard";
+import { AppScreen } from "@/components/shell";
 
 export default function CommunityScreen() {
   const [isLoading, setIsLoading] = useState(true);
@@ -45,7 +46,17 @@ export default function CommunityScreen() {
               post={post}
               categoryLabel={categoryLabelMap[post.category]}
             />
-          ))}
+           ))
+         ) : (
+           <View className="items-center gap-2 rounded-3xl border border-border bg-panel px-4 py-6">
+             <AppText className="text-base font-semibold">
+              조건에 맞는 글이 없습니다.
+            </AppText>
+            <AppText tone="muted" className="text-sm">
+              카테고리나 검색어를 조정해 다시 확인해보세요.
+             </AppText>
+           </View>
+         )}
       </View>
     </AppScreen>
   );
