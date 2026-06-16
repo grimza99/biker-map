@@ -104,6 +104,7 @@ export function ProfileForm({ currenValue }: IProfileFormProps) {
       <SelectInput
         options={proficiencySelectOptions}
         placeholder="라이딩 숙련도"
+        value={currenValue?.proficiency ?? ""}
       />
       <Button
         disabled={!profile.name || !isDirty}
