@@ -7,14 +7,12 @@ import { AppText } from "../common";
 import { bikerMapTheme } from "@package-shared/constants";
 
 type AppScreenProps = PropsWithChildren<{
-  eyebrow?: string;
   title?: string;
   description?: string;
   containerStyle?: StyleProp<ViewStyle>;
 }>;
 
 export function AppScreen({
-  eyebrow,
   title,
   description,
   children,
@@ -27,12 +25,9 @@ export function AppScreen({
       edges={["top"]}
     >
       <ScrollView
-        contentContainerClassName="gap-[18px] p-5 pb-7"
+        contentContainerClassName="gap-[18px] pb-7"
         showsVerticalScrollIndicator={false}
       >
-        <AppText className="text-xs uppercase tracking-[1.2px] text-active">
-          {eyebrow}
-        </AppText>
         <AppText className="text-[34px] font-extrabold leading-10">
           {title}
         </AppText>
@@ -49,5 +44,6 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: bikerMapTheme.colors.bg,
+    padding: 20,
   },
 });
