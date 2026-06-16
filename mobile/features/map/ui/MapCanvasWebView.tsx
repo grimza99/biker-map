@@ -1,12 +1,19 @@
-import type { PlaceListItem } from "@package-shared/types/place";
 import { useEffect, useMemo, useRef, useState } from "react";
-import { ActivityIndicator, StyleSheet, Text, View } from "react-native";
+import { ActivityIndicator, View, type ViewStyle } from "react-native";
 import { WebView, type WebViewMessageEvent } from "react-native-webview";
 
-import { bikerMapTheme } from "@package-shared/constants/theme";
+import {
+  PlaceListItem,
+  RouteMapPathItem,
+  TLocationCoordinate,
+  bikerMapTheme,
+} from "@package-shared/index";
+
+import { AppText } from "@/components/common";
 
 type MapCanvasWebViewProps = {
   activeFilter: string;
+  currentLocation?: TLocationCoordinate | null;
   focusedPlaceId?: string | null;
   onMapReady?: () => void;
   onMarkerPressed?: (placeId: string) => void;
@@ -20,6 +27,7 @@ type BridgeEvent =
   | {
       payload: {
         activeFilter: string;
+        currentLocation: TLocationCoordinate | null;
         focusedPlaceId: string | null;
         places: PlaceListItem[];
       };
@@ -34,6 +42,7 @@ type WebViewLoadErrorEvent = {
 
 export function MapCanvasWebView({
   activeFilter,
+  currentLocation = null,
   focusedPlaceId = null,
   onMapReady,
   onMarkerPressed,
@@ -55,6 +64,7 @@ export function MapCanvasWebView({
       type: "SET_PLACES",
       payload: {
         activeFilter,
+        currentLocation,
         focusedPlaceId,
         places,
       },
@@ -63,7 +73,7 @@ export function MapCanvasWebView({
     webViewRef.current?.injectJavaScript(
       `window.__receiveFromNative?.(${JSON.stringify(message)}); true;`
     );
-  }, [activeFilter, focusedPlaceId, isReady, places]);
+  }, [activeFilter, currentLocation, focusedPlaceId, isReady, places, routes]);
 
   function handleMessage(event: WebViewMessageEvent) {
     try {
@@ -168,6 +178,8 @@ function buildMapHtml(clientId: string) {
 
       var map = null;
       var activeMarkers = [];
+      var activeRoutePolylines = [];
+      var activeCurrentLocationMarker = null;
       var sdkScriptUrl = ${serializedScriptUrl};
 
       var CATEGORY_COLORS = {
@@ -192,6 +204,13 @@ function buildMapHtml(clientId: string) {
         return '<div style="position:relative;width:' + dotSize + 'px;height:' + dotSize + 'px;">' + card + dot + '</div>';
       }
 
+      function makeCurrentLocationMarkerContent() {
+        return '<div style="position:relative;width:22px;height:22px;">'
+          + '<div style="position:absolute;left:50%;top:50%;width:22px;height:22px;border-radius:999px;transform:translate(-50%,-50%);background:rgba(0,149,255,0.18);"></div>'
+          + '<div style="position:absolute;left:50%;top:50%;width:20px;height:20px;border-radius:999px;transform:translate(-50%,-50%);background:#0095FF;border:3px solid rgba(245,247,251,0.95);box-shadow:0 4px 12px rgba(0,0,0,0.32);"></div>'
+          + '</div>';
+      }
+
       function escapeHtml(value) {
         return String(value || '')
           .replace(/&/g, '&amp;')
@@ -206,11 +225,44 @@ function buildMapHtml(clientId: string) {
         activeMarkers = [];
       }
 
+<<<<<<< HEAD
       function renderMarkers(payload) {
         clearMarkers();
         if (!map) return;
 
         var places = payload.places;
+=======
+      function clearRoutePolylines() {
+        activeRoutePolylines.forEach(function(polyline) { polyline.setMap(null); });
+        activeRoutePolylines = [];
+      }
+
+      function clearCurrentLocationMarker() {
+        if (activeCurrentLocationMarker) {
+          activeCurrentLocationMarker.setMap(null);
+          activeCurrentLocationMarker = null;
+        }
+      }
+
+      function extendBounds(bounds, position) {
+        if (!bounds) {
+          return new naver.maps.LatLngBounds(position, position);
+        }
+
+        bounds.extend(position);
+        return bounds;
+      }
+
+      function renderMapData(payload) {
+        clearMarkers();
+        clearRoutePolylines();
+        clearCurrentLocationMarker();
+        if (!map) return;
+
+        var places = payload.places;
+        var currentLocation = payload.currentLocation;
+        var routes = payload.routes || [];
+>>>>>>> e276bf5 (feat(mobile): show current location on bikers map)
         var focusedId = payload.focusedPlaceId;
         var bounds = null;
 
@@ -242,8 +294,41 @@ function buildMapHtml(clientId: string) {
           }
         });
 
+        if (
+          currentLocation &&
+          Number.isFinite(Number(currentLocation.lat)) &&
+          Number.isFinite(Number(currentLocation.lng))
+        ) {
+          var currentPosition = new naver.maps.LatLng(
+            Number(currentLocation.lat),
+            Number(currentLocation.lng)
+          );
+          
+          activeCurrentLocationMarker = new naver.maps.Marker({
+            position: currentPosition,
+            map: map,
+            icon: {
+              content: makeCurrentLocationMarkerContent(),
+              anchor: new naver.maps.Point(18, 18),
+            },
+          });
+          bounds = extendBounds(bounds, currentPosition);
+        }
+
         if (bounds) {
+<<<<<<< HEAD
           if (places.length === 1) {
+=======
+          if (places.length === 0 && routes.length === 0 && currentLocation) {
+            map.setCenter(
+              new naver.maps.LatLng(
+                Number(currentLocation.lat),
+                Number(currentLocation.lng)
+              )
+            );
+            map.setZoom(17, true);
+          } else if (places.length === 1 && routes.length === 0 && !currentLocation) {
+>>>>>>> e276bf5 (feat(mobile): show current location on bikers map)
             map.setCenter(new naver.maps.LatLng(places[0].lat, places[0].lng));
           } else {
             map.fitBounds(bounds, { padding: 60 });

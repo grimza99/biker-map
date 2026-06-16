@@ -1,58 +1,117 @@
-import { AppText } from "@/components/common";
-import type { BikerPreview } from "@/entities/bikers";
-import { BikersBottomSheet } from "@/entities/bikers/ui/BikersBottomSheet";
-import { AppScreen } from "@/components/shell";
+import { Redirect } from "expo-router";
+import { Alert, Linking, StyleSheet, View } from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
 
-const mockBikers: BikerPreview[] = [
-  {
-    nickname: "string",
-    bikeBrand: "string",
-    bikeModel: "string",
-    distance: "string",
-    proficiency: "string",
-  },
-  {
-    nickname: "string",
-    bikeBrand: "string",
-    bikeModel: "string",
-    distance: "string",
-    proficiency: "string",
-  },
-  {
-    nickname: "string",
-    bikeBrand: "string",
-    bikeModel: "string",
-    distance: "string",
-    proficiency: "string",
-  },
-  {
-    nickname: "string",
-    bikeBrand: "string",
-    bikeModel: "string",
-    distance: "string",
-    proficiency: "string",
-  },
-  {
-    nickname: "string",
-    bikeBrand: "string",
-    bikeModel: "string",
-    distance: "string",
-    proficiency: "string",
-  },
-];
+import { useEffect, useState } from "react";
+
+import { AppText } from "@/components/common";
+import { useCurrentLocation } from "@/features/location/hooks";
+import { MapCanvasWebView } from "@/features/map/ui/MapCanvasWebView";
+import { useSession } from "@/features/session/model";
+import { MOBILE_PATHS, Toggle } from "@/shared";
 
 export default function BikersScreen() {
+  const { status } = useSession();
+  const isAuthenticated = status === "authenticated";
+  const [toggle, setToggle] = useState(false);
+  const {
+    currentLocation,
+    errorMessage,
+    isLoading,
+    requestPermission,
+  } = useCurrentLocation(isAuthenticated);
+  const isLocationServiceDisabled =
+    errorMessage ===
+    "기기의 위치 서비스가 꺼져 있어 현재 위치를 가져올 수 없습니다.";
+
+  useEffect(() => {
+    if (!isLocationServiceDisabled) {
+      return;
+    }
+
+    Alert.alert(
+      "위치 서비스가 꺼져 있습니다",
+      "기기 설정에서 위치 서비스를 켜야 현재 위치를 지도에 표시할 수 있습니다.",
+      [
+        {
+          text: "취소",
+          style: "cancel",
+        },
+        {
+          text: "설정으로 이동",
+          onPress: () => {
+            void Linking.openSettings();
+          },
+        },
+      ]
+    );
+  }, [isLocationServiceDisabled]);
+
+  if (!isAuthenticated) {
+    return <Redirect href={MOBILE_PATHS.auth} />;
+  }
+
   return (
-    <AppScreen
-      eyebrow="Mock Bikers"
-      title="주변 바이커"
-      description="실시간 위치 연동 전, 바텀 시트와 채팅 흐름을 먼저 점검하는 모바일 목업 화면입니다."
-      containerStyle={{ paddingBottom: 220 }}
-    >
-      <AppText tone="muted" className="text-sm leading-6">
-        하단 트리거를 눌러 주변 바이커 목록과 채팅 mock 화면으로 이동할 수 있습니다.
-      </AppText>
-      <BikersBottomSheet bikers={mockBikers} />
-    </AppScreen>
+    <View className="bg-bg flex-1">
+      <MapCanvasWebView
+        activeFilter="all"
+        currentLocation={currentLocation}
+        places={[]}
+        routes={[]}
+      />
+
+      <SafeAreaView
+        className="px-4.5 pb-3 pt-2"
+        edges={["top"]}
+        style={styles.overlay}
+      >
+        <Toggle
+          value={toggle}
+          onValueChange={(v) => setToggle(v)}
+          label={toggle ? "위치 공유중" : "위치 공유 끔"}
+          size="lg"
+        />
+        <View className="gap-3 rounded-[28px] border border-border bg-[rgba(17,19,21,0.9)] px-4.5 py-4">
+          {currentLocation ? (
+            <AppText className="text-xs font-bold text-text">
+              LAT {currentLocation.lat.toFixed(5)} / LNG
+              {currentLocation.lng.toFixed(5)}
+            </AppText>
+          ) : null}
+
+          {isLoading ? (
+            <AppText className="text-xs font-bold text-muted">
+              현재 위치를 확인하는 중입니다
+            </AppText>
+          ) : null}
+
+          {errorMessage ? (
+            <View className="gap-2">
+              <AppText className="text-xs font-bold text-warning">
+                {errorMessage}
+              </AppText>
+              <Toggle
+                value={false}
+                onValueChange={() => {
+                  void requestPermission();
+                }}
+                label="위치 권한 다시 요청"
+                size="sm"
+              />
+            </View>
+          ) : null}
+        </View>
+      </SafeAreaView>
+    </View>
   );
 }
+
+const styles = StyleSheet.create({
+  overlay: {
+    position: "absolute",
+    top: 0,
+    right: 0,
+    left: 0,
+    zIndex: 10,
+  },
+});
