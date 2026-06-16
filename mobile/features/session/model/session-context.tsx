@@ -30,6 +30,7 @@ type SessionContextValue = {
   login: (body: LoginBody) => Promise<void>;
   signUp: (body: SignUpBody) => Promise<void>;
   signOut: () => Promise<void>;
+  setSession: (body: AppSession) => void;
 };
 
 const SessionContext = createContext<SessionContextValue | null>(null);
@@ -93,6 +94,10 @@ export function SessionProvider({ children }: PropsWithChildren) {
     },
     status,
     user,
+    setSession(newSession) {
+      setUser(newSession);
+      setStatus("authenticated");
+    },
     async login(loginBody) {
       const response = await apiFetch.post<AuthResponseData>(
         API_PATHS.auth.login,
