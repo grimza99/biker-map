@@ -42,16 +42,14 @@ export function ReactionActionGroup({
   ];
 
   return (
-    <View className="flex-row items-center gap-1.5">
+    <View className="flex-row items-center gap-1">
       {actions.map((action) => (
         <Button
           key={action.reaction}
           size="sm"
           variant="ghost"
-          selected={action.selected}
           disabled={disabled}
           onPress={() => onToggle(action.reaction)}
-          textStyle={{ fontSize: 12 }}
         >
           <Feather
             name={action.iconName}
