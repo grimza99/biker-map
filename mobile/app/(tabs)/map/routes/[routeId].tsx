@@ -6,6 +6,8 @@ import { AppText, Button, Chip } from "@/components/common";
 import { AppScreen } from "@/components/shell";
 import { RouteMetaRow, useRouteDetailQuery } from "@/entities/route";
 import { bikerMapTheme } from "@package-shared/constants";
+import { MarkdownContentNative } from "@/shared/lib/markdown";
+import { openExternalUrl } from "@/shared";
 
 export default function RouteDetailPlaceholderScreen() {
   const { routeId } = useLocalSearchParams<{ routeId: string }>();
@@ -30,6 +32,7 @@ export default function RouteDetailPlaceholderScreen() {
             </View>
           </View>
           <Feather name="heart" size={24} color={heartColor} />
+          {/* todo : favoriteHeartButton merge후에 교체 */}
         </View>
         <View className="gap-2 flex-col border border-border rounded-2xl bg-panel-soft p-4 flex-1">
           <View className="flex flex-row justify-between ">
@@ -61,8 +64,10 @@ export default function RouteDetailPlaceholderScreen() {
             />
           </View>
         </View>
-        <Button>네비게이션</Button>
-        <AppText>{route?.content}</AppText>
+        <Button onPress={() => openExternalUrl(route?.externalMapUrl ?? "")}>
+          네비게이션
+        </Button>
+        {route?.content && <MarkdownContentNative content={route.content} />}
       </ScrollView>
     </AppScreen>
   );
