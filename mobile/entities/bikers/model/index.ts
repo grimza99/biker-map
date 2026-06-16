@@ -5,3 +5,8 @@ export type BikerPreview = {
   distance: string;
   proficiency: string;
 };
+
+export type TLocationCoordinate = {
+  lat: number;
+  lng: number;
+};
