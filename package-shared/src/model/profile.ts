@@ -14,3 +14,9 @@ export const proficiencyClassNameMap = (proficiency: Tproficiency | null) => {
   };
   return proficiency ? classNameMap[proficiency] : "";
 };
+
+export const proficiencySelectOptions = [
+  { value: "beginner", label: "초급자" },
+  { value: "intermediate", label: "중급자" },
+  { value: "advanced", label: "고급자" },
+];

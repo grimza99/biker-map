@@ -5,6 +5,7 @@ import { Button, ImageInput, Input, SelectInput } from "@/shared";
 import { Tproficiency } from "@package-shared/types";
 import { useEffect, useMemo, useState } from "react";
 import { useUpdateProfile } from "../model";
+import { proficiencySelectOptions } from "@package-shared/model";
 
 export function ProfileForm() {
   const { session } = useSession();
@@ -96,12 +97,7 @@ export function ProfileForm() {
           setProficiency(option ? (option as Tproficiency) : null)
         }
         placeholder="해당 없음"
-        options={[
-          { value: "", label: "해당 없음" },
-          { value: "beginner", label: "초급자" },
-          { value: "intermediate", label: "중급자" },
-          { value: "advanced", label: "고급자" },
-        ]}
+        options={proficiencySelectOptions}
       />
       <ImageInput
         label="프로필 이미지"
