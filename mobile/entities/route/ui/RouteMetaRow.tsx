@@ -14,9 +14,10 @@ export function RouteMetaRow({
 }: {
   icon: keyof typeof MaterialCommunityIcons.glyphMap;
   label: string;
-  value: string;
+  value: string | undefined | null | number;
   TextClassName?: string;
 }) {
+  const formatedValue = value ? value : "정보 없음";
   return (
     <View className="flex-row items-center gap-2 flex-1">
       <MaterialCommunityIcons
@@ -25,7 +26,7 @@ export function RouteMetaRow({
         color={bikerMapTheme.colors.accent}
       />
       <AppText className={cn("text-[13px]", TextClassName)} tone="muted">
-        {label} - {value}
+        {label} - {formatedValue}
       </AppText>
     </View>
   );

@@ -7,6 +7,8 @@ import { RouteMetaRow, useRouteDetailQuery } from "@/entities/route";
 import { MarkdownContentNative } from "@/shared/lib/markdown";
 import { openExternalUrl } from "@/shared";
 import { FavoriteActionButton, useToggleFavorite } from "@/features/favorite";
+import { regionLabel } from "@package-shared/model";
+import { RouteRegion } from "@package-shared/index";
 
 export default function RouteDetailPlaceholderScreen() {
   const { routeId } = useLocalSearchParams<{ routeId: string }>();
@@ -18,6 +20,13 @@ export default function RouteDetailPlaceholderScreen() {
   });
   const route = data?.data;
 
+  if (!route) return null;
+  const {
+    distanceKm,
+    departureRegion,
+    destinationRegion,
+    estimatedDurationMinutes,
+  } = route;
   return (
     <AppScreen title="경로 상세">
       <ScrollView contentContainerStyle={{ flexDirection: "column", gap: 16 }}>
@@ -45,13 +54,13 @@ export default function RouteDetailPlaceholderScreen() {
             <RouteMetaRow
               icon="map-marker-radius-outline"
               label="출발"
-              value={"정보 없음"}
+              value={regionLabel[departureRegion as RouteRegion]}
               TextClassName="text-white"
             />
             <RouteMetaRow
               icon="map-marker-check-outline"
               label="도착"
-              value={"정보 없음"}
+              value={regionLabel[destinationRegion as RouteRegion]}
               TextClassName="text-white"
             />
           </View>
@@ -59,13 +68,13 @@ export default function RouteDetailPlaceholderScreen() {
             <RouteMetaRow
               icon="routes"
               label="거리"
-              value={"정보 없음"}
+              value={`${distanceKm}Km`}
               TextClassName="text-white"
             />
             <RouteMetaRow
               icon="timer-outline"
               label="시간"
-              value={"정보 없음"}
+              value={String(estimatedDurationMinutes) + "분"}
               TextClassName="text-white"
             />
           </View>
