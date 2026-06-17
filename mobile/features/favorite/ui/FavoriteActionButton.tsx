@@ -4,7 +4,6 @@ import { bikerMapTheme } from "@package-shared/index";
 import { Button } from "@/components/common";
 
 type FavoriteActionButtonProps = {
-  postId: string;
   selected?: boolean;
   disabled?: boolean;
   onClick: () => void;
