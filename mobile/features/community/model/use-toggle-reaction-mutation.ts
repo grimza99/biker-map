@@ -29,6 +29,14 @@ type ReactionMutationContext = {
   previousComments?: ApiResponse<PostCommentsResponseData> | undefined;
 };
 
+function createEmptyReactionSummary(): ReactionSummary {
+  return {
+    likeCount: 0,
+    dislikeCount: 0,
+    myReaction: null,
+  };
+}
+
 function isPostsListResponse(
   value:
     | ApiResponse<PostsListResponseData>
@@ -50,44 +58,51 @@ function isPostsListQueryKey(queryKey: readonly unknown[]) {
 }
 
 function getNextReactionSummary(
-  current: ReactionSummary,
+  current: ReactionSummary | null | undefined,
   reaction: ReactionType
 ): ReactionSummary {
-  if (current.myReaction === reaction) {
+  const currentSummary = current ?? createEmptyReactionSummary();
+
+  if (currentSummary.myReaction === reaction) {
     return {
-      ...current,
+      ...currentSummary,
       likeCount:
         reaction === "like"
-          ? Math.max(current.likeCount - 1, 0)
-          : current.likeCount,
+          ? Math.max(currentSummary.likeCount - 1, 0)
+          : currentSummary.likeCount,
       dislikeCount:
         reaction === "dislike"
-          ? Math.max(current.dislikeCount - 1, 0)
-          : current.dislikeCount,
+          ? Math.max(currentSummary.dislikeCount - 1, 0)
+          : currentSummary.dislikeCount,
       myReaction: null,
     };
   }
 
-  if (current.myReaction === "like") {
+  if (currentSummary.myReaction === "like") {
     return {
-      likeCount: Math.max(current.likeCount - 1, 0),
-      dislikeCount: current.dislikeCount + 1,
+      likeCount: Math.max(currentSummary.likeCount - 1, 0),
+      dislikeCount: currentSummary.dislikeCount + 1,
       myReaction: "dislike",
     };
   }
 
-  if (current.myReaction === "dislike") {
+  if (currentSummary.myReaction === "dislike") {
     return {
-      likeCount: current.likeCount + 1,
-      dislikeCount: Math.max(current.dislikeCount - 1, 0),
+      likeCount: currentSummary.likeCount + 1,
+      dislikeCount: Math.max(currentSummary.dislikeCount - 1, 0),
       myReaction: "like",
     };
   }
 
   return {
-    likeCount: reaction === "like" ? current.likeCount + 1 : current.likeCount,
+    likeCount:
+      reaction === "like"
+        ? currentSummary.likeCount + 1
+        : currentSummary.likeCount,
     dislikeCount:
-      reaction === "dislike" ? current.dislikeCount + 1 : current.dislikeCount,
+      reaction === "dislike"
+        ? currentSummary.dislikeCount + 1
+        : currentSummary.dislikeCount,
     myReaction: reaction,
   };
 }
