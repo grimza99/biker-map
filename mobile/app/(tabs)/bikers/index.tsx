@@ -5,11 +5,11 @@ import { useEffect, useState } from "react";
 
 import { AppText } from "@/components/common";
 import { useCurrentLocation } from "@/features/location/hooks";
-import { useSession } from "../../features/session/model";
 import { MapCanvasWebView } from "@/features/map/ui/MapCanvasWebView";
 import { MOBILE_PATHS, Toggle } from "@/shared";
 import { Redirect } from "expo-router";
 import { BikersBottomSheet } from "@/entities/bikers/ui/BikersBottomSheet";
+import { useSession } from "@/features/session/model";
 
 const mockBikers = [
   {
