@@ -2,11 +2,11 @@ import { useState } from "react";
 import { Alert, View } from "react-native";
 import { bikerMapTheme, type CommunityComment } from "@package-shared/index";
 
-import { useCreateCommentReply } from "../model";
 import { CommentCard } from "./CommentCard";
 import { Button, Input } from "@/components/common";
 import { Feather } from "@expo/vector-icons";
 import { useSession } from "@/features/session/model";
+import { useCreateCommentReply, useToggleReaction } from "@/features/community";
 
 type CommentThreadProps = {
   comment: CommunityComment;
@@ -21,12 +21,22 @@ export function CommentThread({
 }: CommentThreadProps) {
   const [reply, setReply] = useState("");
   const [replyInputOpen, setReplyInputOpen] = useState(false);
-  const replyMutation = useCreateCommentReply(postId, comment.id);
+
   const { status } = useSession();
+
+  const { mutateAsync: createReply, isPending: isCreateReplyPending } =
+    useCreateCommentReply(postId, comment.id);
+  const { mutateAsync: CommentReaction } = useToggleReaction({
+    targetType: "comment",
+    postId: postId,
+    targetId: comment.id,
+  });
   const isLoggedin = status === "authenticated";
+
   async function handleReplySubmit() {
     try {
-      await replyMutation.mutateAsync(reply);
+      await createReply(reply);
+      setReply("");
       setReplyInputOpen(false);
     } catch (error) {
       Alert.alert(
@@ -43,7 +53,7 @@ export function CommentThread({
         disabled={!canReply}
         showReplyAction
         onReplyPress={() => setReplyInputOpen((prev) => !prev)}
-        onReaction={() => {}}
+        onReaction={(reaction) => CommentReaction(reaction)}
       />
 
       {replyInputOpen && canReply && (
@@ -52,7 +62,7 @@ export function CommentThread({
             placeholder={
               isLoggedin ? "답글을 입력하세요" : "로그인후 답글 입력 가능"
             }
-            disabled={replyMutation.isPending}
+            disabled={isCreateReplyPending}
             value={reply}
             onChange={(e) => setReply(e.nativeEvent.text)}
             className="flex-1"
@@ -73,14 +83,21 @@ export function CommentThread({
       {/* reply list 영역 */}
       {comment.replies.length > 0 && (
         <View className="gap-2.5 pl-4">
-          {comment.replies.map((reply) => (
-            <CommentCard
-              key={reply.id}
-              item={reply}
-              disabled={!canReply}
-              onReaction={() => {}}
-            />
-          ))}
+          {comment.replies.map((reply) => {
+            const { mutateAsync: toggleReplyReaction } = useToggleReaction({
+              targetType: "comment",
+              postId: postId,
+              targetId: reply.id,
+            });
+            return (
+              <CommentCard
+                key={reply.id}
+                item={reply}
+                disabled={!canReply}
+                onReaction={(reaction) => toggleReplyReaction(reaction)}
+              />
+            );
+          })}
         </View>
       )}
     </View>
