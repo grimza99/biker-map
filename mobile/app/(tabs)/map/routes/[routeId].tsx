@@ -1,23 +1,22 @@
 import { useLocalSearchParams } from "expo-router";
-import { Feather } from "@expo/vector-icons";
 import { ScrollView, View } from "react-native";
 
 import { AppText, Button, Chip } from "@/components/common";
 import { AppScreen } from "@/components/shell";
 import { RouteMetaRow, useRouteDetailQuery } from "@/entities/route";
-import { bikerMapTheme } from "@package-shared/constants";
 import { MarkdownContentNative } from "@/shared/lib/markdown";
 import { openExternalUrl } from "@/shared";
+import { FavoriteActionButton, useToggleFavorite } from "@/features/favorite";
 
 export default function RouteDetailPlaceholderScreen() {
   const { routeId } = useLocalSearchParams<{ routeId: string }>();
   const { data } = useRouteDetailQuery(routeId);
 
+  const { mutateAsync: toggleFavorite } = useToggleFavorite({
+    targetType: "route",
+    targetId: routeId,
+  });
   const route = data?.data;
-
-  const heartColor = false
-    ? bikerMapTheme.colors.accent
-    : bikerMapTheme.colors.muted;
 
   return (
     <AppScreen title="경로 상세">
@@ -31,8 +30,15 @@ export default function RouteDetailPlaceholderScreen() {
               ))}
             </View>
           </View>
-          <Feather name="heart" size={24} color={heartColor} />
-          {/* todo : favoriteHeartButton merge후에 교체 */}
+          <FavoriteActionButton
+            selected={route?.favorited}
+            onClick={() =>
+              toggleFavorite({
+                favoriteId: route?.favoriteId,
+                favorited: route?.favorited,
+              })
+            }
+          />
         </View>
         <View className="gap-2 flex-col border border-border rounded-2xl bg-panel-soft p-4 flex-1">
           <View className="flex flex-row justify-between ">
