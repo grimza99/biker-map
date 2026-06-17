@@ -1,6 +1,6 @@
 import React from "react";
 import { View, StyleSheet } from "react-native";
-import Markdown from "react-native-marked";
+import { useMarkdown } from "react-native-marked";
 
 import { bikerMapTheme } from "@package-shared/constants";
 
@@ -9,35 +9,33 @@ type Props = {
 };
 
 export function MarkdownContentNative({ content }: Props) {
+  const elements = useMarkdown(content, {
+    styles: {
+      h1: styles.h1,
+      h2: styles.h2,
+      h3: styles.h3,
+      text: styles.text,
+      paragraph: styles.p,
+      list: styles.li,
+      li: styles.li,
+      link: styles.a,
+      blockquote: styles.blockquote,
+      code: styles.pre,
+      image: styles.img,
+    },
+    theme: {
+      colors: {
+        text: bikerMapTheme.colors.text,
+        code: bikerMapTheme.colors.text,
+        link: bikerMapTheme.colors.text,
+        border: bikerMapTheme.colors.border,
+      },
+    },
+  });
+
   return (
     <View style={styles.container}>
-      <Markdown
-        value={content}
-        styles={{
-          h1: styles.h1,
-          h2: styles.h2,
-          h3: styles.h3,
-          text: styles.text,
-          paragraph: styles.p,
-          list: styles.li,
-          li: styles.li,
-          link: styles.a,
-          blockquote: styles.blockquote,
-          code: styles.pre,
-          image: styles.img,
-        }}
-        theme={{
-          colors: {
-            text: bikerMapTheme.colors.text,
-            code: bikerMapTheme.colors.text,
-            link: bikerMapTheme.colors.text,
-            border: bikerMapTheme.colors.border,
-          },
-        }}
-        flatListProps={{
-          contentContainerStyle: { backgroundColor: bikerMapTheme.colors.bg },
-        }}
-      />
+      {elements}
     </View>
   );
 }
