@@ -24,10 +24,12 @@ export function usePostDetail(postId: string) {
 export function usePostComments(postId: string) {
   return useQuery({
     queryKey: queryKeys.comments(postId),
-    queryFn: async () =>
-      apiFetch.get<PostCommentsResponseData>(
+    queryFn: async () => {
+      const res = await apiFetch.get<PostCommentsResponseData>(
         API_PATHS.community.comments(postId)
-      ),
+      );
+      return res.data;
+    },
     enabled: Boolean(postId),
   });
 }
