@@ -1,6 +1,10 @@
 import { useState } from "react";
 import { Alert, View } from "react-native";
-import { bikerMapTheme, type CommunityComment } from "@package-shared/index";
+import {
+  bikerMapTheme,
+  type CommunityComment,
+  type CommunityReply,
+} from "@package-shared/index";
 
 import { CommentCard } from "./CommentCard";
 import { Button, Input } from "@/components/common";
@@ -83,23 +87,40 @@ export function CommentThread({
       {/* reply list 영역 */}
       {comment.replies.length > 0 && (
         <View className="gap-2.5 pl-4">
-          {comment.replies.map((reply) => {
-            const { mutateAsync: toggleReplyReaction } = useToggleReaction({
-              targetType: "comment",
-              postId: postId,
-              targetId: reply.id,
-            });
-            return (
-              <CommentCard
-                key={reply.id}
-                item={reply}
-                disabled={!canReply}
-                onReaction={(reaction) => toggleReplyReaction(reaction)}
-              />
-            );
-          })}
+          {comment.replies.map((reply) => (
+            <ReplyCard
+              key={reply.id}
+              canReply={canReply}
+              postId={postId}
+              reply={reply}
+            />
+          ))}
         </View>
       )}
     </View>
+  );
+}
+
+function ReplyCard({
+  canReply,
+  postId,
+  reply,
+}: {
+  canReply: boolean;
+  postId: string;
+  reply: CommunityReply;
+}) {
+  const { mutateAsync: toggleReplyReaction } = useToggleReaction({
+    targetType: "comment",
+    postId,
+    targetId: reply.id,
+  });
+
+  return (
+    <CommentCard
+      item={reply}
+      disabled={!canReply}
+      onReaction={(reaction) => toggleReplyReaction(reaction)}
+    />
   );
 }
