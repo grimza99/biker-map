@@ -20,7 +20,7 @@ export function CommentCard({
   onReplyPress,
 }: CommentCardProps) {
   return (
-    <DefaultCardContainer containerStyle="gap-2 rounded-3xl bg-panel-solid p-3">
+    <DefaultCardContainer containerStyle="gap-2 rounded-3xl bg-panel-solid px-3 py-2">
       <View className="flex-1 gap-1 flex-row items-center justify-between">
         <ProfileIdentity avatarUrl={null} name={item.author.name} />
         <AppText tone="muted" className="pl-10 text-xs font-semibold">
