@@ -9,7 +9,45 @@ import { useSession } from "../../features/session/model";
 import { MapCanvasWebView } from "@/features/map/ui/MapCanvasWebView";
 import { MOBILE_PATHS, Toggle } from "@/shared";
 import { Redirect } from "expo-router";
+import { BikersBottomSheet } from "@/entities/bikers/ui/BikersBottomSheet";
 
+const mockBikers = [
+  {
+    nickname: "string",
+    bikeBrand: "string",
+    bikeModel: "string",
+    distance: "string",
+    proficiency: "string",
+  },
+  {
+    nickname: "string",
+    bikeBrand: "string",
+    bikeModel: "string",
+    distance: "string",
+    proficiency: "string",
+  },
+  {
+    nickname: "string",
+    bikeBrand: "string",
+    bikeModel: "string",
+    distance: "string",
+    proficiency: "string",
+  },
+  {
+    nickname: "string",
+    bikeBrand: "string",
+    bikeModel: "string",
+    distance: "string",
+    proficiency: "string",
+  },
+  {
+    nickname: "string",
+    bikeBrand: "string",
+    bikeModel: "string",
+    distance: "string",
+    proficiency: "string",
+  },
+];
 export default function BikersScreen() {
   const { status } = useSession();
   const isAuthenticated = status === "authenticated";
@@ -95,6 +133,7 @@ export default function BikersScreen() {
           ) : null}
         </View>
       </SafeAreaView>
+      <BikersBottomSheet bikers={mockBikers} />
     </View>
   );
 }
