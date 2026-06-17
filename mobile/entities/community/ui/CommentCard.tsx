@@ -1,5 +1,9 @@
 import { View } from "react-native";
-import type { CommunityComment, CommunityReply } from "@package-shared/index";
+import type {
+  CommunityComment,
+  CommunityReply,
+  ReactionType,
+} from "@package-shared/index";
 
 import { AppText, DefaultCardContainer } from "@/components/common";
 import { CommentActionBar } from "./CommentActionBar";
@@ -10,6 +14,7 @@ type CommentCardProps = {
   disabled?: boolean;
   showReplyAction?: boolean;
   onReplyPress?: () => void;
+  onReaction?: (reaction: ReactionType) => void;
 };
 
 //todo : author의 avatarUrl 넘겨주기
@@ -18,6 +23,7 @@ export function CommentCard({
   disabled,
   showReplyAction,
   onReplyPress,
+  onReaction,
 }: CommentCardProps) {
   return (
     <DefaultCardContainer containerStyle="gap-2 rounded-3xl bg-panel-solid px-3 py-2">
@@ -33,6 +39,7 @@ export function CommentCard({
         disabled={disabled}
         showReplyAction={showReplyAction}
         onReplyPress={onReplyPress}
+        onReaction={(reaction) => onReaction?.(reaction)}
       />
     </DefaultCardContainer>
   );
