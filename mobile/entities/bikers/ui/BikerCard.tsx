@@ -13,9 +13,17 @@ import { MOBILE_PATHS } from "@/shared";
 interface BikerCardProps {
   biker: IBiker;
 }
+
+function buildMockChatId(biker: IBiker) {
+  return [biker.nickname, biker.bikeBrand, biker.bikeModel]
+    .map((value) => value.trim().toLowerCase().replace(/\s+/g, "-"))
+    .filter(Boolean)
+    .join("__");
+}
+
 export function BikerCard({ biker }: BikerCardProps) {
   const router = useRouter();
-  const chatId = new Date();
+  const chatId = buildMockChatId(biker);
 
   const handleClickBiker = () => {
     router.push({
