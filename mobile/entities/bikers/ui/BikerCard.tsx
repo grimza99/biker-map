@@ -7,13 +7,29 @@ import {
   DefaultCardContainer,
 } from "@/components/common";
 import { IBiker } from "@package-shared/types";
+import { Href, useRouter } from "expo-router";
+import { MOBILE_PATHS } from "@/shared";
 
 interface BikerCardProps {
   biker: IBiker;
 }
+
+function buildMockChatId(biker: IBiker) {
+  return [biker.nickname, biker.bikeBrand, biker.bikeModel]
+    .map((value) => value.trim().toLowerCase().replace(/\s+/g, "-"))
+    .filter(Boolean)
+    .join("__");
+}
+
 export function BikerCard({ biker }: BikerCardProps) {
+  const router = useRouter();
+  const chatId = buildMockChatId(biker);
+
   const handleClickBiker = () => {
-    //todo card click handler
+    router.push({
+      pathname: MOBILE_PATHS.bikers.chat,
+      params: { chatId: chatId },
+    } as unknown as Href);
   };
 
   return (
