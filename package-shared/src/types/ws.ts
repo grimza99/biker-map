@@ -27,7 +27,7 @@ export type TBikerRealtimeConfigResponseData = WsConnectionResponseData & {
 export type TChatRealtimeConfigResponseData = WsConnectionResponseData & {
   channel: string;
   feature: "chat";
-  roomId?: string;
+  roomId: string;
 };
 
 export type TBikerPresenceSyncEvent = {
