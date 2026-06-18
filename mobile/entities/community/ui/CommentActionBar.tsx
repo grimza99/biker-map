@@ -1,6 +1,10 @@
 import { Feather } from "@expo/vector-icons";
 import { View } from "react-native";
-import type { CommunityComment, CommunityReply } from "@package-shared/index";
+import type {
+  CommunityComment,
+  CommunityReply,
+  ReactionType,
+} from "@package-shared/index";
 
 import { AppText, Button } from "@/components/common";
 import { bikerMapTheme } from "@package-shared/index";
@@ -11,6 +15,7 @@ type CommentActionBarProps = {
   disabled?: boolean;
   showReplyAction?: boolean; //reply는 false
   onReplyPress?: () => void;
+  onReaction?: (action: ReactionType) => void;
 };
 
 export function CommentActionBar({
@@ -18,6 +23,7 @@ export function CommentActionBar({
   disabled,
   showReplyAction = false,
   onReplyPress,
+  onReaction,
 }: CommentActionBarProps) {
   return (
     <View className="flex-row flex-wrap items-center justify-between">
@@ -56,7 +62,7 @@ export function CommentActionBar({
       <ReactionActionGroup
         reactions={item.reactions}
         disabled={disabled}
-        onToggle={() => {}}
+        onToggle={(action) => onReaction?.(action)}
       />
     </View>
   );

@@ -18,11 +18,14 @@ export function PostCard({ post, categoryLabel }: PostCardProps) {
   const router = useRouter();
   const chipColor = CHIP_COLOR[post.category];
 
+  const handlePressDetail = () => {
+    router.push({
+      pathname: "/(tabs)/community/[postId]",
+      params: { postId: post.id },
+    } as unknown as Href);
+  };
   return (
-    <Pressable
-      accessibilityRole="button"
-      onPress={() => router.push(`/(tabs)/community/${post.id}` as Href)}
-    >
+    <Pressable accessibilityRole="button" onPress={handlePressDetail}>
       <DefaultCardContainer>
         <View className="flex flex-col items-start gap-2">
           <View className="w-full flex-row items-center justify-between gap-2">

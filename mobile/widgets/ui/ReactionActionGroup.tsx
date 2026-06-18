@@ -11,7 +11,7 @@ import { Button } from "@/components/common";
 type ReactionActionGroupProps = {
   reactions: ReactionSummary;
   disabled?: boolean;
-  onToggle: (reaction: ReactionType) => void;
+  onToggle?: (reaction: ReactionType) => void;
 };
 
 type ReactionButtonConfig = {
@@ -49,7 +49,7 @@ export function ReactionActionGroup({
           size="sm"
           variant="ghost"
           disabled={disabled}
-          onPress={() => onToggle(action.reaction)}
+          onPress={() => onToggle?.(action.reaction)}
         >
           <Feather
             name={action.iconName}
