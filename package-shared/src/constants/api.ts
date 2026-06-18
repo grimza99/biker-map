@@ -48,4 +48,10 @@ export const API_PATHS = {
     list: `${BASE_URL}/favorites`,
     detail: (favoriteId: string) => `${BASE_URL}/favorites/${favoriteId}`,
   },
+  bikers: {
+    myLocation: `${BASE_URL}/mobile/bikers/me/location`,
+    mySharing: `${BASE_URL}/mobile/bikers/me/sharing`,
+    nearby: `${BASE_URL}/mobile/bikers/nearby`,
+    realtimeConfig: `${BASE_URL}/mobile/bikers/realtime-config`,
+  },
 };
