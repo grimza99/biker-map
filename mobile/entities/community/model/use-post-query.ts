@@ -1,5 +1,6 @@
 import {
   API_PATHS,
+  type ApiResponse,
   PostCommentsResponseData,
   queryKeys,
   type PostDetailResponseData,
@@ -9,27 +10,21 @@ import { useQuery } from "@tanstack/react-query";
 import { apiFetch } from "@/shared";
 
 export function usePostDetail(postId: string) {
-  return useQuery({
+  return useQuery<ApiResponse<PostDetailResponseData>>({
     queryKey: queryKeys.post(postId),
-    queryFn: async () => {
-      const res = await apiFetch.get<PostDetailResponseData>(
-        API_PATHS.community.post(postId)
-      );
-      return res.data;
-    },
+    queryFn: () =>
+      apiFetch.get<PostDetailResponseData>(API_PATHS.community.post(postId)),
     enabled: Boolean(postId),
   });
 }
 
 export function usePostComments(postId: string) {
-  return useQuery({
+  return useQuery<ApiResponse<PostCommentsResponseData>>({
     queryKey: queryKeys.comments(postId),
-    queryFn: async () => {
-      const res = await apiFetch.get<PostCommentsResponseData>(
+    queryFn: () =>
+      apiFetch.get<PostCommentsResponseData>(
         API_PATHS.community.comments(postId)
-      );
-      return res.data;
-    },
+      ),
     enabled: Boolean(postId),
   });
 }
