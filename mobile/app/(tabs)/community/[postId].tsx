@@ -33,9 +33,14 @@ export default function PostDetailScreen() {
   const { status } = useSession();
 
   const [comment, setComment] = useState("");
-  const { data: post, isLoading, error, isError } = usePostDetail(postId ?? "");
   const {
-    data: commentsData,
+    data: postResponse,
+    isLoading,
+    error,
+    isError,
+  } = usePostDetail(postId ?? "");
+  const {
+    data: commentsResponse,
     isLoading: isCommentsLoading,
     isError: isCommentsError,
     isPending: isCommentsPending,
@@ -49,13 +54,10 @@ export default function PostDetailScreen() {
   const { mutateAsync: createComment, isPending: isCreateCommentPending } =
     useCreatePostComment(postId ?? "");
 
-  const comments = commentsData?.items ?? [];
+  const post = postResponse?.data;
+  const comments = commentsResponse?.data.items ?? [];
   const isAuthenticated = status === "authenticated";
   const chipColor = post ? CHIP_COLOR[post.category] : "";
-
-  if (!post) {
-    return null;
-  }
 
   async function handleCreateComment() {
     try {
@@ -142,7 +144,10 @@ export default function PostDetailScreen() {
             <DefaultCardContainer containerStyle="rounded-3xl bg-panel">
               <View className="gap-2.5">
                 {post.images.map((image) => (
-                  <AppText className="text-sm font-semibold text-active">
+                  <AppText
+                    key={image}
+                    className="text-sm font-semibold text-active"
+                  >
                     {image}
                   </AppText>
                 ))}

@@ -23,6 +23,7 @@ export function useCreatePostComment(postId: string) {
       ),
     onSuccess: async () => {
       await Promise.all([
+        queryClient.invalidateQueries({ queryKey: queryKeys.postsRoot }),
         queryClient.invalidateQueries({ queryKey: queryKeys.post(postId) }),
         queryClient.invalidateQueries({ queryKey: queryKeys.comments(postId) }),
       ]);
@@ -49,6 +50,7 @@ export function useCreateCommentReply(postId: string, commentId?: string) {
     },
     onSuccess: async () => {
       await Promise.all([
+        queryClient.invalidateQueries({ queryKey: queryKeys.postsRoot }),
         queryClient.invalidateQueries({ queryKey: queryKeys.post(postId) }),
         queryClient.invalidateQueries({ queryKey: queryKeys.comments(postId) }),
       ]);
