@@ -1,4 +1,9 @@
 export const queryKeys = {
+  bikersRoot: ["bikers"] as const,
+  myBikerLocation: ["bikers", "me", "location"] as const,
+  bikerRealtimeConfig: ["bikers", "realtime-config"] as const,
+  nearbyBikers: (params?: Record<string, string | number | undefined>) =>
+    ["bikers", "nearby", params ?? {}] as const,
   postsRoot: ["posts"] as const,
   session: ["session"] as const,
   favoritesRoot: ["favorites"] as const,
