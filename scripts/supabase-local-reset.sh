@@ -4,11 +4,40 @@ set -euo pipefail
 ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 cd "$ROOT_DIR"
 
-echo "[supabase-local-reset] starting local Supabase"
-npx supabase start
+run_with_retries() {
+  local description="$1"
+  shift
 
-echo "[supabase-local-reset] resetting empty local database"
-npx supabase db reset --local --no-seed
+  local attempt=1
+  local max_attempts=4
+  local delay_seconds=5
+
+  while true; do
+    echo "[supabase-local-reset] ${description} (attempt ${attempt}/${max_attempts})"
+
+    if "$@"; then
+      return 0
+    fi
+
+    if (( attempt >= max_attempts )); then
+      echo "[supabase-local-reset] ${description} failed after ${max_attempts} attempts" >&2
+      return 1
+    fi
+
+    echo "[supabase-local-reset] ${description} failed, stopping local Supabase and retrying in ${delay_seconds}s" >&2
+    npx supabase stop >/dev/null 2>&1 || true
+    sleep "$delay_seconds"
+
+    attempt=$((attempt + 1))
+    delay_seconds=$((delay_seconds * 2))
+  done
+}
+
+run_with_retries "starting local Supabase" npx supabase start
+
+run_with_retries \
+  "resetting empty local database" \
+  npx supabase db reset --local --no-seed
 
 get_local_db_port() {
   local db_url
