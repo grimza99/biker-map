@@ -1,9 +1,11 @@
 "use client";
 
 import type { ReactNode } from "react";
+import { Suspense } from "react";
 import type { InitialSessionData } from "@package-shared/types/session";
 
 import { AppQueryProvider } from "./query-provider";
+import { AuthToastBridge } from "@features/auth";
 import { SessionProvider } from "@features/session";
 import { ToastProvider } from "@shared/ui";
 
@@ -18,6 +20,9 @@ export function AppProviders({
     <AppQueryProvider>
       <ToastProvider>
         <SessionProvider initialSession={initialSession}>
+          <Suspense fallback={null}>
+            <AuthToastBridge />
+          </Suspense>
           {children}
         </SessionProvider>
       </ToastProvider>

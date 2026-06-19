@@ -1,0 +1,4 @@
+-- Supabase local seed for E2E tests.
+--
+-- Keep this file deterministic. Auth flow tests should create test users and
+-- rows with an e2e_ prefix, then clean up or rely on `supabase db reset`.

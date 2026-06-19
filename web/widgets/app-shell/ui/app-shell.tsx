@@ -6,6 +6,7 @@ import type { ReactNode } from "react";
 
 import { Profile } from "@/shared";
 import { MainNav } from "@/widgets/navs";
+import { logoutAction } from "@features/auth/actions";
 import { useSession } from "@features/session";
 import { cn } from "@shared/lib";
 import { NotificationsRealtimeBridge } from "@widgets/notification-bell";
@@ -64,10 +65,7 @@ export function AppShell({ children }: { children: ReactNode }) {
           <MainNav />
         </div>
       </header>
-
-      <main className="mx-auto w-[min(1120px,calc(100%-32px))] py-6 pb-14">
-        {children}
-      </main>
+      {children}
     </>
   );
 }

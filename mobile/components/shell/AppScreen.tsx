@@ -1,22 +1,35 @@
 import { type PropsWithChildren } from "react";
-import { ScrollView, StyleSheet, Text, View } from "react-native";
+import { ScrollView, StyleProp, StyleSheet, Text, View, ViewStyle } from "react-native";
 
 import { bikerMapTheme } from "@package-shared/constants/theme";
 
 type AppScreenProps = PropsWithChildren<{
-  eyebrow: string;
-  title: string;
-  description: string;
+  eyebrow?: string;
+  title?: string;
+  description?: string;
+  containerStyle?: StyleProp<ViewStyle>;
 }>;
 
-export function AppScreen({ eyebrow, title, description, children }: AppScreenProps) {
+export function AppScreen({
+  eyebrow,
+  title,
+  description,
+  children,
+  containerStyle,
+}: AppScreenProps) {
   return (
-    <ScrollView style={styles.container} contentContainerStyle={styles.content} showsVerticalScrollIndicator={false}>
-      <View style={styles.hero}>
-        <Text style={styles.eyebrow}>{eyebrow}</Text>
-        <Text style={styles.title}>{title}</Text>
-        <Text style={styles.description}>{description}</Text>
-      </View>
+    <ScrollView
+      style={[styles.container, containerStyle]}
+      contentContainerStyle={styles.content}
+      showsVerticalScrollIndicator={false}
+    >
+      {eyebrow || title || description ? (
+        <View style={styles.hero}>
+          {eyebrow ? <Text style={styles.eyebrow}>{eyebrow}</Text> : null}
+          {title ? <Text style={styles.title}>{title}</Text> : null}
+          {description ? <Text style={styles.description}>{description}</Text> : null}
+        </View>
+      ) : null}
       {children}
     </ScrollView>
   );
