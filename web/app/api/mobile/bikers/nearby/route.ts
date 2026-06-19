@@ -90,26 +90,23 @@ export async function GET(request: NextRequest) {
   const bounds = buildBounds(query.lat, query.lng, query.radiusMeters);
   const supabase = createSupabaseServiceClient();
 
-  const candidateFetchLimit = Math.min(query.limit * 4, 400);
-  const { data, error } = await supabase
-    .from("biker_presence")
-    .select(
-      "user_id, lat, lng, accuracy_meters, heading, speed_kph, expires_at, updated_at"
-    )
-    .gt("expires_at", nowIso)
-    .neq("user_id", session.userId)
-    .gte("lat", bounds.minLat)
-    .lte("lat", bounds.maxLat)
-    .gte("lng", bounds.minLng)
-    .lte("lng", bounds.maxLng)
-    .order("updated_at", { ascending: false })
-    .limit(candidateFetchLimit);
-
-  if (error) {
-    return internalServerError(error.message);
+  let candidateRows: BikerPresenceNearbyRow[];
+  try {
+    candidateRows = await loadNearbyPresenceCandidates(
+      supabase,
+      session.userId,
+      nowIso,
+      bounds
+    );
+  } catch (error) {
+    return internalServerError(
+      error instanceof Error
+        ? error.message
+        : "주변 바이커 위치를 조회할 수 없습니다."
+    );
   }
 
-  const candidates = ((data ?? []) as BikerPresenceNearbyRow[])
+  const candidates = candidateRows
     .map((row) => ({
       ...row,
       distanceMeters: calculateDistanceMeters(
@@ -146,6 +143,43 @@ export async function GET(request: NextRequest) {
   } satisfies TBikersNearbyResponseData;
 
   return ok(response);
+}
+
+async function loadNearbyPresenceCandidates(
+  supabase: ReturnType<typeof createSupabaseServiceClient>,
+  currentUserId: string,
+  nowIso: string,
+  bounds: ReturnType<typeof buildBounds>
+) {
+  const responses = await Promise.all(
+    bounds.lngRanges.map((range) =>
+      supabase
+        .from("biker_presence")
+        .select(
+          "user_id, lat, lng, accuracy_meters, heading, speed_kph, expires_at, updated_at"
+        )
+        .gt("expires_at", nowIso)
+        .neq("user_id", currentUserId)
+        .gte("lat", bounds.minLat)
+        .lte("lat", bounds.maxLat)
+        .gte("lng", range.minLng)
+        .lte("lng", range.maxLng)
+    )
+  );
+
+  const rowsByUserId = new Map<string, BikerPresenceNearbyRow>();
+
+  for (const response of responses) {
+    if (response.error) {
+      throw new Error(response.error.message);
+    }
+
+    for (const row of (response.data ?? []) as BikerPresenceNearbyRow[]) {
+      rowsByUserId.set(row.user_id, row);
+    }
+  }
+
+  return Array.from(rowsByUserId.values());
 }
 
 async function loadNearbyProfileMap(
@@ -204,12 +238,41 @@ function buildBounds(lat: number, lng: number, radiusMeters: number) {
     Math.abs(cosLat) < 1e-6
       ? 180
       : radiansToDegrees(radiusMeters / (EARTH_RADIUS_METERS * cosLat));
+  const rawMinLng = lng - lngDelta;
+  const rawMaxLng = lng + lngDelta;
 
   return {
     minLat: Math.max(-90, lat - latDelta),
     maxLat: Math.min(90, lat + latDelta),
-    minLng: Math.max(-180, lng - lngDelta),
-    maxLng: Math.min(180, lng + lngDelta),
+    lngRanges:
+      rawMinLng < -180
+        ? [
+            {
+              minLng: rawMinLng + 360,
+              maxLng: 180,
+            },
+            {
+              minLng: -180,
+              maxLng: rawMaxLng,
+            },
+          ]
+        : rawMaxLng > 180
+          ? [
+              {
+                minLng: rawMinLng,
+                maxLng: 180,
+              },
+              {
+                minLng: -180,
+                maxLng: rawMaxLng - 360,
+              },
+            ]
+          : [
+              {
+                minLng: rawMinLng,
+                maxLng: rawMaxLng,
+              },
+            ],
   };
 }
 
