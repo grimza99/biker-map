@@ -1,34 +1,35 @@
 "use client";
 
-import { uploadImage } from "@/features/image";
+import { AuthVerifyDialog } from "@/features/auth";
+import { ProfileForm } from "@/features/me";
+import { Chip, cn, DefaultCardContainer, ProfileImgChip } from "@/shared";
 import {
-  Button,
-  DefaultCardContainer,
-  ImageInput,
-  Input,
-  ProfileImgChip,
-} from "@/shared";
-import { useUpdateProfile } from "@features/me/model/use-update-profile";
-import { AppSession } from "@package-shared/index";
-import { useEffect, useMemo, useState } from "react";
+  AppSession,
+  proficiencyClassNameMap,
+  proficiencyMap,
+} from "@package-shared/index";
+import { ShieldHalfIcon } from "lucide-react";
+import { useState } from "react";
 
 export function MyInfoSection({ session }: { session: AppSession }) {
-  const [name, setName] = useState(session.name);
-  const [avatarUrls, setAvatarUrls] = useState<string[] | null>(
-    session.avatarUrl ? [session.avatarUrl] : null
-  );
-  const { mutateAsync: updateProfile, isPending } = useUpdateProfile();
+  const [isVerifyDialogOpen, setIsVerifyDialogOpen] = useState(false);
 
-  useEffect(() => {
-    setName(session.name);
-    setAvatarUrls(session.avatarUrl ? [session.avatarUrl] : null);
-  }, [session.avatarUrl, session.name]);
+  if (!session) return null;
 
-  const avatarUrl = avatarUrls?.[0] ?? null;
-  const isDirty = useMemo(
-    () => name.trim() !== session.name || avatarUrl !== session.avatarUrl,
-    [avatarUrl, name, session.avatarUrl, session.name]
-  );
+  const {
+    name,
+    avatarUrl,
+    email,
+    bikeBrand,
+    bikeModel,
+    isVerified,
+    proficiency,
+  } = session;
+
+  const verifiedLabel = isVerified ? "본인 인증 완료" : "본인 인증 미완료";
+  const proficiencyLabel = proficiency
+    ? proficiencyMap[proficiency]
+    : "정보 없음";
 
   return (
     <DefaultCardContainer>
@@ -47,51 +48,42 @@ export function MyInfoSection({ session }: { session: AppSession }) {
               <h1 className="m-0 text-[clamp(28px,4vw,42px)] font-semibold tracking-[-0.04em] text-text">
                 {name}
               </h1>
-              <p className="m-0 text-sm text-muted">{session.email}</p>
+              <p className="m-0 text-sm text-muted">{email}</p>
+              <div className="flex gap-2">
+                <span>{bikeBrand}</span>
+                <strong>·</strong>
+                <span> {bikeModel}</span>
+              </div>
+              <div className="flex flex-row gap-3">
+                <button
+                  className="w-fit h-fit"
+                  disabled={!!isVerified}
+                  onClick={() => {
+                    setIsVerifyDialogOpen(true);
+                  }}
+                >
+                  <Chip
+                    icon={<ShieldHalfIcon className="size-4" />}
+                    label={verifiedLabel}
+                    className={cn(
+                      isVerified &&
+                        "bg-green-300/10 border-green-300/20 text-green-300"
+                    )}
+                  />
+                </button>
+                <Chip
+                  label={proficiencyLabel}
+                  className={proficiencyClassNameMap(proficiency)}
+                />
+              </div>
             </div>
           </div>
         </div>
-        <form
-          className="grid w-full max-w-105 gap-4"
-          onSubmit={(event) => {
-            event.preventDefault();
-            if (isPending || !isDirty || !name.trim()) {
-              return;
-            }
-
-            updateProfile({
-              name: name.trim(),
-              avatarUrl,
-            });
-          }}
-        >
-          <Input
-            label="이름"
-            value={name}
-            onChange={(event) => setName(event.target.value)}
-            placeholder="라이더 이름"
-            maxLength={40}
-          />
-          <ImageInput
-            label="프로필 이미지"
-            value={avatarUrls}
-            maxImages={1}
-            onValueChange={(urls) => setAvatarUrls(urls)}
-            onUpload={async (file) => {
-              const uploaded = await uploadImage(file);
-              return uploaded.url;
-            }}
-          />
-          <div className="flex justify-end">
-            <Button
-              type="submit"
-              loading={isPending}
-              disabled={!isDirty || !name.trim() || isPending}
-            >
-              프로필 저장
-            </Button>
-          </div>
-        </form>
+        <ProfileForm />
+        <AuthVerifyDialog
+          open={isVerifyDialogOpen}
+          onOpenChange={() => setIsVerifyDialogOpen(false)}
+        />
       </div>
     </DefaultCardContainer>
   );

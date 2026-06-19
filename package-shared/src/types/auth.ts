@@ -11,11 +11,6 @@ export type SignUpBody = {
   name: string;
 };
 
-export type UpdateMeBody = {
-  name: string;
-  avatarUrl: string | null;
-};
-
 export type AuthResponseData = {
   session: AppSession | null;
   accessToken: string | null;
@@ -32,17 +27,22 @@ export type RefreshResponseData = {
   refreshToken: string | null;
 };
 
-export type MeResponseData = {
-  authenticated: boolean;
-  session: AppSession | null;
-};
-
-export type UpdateMeResponseData = {
-  session: AppSession | null;
-};
-
 export type DeleteAccountResponseData = {
   deleted: true;
   deletedAt: string;
   purgeAfter: string;
 };
+
+export type ISendVerificationCodeBody = {
+  phone: string;
+};
+export type ISendVerificationCodeResponseData = {
+  phone: string;
+  expiresAt: string;
+};
+
+export type IVerificationCodeCheckBody = {
+  phone: string;
+  code: string;
+};
+export type AuthVerifyResponseData = AppSession;

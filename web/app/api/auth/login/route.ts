@@ -2,7 +2,6 @@ import { AuthResponseData, type LoginBody } from "@package-shared/types/auth";
 import {
   badRequest,
   forbidden,
-  internalServerError,
   ok,
   parseRequestBody,
 } from "@shared/api";
@@ -24,6 +23,7 @@ const loginSchema = z.object({
   password: z.string().min(6),
 });
 
+/**--------------------------login------------------------------- */
 export async function POST(request: Request) {
   const isMobileClient = isMobileClientRequest(request);
   let payload: LoginBody;
@@ -50,20 +50,11 @@ export async function POST(request: Request) {
     return badRequest("로그인 세션을 확인할 수 없습니다.");
   }
 
-  const mappedSession = mapSupabaseSession(session);
-  if (!mappedSession) {
-    return badRequest("로그인 사용자 정보를 확인할 수 없습니다.");
-  }
-
   let profileStatus = null;
   try {
-    profileStatus = await getProfileStatus(mappedSession.userId);
-  } catch (profileError) {
-    return internalServerError(
-      profileError instanceof Error
-        ? profileError.message
-        : "프로필 상태를 확인하지 못했습니다."
-    );
+    profileStatus = await getProfileStatus(session.user.id);
+  } catch {
+    profileStatus = null;
   }
 
   if (profileStatus?.deletedAt) {
@@ -74,6 +65,18 @@ export async function POST(request: Request) {
     return response;
   }
 
+  const mappedSession = mapSupabaseSession(
+    session,
+    profileStatus?.role,
+    profileStatus?.bikeBrand ?? null,
+    profileStatus?.bikeModel ?? null,
+    profileStatus?.phone ?? "",
+    profileStatus?.isVerified || false,
+    profileStatus?.proficiency ?? null
+  );
+  if (!mappedSession) {
+    return badRequest("로그인 사용자 정보를 확인할 수 없습니다.");
+  }
   const response = ok<AuthResponseData>({
     session: {
       ...mappedSession,

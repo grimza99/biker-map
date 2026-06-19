@@ -1,10 +1,14 @@
-import type { AppSession } from "@package-shared/types/session";
 import type { Session, User } from "@supabase/supabase-js";
 
+import type { AppSession } from "@package-shared/types/session";
+
 import { refreshTokenCookieOptions } from "@shared/config";
-import { createSupabaseAuthClient, mapSupabaseSession } from "@shared/lib/supabase";
-import { getProfileStatus } from "./supabase-profiles";
+import {
+  createSupabaseAuthClient,
+  mapSupabaseSession,
+} from "@shared/lib/supabase";
 import { unauthorized } from "./response";
+import { getProfileStatus } from "./supabase-profiles";
 
 /**
  *
@@ -54,26 +58,34 @@ export async function getSupabaseAuthSession(
  */
 async function getApiSession(request: Request): Promise<AppSession | null> {
   const session = await getSupabaseAuthSession(request);
-  const mappedSession = mapSupabaseSession(session ?? null);
 
-  if (!mappedSession || !session?.access_token) {
-    return mappedSession;
+  if (!session?.access_token) {
+    return null;
   }
 
+  let profileStatus;
   try {
-    const profileStatus = await getProfileStatus(mappedSession.userId);
+    profileStatus = await getProfileStatus(session.user.id);
     if (profileStatus?.deletedAt) {
       return null;
     }
-
-    return {
-      ...mappedSession,
-      role: profileStatus?.role || "member",
-    };
   } catch {
     return null;
   }
 
+  const mappedSession = mapSupabaseSession(
+    session,
+    profileStatus?.role,
+    profileStatus?.bikeBrand || null,
+    profileStatus?.bikeModel || null,
+    profileStatus?.phone ?? "",
+    profileStatus?.isVerified ?? false,
+    profileStatus?.proficiency ?? null
+  );
+
+  if (!mappedSession || !session?.access_token) {
+    return mappedSession;
+  }
   return mappedSession;
 }
 
@@ -137,4 +149,32 @@ export function clearRefreshTokenCookie(response: Response) {
   }
 
   cookieStore.append("Set-Cookie", parts.join("; "));
+}
+
+/**---------------------------------------------------- clear session --------------------------------------------------------*/
+export function clearAuthSessionCookies(response: Response) {
+  const cookieStore = response.headers;
+  const secure = refreshTokenCookieOptions.secure;
+  const sessionCookieNames = [
+    "authjs.session-token",
+    "__Secure-authjs.session-token",
+    "next-auth.session-token",
+    "__Secure-next-auth.session-token",
+  ];
+
+  for (const name of sessionCookieNames) {
+    const parts = [
+      `${name}=`,
+      `Path=${refreshTokenCookieOptions.path}`,
+      "Max-Age=0",
+      "HttpOnly",
+      "SameSite=Lax",
+    ];
+
+    if (secure) {
+      parts.push("Secure");
+    }
+
+    cookieStore.append("Set-Cookie", parts.join("; "));
+  }
 }

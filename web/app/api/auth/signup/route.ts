@@ -26,7 +26,7 @@ export async function POST(request: Request) {
 
   const supabase = createSupabaseAuthClient();
   const {
-    data: { session, user },
+    data: { session },
     error,
   } = await supabase.auth.signUp({
     email: payload.email,
@@ -42,7 +42,15 @@ export async function POST(request: Request) {
     return badRequest(error.message);
   }
 
-  const mappedSession = mapSupabaseSession(session);
+  const mappedSession = mapSupabaseSession(
+    session,
+    "member",
+    null,
+    null,
+    "",
+    false,
+    null
+  );
 
   const response = created<AuthResponseData>({
     session: mappedSession,

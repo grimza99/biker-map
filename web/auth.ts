@@ -71,11 +71,9 @@ export const {
         }
 
         const profileStatusResult = await resolveProfileStatus(session.user.id);
-        if (!profileStatusResult.ok) {
-          return null;
-        }
-
-        const profileStatus = profileStatusResult.profileStatus;
+        const profileStatus = profileStatusResult.ok
+          ? profileStatusResult.profileStatus
+          : null;
         if (profileStatus?.deletedAt) {
           return null;
         }
@@ -172,6 +170,7 @@ export const {
 
       return refreshSupabaseToken(token);
     },
+
     async session({ session, token }) {
       const userId = typeof token.userId === "string" ? token.userId : null;
       const role = typeof token.role === "string" ? token.role : "member";
@@ -187,6 +186,17 @@ export const {
         email: typeof token.email === "string" ? token.email : "",
         image: typeof token.picture === "string" ? token.picture : null,
       };
+      let profileStatus = null;
+
+      if (userId) {
+        const profileStatusResult = await resolveProfileStatus(userId);
+
+        if (profileStatusResult.ok) {
+          profileStatus = profileStatusResult.profileStatus;
+        } else {
+          session.supabaseError = "profile_status_fetch_failed";
+        }
+      }
       session.appSession = userId
         ? {
             userId,
@@ -194,6 +204,11 @@ export const {
             email: session.user.email ?? "",
             avatarUrl: session.user.image ?? null,
             role,
+            bikeBrand: profileStatus?.bikeBrand ?? null,
+            bikeModel: profileStatus?.bikeModel ?? null,
+            phone: profileStatus?.phone ?? "",
+            isVerified: profileStatus?.isVerified || false,
+            proficiency: profileStatus?.proficiency || null,
           }
         : null;
       session.accessToken = accessToken;

@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import type { ReactNode } from "react";
 
 import { Profile } from "@/shared";
@@ -11,7 +12,13 @@ import { cn } from "@shared/lib";
 import { NotificationsRealtimeBridge } from "@widgets/notification-bell";
 
 export function AppShell({ children }: { children: ReactNode }) {
-  const { session, status } = useSession();
+  const router = useRouter();
+  const { session, signOut, status } = useSession();
+
+  async function handleSignOut() {
+    await signOut();
+    router.push("/auth?toast=logout-success");
+  }
 
   return (
     <>
@@ -30,14 +37,15 @@ export function AppShell({ children }: { children: ReactNode }) {
                   href="/me"
                   avatarUrl={session?.avatarUrl}
                 />
-                <form action={logoutAction}>
+                <div>
                   <button
+                    onClick={() => void handleSignOut()}
                     className="inline-flex items-center justify-center rounded-full border border-border bg-panel-solid px-3.5 py-2 text-sm font-medium transition duration-150 ease-out hover:-translate-y-0.5 whitespace-nowrap"
-                    type="submit"
+                    type="button"
                   >
                     로그아웃
                   </button>
-                </form>
+                </div>
               </div>
             ) : (
               <Link

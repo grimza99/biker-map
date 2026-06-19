@@ -1,9 +1,15 @@
+import { Tproficiency } from "@package-shared/types";
 import type { AppSession } from "@package-shared/types/session";
 import type { Session } from "@supabase/supabase-js";
 
 export function mapSupabaseSession(
   session: Session | null,
-  role = "member"
+  role = "member",
+  bikeBrand: string | null,
+  bikeModel: string | null,
+  phone: string,
+  isVerified: boolean,
+  proficiency: Tproficiency | null
 ): AppSession | null {
   const user = session?.user;
   if (!user) {
@@ -25,6 +31,11 @@ export function mapSupabaseSession(
     name: metadataName || "",
     email: user.email || "",
     avatarUrl,
-    role,
+    role: role || "member",
+    bikeBrand,
+    bikeModel,
+    phone,
+    isVerified,
+    proficiency: proficiency || null,
   };
 }

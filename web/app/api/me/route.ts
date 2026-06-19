@@ -1,8 +1,9 @@
-import type {
+import {
+  BUCKET_NAME,
   DeleteAccountResponseData,
   UpdateMeResponseData,
-} from "@package-shared/types/auth";
-import { BUCKET_NAME } from "@package-shared/constants/supabase";
+} from "@package-shared/index";
+
 import {
   badRequest,
   createSupabaseApiClient,
@@ -16,15 +17,18 @@ import {
   clearRefreshTokenCookie,
   getSupabaseAuthSession,
 } from "@shared/api/auth";
-import { createSupabaseServiceClient } from "@shared/lib/supabase";
-import { getSupabasePublicEnv } from "@shared/config";
 import { getProfileStatus } from "@shared/api/supabase-profiles";
+import { getSupabasePublicEnv } from "@shared/config";
+import { createSupabaseServiceClient } from "@shared/lib/supabase";
 import { NextResponse } from "next/server";
 import { z } from "zod";
 
 const updateMeSchema = z.object({
   name: z.string().trim().min(1).max(40),
   avatarUrl: z.string().url().nullable(),
+  bikeBrand: z.string().nullable(),
+  bikeModel: z.string().nullable(),
+  proficiency: z.enum(["beginner", "intermediate", "advanced"]).nullable(),
 });
 
 export async function GET(request: Request) {
@@ -44,9 +48,20 @@ export async function GET(request: Request) {
     return unauthorized("탈퇴 처리된 계정입니다.");
   }
 
-  return ok(mapMe(session, profileStatus?.role || "member"));
+  return ok(
+    mapMe(
+      session,
+      profileStatus?.role || "member",
+      profileStatus?.bikeBrand || null,
+      profileStatus?.bikeModel || null,
+      profileStatus?.phone || "",
+      profileStatus?.isVerified || false,
+      profileStatus?.proficiency || null
+    )
+  );
 }
 
+/**---------------------------------name, email, bikeBrand, bikeModel edit ---------------------- */
 export async function PATCH(request: Request) {
   const session = await getSupabaseAuthSession(request);
   if (!session) {
@@ -84,6 +99,9 @@ export async function PATCH(request: Request) {
     .from("profiles")
     .update({
       name: payload.name,
+      bike_brand: payload.bikeBrand,
+      bike_model: payload.bikeModel,
+      proficiency: payload.proficiency,
     })
     .eq("id", session.user.id);
 
@@ -117,7 +135,15 @@ export async function PATCH(request: Request) {
   }
 
   return ok<UpdateMeResponseData>({
-    session: mapMe(updatedSession, profileStatus?.role || "member").session,
+    session: mapMe(
+      updatedSession,
+      profileStatus?.role || "member",
+      profileStatus?.bikeBrand || null,
+      profileStatus?.bikeModel || null,
+      profileStatus?.phone || "",
+      profileStatus?.isVerified || false,
+      profileStatus?.proficiency || null
+    ).session,
   });
 }
 
@@ -149,6 +175,8 @@ function extractPublicBucketPath(avatarUrl: string | null) {
     return null;
   }
 }
+
+/**---------------------------------draw user---------------------------------- */
 
 export async function DELETE(request: Request) {
   const session = await getSupabaseAuthSession(request);
