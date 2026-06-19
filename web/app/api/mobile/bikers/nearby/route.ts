@@ -285,7 +285,9 @@ function calculateDistanceMeters(
   const lat1 = degreesToRadians(fromLat);
   const lat2 = degreesToRadians(toLat);
   const deltaLat = degreesToRadians(toLat - fromLat);
-  const deltaLng = degreesToRadians(toLng - fromLng);
+  const deltaLng = degreesToRadians(
+    normalizeShortestLongitudeDelta(toLng - fromLng)
+  );
 
   const haversine =
     Math.sin(deltaLat / 2) ** 2 +
@@ -304,4 +306,16 @@ function degreesToRadians(value: number) {
 
 function radiansToDegrees(value: number) {
   return (value * 180) / Math.PI;
+}
+
+function normalizeShortestLongitudeDelta(deltaLng: number) {
+  if (deltaLng > 180) {
+    return deltaLng - 360;
+  }
+
+  if (deltaLng < -180) {
+    return deltaLng + 360;
+  }
+
+  return deltaLng;
 }
