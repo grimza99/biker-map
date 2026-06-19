@@ -153,7 +153,7 @@ export function useToggleFavorite({
     onSettled: async () => {
       await Promise.all([
         queryClient.invalidateQueries({ queryKey: detailQueryKey }),
-        queryClient.invalidateQueries({ queryKey: queryKeys.favoritesRoot }),
+        queryClient.invalidateQueries({ queryKey: queryKeys.meFavoritesRoot }),
       ]);
     },
   });
