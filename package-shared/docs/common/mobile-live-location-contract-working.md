@@ -42,6 +42,9 @@
   - MVP는 `lat/lng/radius`를 명시적으로 전달
 
 결정사항:
+- MVP nearby snapshot 요청은 `lat`, `lng`를 필수 query로 전달한다.
+- 조회 반경은 `radiusMeters`를 사용하고, 미전달 시 서버 기본값 `5000m`를 적용한다.
+- 이 결정은 현재 `package-shared/src/types/biker.ts`의 `TBikersNearbyQuery`와 동일하게 유지한다.
 
 ### Open Question 3
 
