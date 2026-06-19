@@ -1,5 +1,6 @@
 export { API_PATHS } from "./api";
 export { APP_DESCRIPTION, APP_NAME, SESSION_STORAGE_KEY } from "./app";
+export * from "./biker";
 export { PATHS } from "./paths";
 export { queryKeys } from "./query-keys";
 export { BUCKET_NAME } from "./supabase";
