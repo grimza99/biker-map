@@ -1,6 +1,7 @@
 create table if not exists public.biker_sharing_session (
   session_id uuid default gen_random_uuid() not null,
   user_id uuid not null,
+  session_version bigint generated always as identity not null,
   status text not null default 'active',
   started_at timestamp with time zone default now() not null,
   ended_at timestamp with time zone,
@@ -29,18 +30,22 @@ create table if not exists public.biker_sharing_session (
 );
 
 comment on table public.biker_sharing_session is '위치 데이터 없이 live biker sharing session 유효성만 관리하는 세션 테이블';
+comment on column public.biker_sharing_session.session_version is 'sharing on/off/location 요청의 순서 보장과 stale session 구분에 사용하는 단조 증가 버전';
 comment on column public.biker_sharing_session.guard_expires_at is '종료된 세션 row를 늦게 도착한 location 요청 필터링용으로 유지하는 만료 시각';
 
 create unique index if not exists uniq_biker_sharing_session_active_user
 on public.biker_sharing_session using btree (user_id)
 where (status = 'active'::text);
 
+create unique index if not exists uniq_biker_sharing_session_user_version
+on public.biker_sharing_session using btree (user_id, session_version);
+
 create index if not exists idx_biker_sharing_session_guard_expires_at
 on public.biker_sharing_session using btree (guard_expires_at)
 where (status = 'ended'::text);
 
-create index if not exists idx_biker_sharing_session_user_id_started_at_desc
-on public.biker_sharing_session using btree (user_id, started_at desc);
+create index if not exists idx_biker_sharing_session_user_id_version_desc
+on public.biker_sharing_session using btree (user_id, session_version desc);
 
 alter table public.biker_sharing_session enable row level security;
 
