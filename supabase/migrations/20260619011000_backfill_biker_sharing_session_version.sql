@@ -1,20 +1,29 @@
-create sequence if not exists public.biker_sharing_session_session_version_seq;
+do $$
+begin
+  if not exists (
+    select 1
+    from information_schema.columns
+    where table_schema = 'public'
+      and table_name = 'biker_sharing_session'
+      and column_name = 'session_version'
+  ) then
+    create sequence if not exists public.biker_sharing_session_session_version_seq;
 
-alter sequence public.biker_sharing_session_session_version_seq
-owned by none;
+    alter table public.biker_sharing_session
+    add column session_version bigint;
 
-alter table if exists public.biker_sharing_session
-add column if not exists session_version bigint;
+    alter table public.biker_sharing_session
+    alter column session_version set default nextval('public.biker_sharing_session_session_version_seq');
 
-alter table if exists public.biker_sharing_session
-alter column session_version set default nextval('public.biker_sharing_session_session_version_seq');
+    update public.biker_sharing_session
+    set session_version = nextval('public.biker_sharing_session_session_version_seq')
+    where session_version is null;
 
-update public.biker_sharing_session
-set session_version = nextval('public.biker_sharing_session_session_version_seq')
-where session_version is null;
-
-alter table if exists public.biker_sharing_session
-alter column session_version set not null;
+    alter table public.biker_sharing_session
+    alter column session_version set not null;
+  end if;
+end
+$$;
 
 comment on column public.biker_sharing_session.session_version is 'sharing on/off/location 요청의 순서 보장과 stale session 구분에 사용하는 단조 증가 버전';
 
