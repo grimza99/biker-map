@@ -1,3 +1,4 @@
+import { ApiClientError } from "@package-shared/index";
 import type { ApiResponse } from "@package-shared/types/api";
 import { getSession } from "next-auth/react";
 import { apiErrorSchema } from "./contracts";

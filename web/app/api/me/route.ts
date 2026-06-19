@@ -2,7 +2,7 @@ import {
   BUCKET_NAME,
   DeleteAccountResponseData,
   UpdateMeResponseData,
-} from "@biker-map/package-shared";
+} from "@package-shared/index";
 
 import {
   badRequest,

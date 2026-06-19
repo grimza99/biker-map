@@ -6,7 +6,7 @@ import {
   ok,
   parseRequestBody,
   unauthorized,
-} from "@/shared";
+} from "@shared/api";
 import { getSupabaseAuthSession } from "@/shared/api/auth";
 import { getProfileStatus } from "@/shared/api/supabase-profiles";
 import { IVerificationCodeCheckBody } from "@package-shared/index";

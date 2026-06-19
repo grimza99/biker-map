@@ -2,12 +2,12 @@ import {
   badRequest,
   createSupabaseApiClient,
   internalServerError,
-  mapVerification,
   ok,
   parseRequestBody,
   unauthorized,
-} from "@/shared";
+} from "@shared/api";
 import { getSupabaseAuthSession } from "@/shared/api/auth";
+import { mapVerification } from "@/shared/api/supabase-mappers";
 import { getProfileStatus } from "@/shared/api/supabase-profiles";
 import { ISendVerificationCodeBody } from "@package-shared/index";
 import z from "zod";
