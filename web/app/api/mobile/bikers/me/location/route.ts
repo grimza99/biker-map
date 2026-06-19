@@ -62,6 +62,8 @@ type BikerSharingSessionRow = {
   guard_expires_at: string | null;
 };
 
+const MAX_BIKER_OBSERVED_AT_FUTURE_SKEW_MS = 5000;
+
 /*------------------------------ get (my active biker presence) ---------------------------------------*/
 
 export async function GET(request: NextRequest) {
@@ -130,6 +132,13 @@ export async function POST(request: NextRequest) {
     BIKER_PRESENCE_STALE_TIMEOUT_SECONDS * 1000
   ) {
     return badRequest("너무 오래된 위치 정보는 업로드할 수 없습니다.");
+  }
+
+  if (
+    observedAt.getTime() - now.getTime() >
+    MAX_BIKER_OBSERVED_AT_FUTURE_SKEW_MS
+  ) {
+    return badRequest("미래 시각의 위치 정보는 업로드할 수 없습니다.");
   }
 
   const supabase = createSupabaseApiClient(request);
