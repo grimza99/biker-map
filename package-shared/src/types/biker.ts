@@ -56,3 +56,12 @@ export type TBikersNearbyResponseData = {
 export type TMyBikerLocationResponseData = {
   presence: TBikerPresenceItem | null;
 };
+
+export type TUpdateMyBikerLocationResponseData = {
+  presence: TBikerPresenceItem;
+};
+
+export type TUpdateMyBikerSharingResponseData = {
+  sharingStatus: TBikerLocationSharingStatus;
+  expiresAt: string | null;
+};
