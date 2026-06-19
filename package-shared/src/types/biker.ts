@@ -21,6 +21,8 @@ export type TBikersNearbyQuery = {
 };
 
 export type TUpdateMyBikerLocationBody = {
+  sharingSessionId: string;
+  sharingSessionVersion: number;
   location: TLocationCoordinate;
   accuracyMeters?: number | null;
   heading?: number | null;
@@ -30,6 +32,8 @@ export type TUpdateMyBikerLocationBody = {
 
 export type TUpdateMyBikerSharingBody = {
   sharingStatus: TBikerLocationSharingStatus;
+  sharingSessionId?: string | null;
+  sharingSessionVersion?: number | null;
 };
 
 export type TBikerPresenceItem = {
@@ -63,5 +67,7 @@ export type TUpdateMyBikerLocationResponseData = {
 
 export type TUpdateMyBikerSharingResponseData = {
   sharingStatus: TBikerLocationSharingStatus;
+  sharingSessionId: string | null;
+  sharingSessionVersion: number | null;
   expiresAt: string | null;
 };
