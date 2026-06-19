@@ -13,3 +13,5 @@ export const DEFAULT_BIKERS_NEARBY_LIMIT = 50;
 export const MAX_BIKERS_NEARBY_LIMIT = 100;
 export const BIKER_PRESENCE_STALE_TIMEOUT_SECONDS = 30;
 export const DEFAULT_BIKER_REALTIME_MODE: RealtimeMode = "supabase-realtime";
+export const DEFAULT_BIKER_REALTIME_CHANNEL = "bikers-location";
+export const DEFAULT_BIKER_REALTIME_FEATURE = "bikers-location";
