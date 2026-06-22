@@ -1,17 +1,18 @@
 import { useLocalSearchParams } from "expo-router";
 
-import { AppText, DefaultCardContainer } from "@/components/common";
+import { DefaultCardContainer } from "@/components/common";
 import { AppScreen } from "@/components/shell";
+import { PlaceDetailContent, usePlaceDetail } from "@/entities/place";
 
 export default function PlaceDetailScreen() {
   const { placeId } = useLocalSearchParams<{ placeId: string }>();
+  const { data: place } = usePlaceDetail(placeId);
 
+  if (!place) return null;
   return (
-    <AppScreen title="장소 상세">
+    <AppScreen title={place.name}>
       <DefaultCardContainer>
-        <AppText className="text-[13px] leading-5" tone="muted">
-          placeId: {placeId}
-        </AppText>
+        <PlaceDetailContent place={place} />
       </DefaultCardContainer>
     </AppScreen>
   );
