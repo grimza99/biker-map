@@ -49,12 +49,6 @@ const workflowItems = [
   },
 ];
 
-const footerLinks = [
-  { label: "이용약관", href: PATHS.policy.terms },
-  { label: "개인정보처리방침", href: PATHS.policy.privacy },
-  { label: "위치정보", href: PATHS.policy.location },
-];
-
 function LandingButtonRow() {
   return (
     <div className="flex flex-wrap gap-3">
@@ -242,29 +236,6 @@ export default function HomePage() {
             <LandingButtonRow />
           </div>
         </DefaultCardContainer>
-
-        <footer className="grid gap-6 border-t border-border/60 px-4 pt-8 text-sm text-muted md:grid-cols-[auto_1fr_auto] md:items-center md:px-0">
-          <div className="flex items-center gap-2">
-            <div className="flex h-6 w-6 items-center justify-center rounded-md bg-muted/20 text-[10px] font-bold text-muted">
-              A
-            </div>
-            <span className="font-semibold">바이커맵</span>
-          </div>
-          <div className="flex flex-wrap items-center justify-center gap-6">
-            {footerLinks.map((item) => (
-              <Link
-                key={item.href}
-                href={item.href}
-                className="transition-colors hover:text-text"
-              >
-                {item.label}
-              </Link>
-            ))}
-          </div>
-          <div className="text-center md:text-right">
-            © 2024 BikerMap. All rights reserved.
-          </div>
-        </footer>
       </section>
     </div>
   );
