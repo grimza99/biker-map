@@ -17,7 +17,8 @@ export function RouteMetaRow({
   value: string | undefined | null | number;
   TextClassName?: string;
 }) {
-  const formatedValue = value ? value : "정보 없음";
+  const formatedValue =
+    value == null || value === "" ? "정보 없음" : value;
   return (
     <View className="flex-row items-center gap-2 flex-1">
       <MaterialCommunityIcons
