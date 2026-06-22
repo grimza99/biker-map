@@ -26,7 +26,7 @@ export function Footer() {
   return (
     <footer className="py-12 border-t-border border-t px-8">
       <div
-        className="w-full flex flex-row overflow-x-auto items-center justify-between"
+        className="mx-auto flex w-full max-w-240 flex-col gap-6 md:flex-row md:items-center md:justify-between"
         aria-label="페이지 하단 정책"
       >
         <div className="flex flex-col gap-2">
@@ -35,7 +35,7 @@ export function Footer() {
             © 2026 BikerMap. All rights reserved.
           </strong>
         </div>
-        <div className="flex ">
+        <div className="flex flex-wrap gap-x-4 gap-y-2">
           {footerPolicyItems.map((item) => {
             const active =
               pathname === item.href || pathname.startsWith(`${item.href}/`);
@@ -43,15 +43,13 @@ export function Footer() {
             return (
               <Button
                 key={item.id}
+                asChild
                 variant="underline"
                 size="sm"
                 selected={active}
                 className="text-muted"
               >
-                <Link
-                  href={item.href}
-                  aria-current={active ? "page" : undefined}
-                >
+                <Link href={item.href} aria-current={active ? "page" : undefined}>
                   {item.label}
                 </Link>
               </Button>

@@ -1,7 +1,8 @@
 import { Compass, MapPinned, MessageSquareMore, Route } from "lucide-react";
 import Link from "next/link";
-
 import Image from "next/image";
+import { PATHS } from "@package-shared/constants";
+
 import { DefaultCardContainer } from "@shared/ui";
 
 const featureItems = [
@@ -48,19 +49,10 @@ const workflowItems = [
   },
 ];
 
-const footerLinks = [
-  { label: "이용약관", href: "/policy/terms" },
-  { label: "개인정보처리방침", href: "/policy/privacy" },
-  { label: "문의하기", href: "/policy/contact" },
-];
-
 function LandingButtonRow() {
   return (
     <div className="flex flex-wrap gap-3">
-      <Link
-        href="/map"
-        className="shadow-[0_10px_28px_rgba(229,87,47,0.28)]"
-      >
+      <Link href="/map" className="shadow-[0_10px_28px_rgba(229,87,47,0.28)]">
         <span className="inline-flex h-12 items-center justify-center gap-2 rounded-full border border-accent bg-accent px-5 text-base font-medium tracking-[-0.01em] text-text transition duration-150 ease-out hover:border-accent-light hover:bg-accent-light active:translate-y-px">
           지도 보기
           <Compass className="h-4 w-4" />
@@ -244,29 +236,6 @@ export default function HomePage() {
             <LandingButtonRow />
           </div>
         </DefaultCardContainer>
-
-        <footer className="grid gap-6 border-t border-border/60 px-4 pt-8 text-sm text-muted md:grid-cols-[auto_1fr_auto] md:items-center md:px-0">
-          <div className="flex items-center gap-2">
-            <div className="flex h-6 w-6 items-center justify-center rounded-md bg-muted/20 text-[10px] font-bold text-muted">
-              A
-            </div>
-            <span className="font-semibold">바이커맵</span>
-          </div>
-          <div className="flex flex-wrap items-center justify-center gap-6">
-            {footerLinks.map((item) => (
-              <Link
-                key={item.href}
-                href={item.href}
-                className="transition-colors hover:text-text"
-              >
-                {item.label}
-              </Link>
-            ))}
-          </div>
-          <div className="text-center md:text-right">
-            © 2024 BikerMap. All rights reserved.
-          </div>
-        </footer>
       </section>
     </div>
   );

@@ -63,10 +63,11 @@ export default function PrivacyPage() {
       <section className="grid gap-3">
         <h2>6. 이용자의 권리</h2>
         <p className="text-muted">
-          Biker Map은 이용자의 개인정보를 원칙적으로 외부에 제공하지 않습니다.
+          이용자는 자신의 개인정보에 대해 열람, 정정, 삭제, 처리 정지를 요청할
+          수 있습니다.
           <br />
-          다만 이용자의 동의가 있거나 법령에 따른 요청이 있는 경우에는 필요한
-          범위에서 제공될 수 있습니다.
+          회원 탈퇴 또는 문의 채널을 통해 관련 요청을 접수할 수 있으며, 법령상
+          보관 의무가 없는 범위에서 지체 없이 처리합니다.
         </p>
       </section>
       <section className="grid gap-3">

@@ -97,7 +97,7 @@ export function Button({
 
   if (asChild && isValidElement<ButtonChildProps>(children)) {
     return cloneElement(children, {
-      className: cn(children.props.className, className),
+      className: cn(resolvedClassName, children.props.className),
       onClick: (event: ReactMouseEvent<HTMLElement>) => {
         children.props.onClick?.(event);
         onClick?.(event as never);
