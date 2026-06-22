@@ -14,11 +14,13 @@ export default function RouteDetailPlaceholderScreen() {
   const { routeId } = useLocalSearchParams<{ routeId: string }>();
   const { data } = useRouteDetailQuery(routeId);
 
-  const { mutateAsync: toggleFavorite } = useToggleFavorite({
+  const { isPending: isFavoritePending, mutateAsync: toggleFavorite } =
+    useToggleFavorite({
     targetType: "route",
     targetId: routeId,
   });
   const route = data?.data;
+  const canOpenNavigation = Boolean(route?.externalMapUrl);
 
   if (!route) return null;
   const {
@@ -40,6 +42,7 @@ export default function RouteDetailPlaceholderScreen() {
             </View>
           </View>
           <FavoriteActionButton
+            disabled={isFavoritePending}
             selected={route?.favorited}
             onClick={() =>
               toggleFavorite({
@@ -79,7 +82,16 @@ export default function RouteDetailPlaceholderScreen() {
             />
           </View>
         </View>
-        <Button onPress={() => openExternalUrl(route?.externalMapUrl ?? "")}>
+        <Button
+          disabled={!canOpenNavigation}
+          onPress={() => {
+            if (!route.externalMapUrl) {
+              return;
+            }
+
+            openExternalUrl(route.externalMapUrl);
+          }}
+        >
           네비게이션
         </Button>
         {route?.content && <MarkdownContentNative content={route.content} />}
