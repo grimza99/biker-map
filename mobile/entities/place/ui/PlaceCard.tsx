@@ -11,7 +11,7 @@ import {
   DefaultCardContainer,
 } from "@/components/common";
 
-import { openExternalUrl } from "@/shared";
+import { MOBILE_PATHS, openExternalUrl } from "@/shared";
 
 type PlaceCardProps = {
   place: PlaceListItem;
@@ -21,7 +21,7 @@ export function PlaceCard({ place }: PlaceCardProps) {
   const router = useRouter();
   const handlePressDetail = () => {
     router.push({
-      pathname: "/(tabs)/map/places/[placeId]",
+      pathname: MOBILE_PATHS.detailPlace,
       params: { placeId: place.id },
     } as unknown as Href);
   };

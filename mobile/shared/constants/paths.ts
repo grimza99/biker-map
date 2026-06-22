@@ -14,4 +14,5 @@ export const MOBILE_PATHS = {
     entry: `${TABS}/bikers` as const,
     chat: `${TABS}/bikers/chats/[chatId]` as const,
   },
+  detailPlace: `${TABS}${PATHS.map.entry}/places/[placeId]` as const,
 };
