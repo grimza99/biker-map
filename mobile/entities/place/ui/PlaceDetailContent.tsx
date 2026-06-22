@@ -11,7 +11,7 @@ import {
   placeCategoryOptions,
   type PlaceDetail,
 } from "@package-shared/index";
-import { View } from "react-native";
+import { Image, View } from "react-native";
 
 export function PlaceDetailContent({ place }: { place: PlaceDetail }) {
   const label = placeCategoryOptions.find(
@@ -21,14 +21,16 @@ export function PlaceDetailContent({ place }: { place: PlaceDetail }) {
   return (
     <View className="flex h-full flex-col gap-5">
       {place.images && place.images.length > 0 ? (
-        <View className="grid grid-cols-2 gap-2">
+        <View className="flex-row flex-wrap gap-2">
           {place.images.map((image) => (
-            <img
-              src={image}
-              alt={place.name}
-              key={image}
-              className="h-44 w-full rounded-2xl object-cover"
-            />
+            <View key={image} style={{ width: "48%" }}>
+              <Image
+                source={{ uri: image }}
+                accessibilityLabel={`${place.name} 이미지`}
+                className="h-44 w-full rounded-2xl"
+                resizeMode="cover"
+              />
+            </View>
           ))}
         </View>
       ) : null}
