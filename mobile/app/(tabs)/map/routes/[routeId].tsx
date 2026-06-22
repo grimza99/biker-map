@@ -1,0 +1,101 @@
+import { useLocalSearchParams } from "expo-router";
+import { ScrollView, View } from "react-native";
+
+import { AppText, Button, Chip } from "@/components/common";
+import { AppScreen } from "@/components/shell";
+import { RouteMetaRow, useRouteDetailQuery } from "@/entities/route";
+import { MarkdownContentNative } from "@/shared/lib/markdown";
+import { openExternalUrl } from "@/shared";
+import { FavoriteActionButton, useToggleFavorite } from "@/features/favorite";
+import { regionLabel } from "@package-shared/model";
+import { RouteRegion } from "@package-shared/index";
+
+export default function RouteDetailPlaceholderScreen() {
+  const { routeId } = useLocalSearchParams<{ routeId: string }>();
+  const { data } = useRouteDetailQuery(routeId);
+
+  const { isPending: isFavoritePending, mutateAsync: toggleFavorite } =
+    useToggleFavorite({
+    targetType: "route",
+    targetId: routeId,
+  });
+  const route = data?.data;
+  const canOpenNavigation = Boolean(route?.externalMapUrl);
+
+  if (!route) return null;
+  const {
+    distanceKm,
+    departureRegion,
+    destinationRegion,
+    estimatedDurationMinutes,
+  } = route;
+  return (
+    <AppScreen title="경로 상세">
+      <ScrollView contentContainerStyle={{ flexDirection: "column", gap: 16 }}>
+        <View className="flex flex-row items-start justify-between">
+          <View className="flex flex-col gap-3 flex-1">
+            <AppText className="text-3xl">{route?.title}</AppText>
+            <View className="flex flex-row flex-wrap gap-2">
+              {route?.tags.map((tag: string, idx: number) => (
+                <Chip label={tag} key={`${tag}-${idx}`} />
+              ))}
+            </View>
+          </View>
+          <FavoriteActionButton
+            disabled={isFavoritePending}
+            selected={route?.favorited}
+            onClick={() =>
+              toggleFavorite({
+                favoriteId: route?.favoriteId,
+                favorited: route?.favorited,
+              })
+            }
+          />
+        </View>
+        <View className="gap-2 flex-col border border-border rounded-2xl bg-panel-soft p-4 flex-1">
+          <View className="flex flex-row justify-between ">
+            <RouteMetaRow
+              icon="map-marker-radius-outline"
+              label="출발"
+              value={regionLabel[departureRegion as RouteRegion]}
+              TextClassName="text-white"
+            />
+            <RouteMetaRow
+              icon="map-marker-check-outline"
+              label="도착"
+              value={regionLabel[destinationRegion as RouteRegion]}
+              TextClassName="text-white"
+            />
+          </View>
+          <View className="flex flex-row justify-between flex-1">
+            <RouteMetaRow
+              icon="routes"
+              label="거리"
+              value={`${distanceKm}Km`}
+              TextClassName="text-white"
+            />
+            <RouteMetaRow
+              icon="timer-outline"
+              label="시간"
+              value={String(estimatedDurationMinutes) + "분"}
+              TextClassName="text-white"
+            />
+          </View>
+        </View>
+        <Button
+          disabled={!canOpenNavigation}
+          onPress={() => {
+            if (!route.externalMapUrl) {
+              return;
+            }
+
+            openExternalUrl(route.externalMapUrl);
+          }}
+        >
+          네비게이션
+        </Button>
+        {route?.content && <MarkdownContentNative content={route.content} />}
+      </ScrollView>
+    </AppScreen>
+  );
+}
