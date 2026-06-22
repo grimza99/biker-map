@@ -1,9 +1,6 @@
 import { ExternalLink, MapPinned, Phone } from "lucide-react";
 
-import {
-  placeCategoryOptions,
-  type PlaceDetail,
-} from "@biker-map/package-shared";
+import { placeCategoryOptions, type PlaceDetail } from "@package-shared/index";
 
 import { Button, DefaultCardContainer, Divider } from "@shared/ui";
 
