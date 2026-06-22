@@ -10,4 +10,8 @@ const TABS = "/(tabs)";
 export const MOBILE_PATHS = {
   auth: `${AUTH}${PATHS.auth}` as const,
   map: `${TABS}${PATHS.map.entry}` as const,
+  bikers: {
+    entry: `${TABS}/bikers` as const,
+    chat: `${TABS}/bikers/chats/[chatId]` as const,
+  },
 };
