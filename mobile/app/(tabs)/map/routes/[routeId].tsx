@@ -14,11 +14,13 @@ export default function RouteDetailPlaceholderScreen() {
   const { routeId } = useLocalSearchParams<{ routeId: string }>();
   const { data } = useRouteDetailQuery(routeId);
 
-  const { mutateAsync: toggleFavorite } = useToggleFavorite({
+  const { isPending: isFavoritePending, mutateAsync: toggleFavorite } =
+    useToggleFavorite({
     targetType: "route",
     targetId: routeId,
   });
   const route = data?.data;
+  const canOpenNavigation = Boolean(route?.externalMapUrl);
 
   if (!route) return null;
   const {
@@ -34,12 +36,13 @@ export default function RouteDetailPlaceholderScreen() {
           <View className="flex flex-col gap-3 flex-1">
             <AppText className="text-3xl">{route?.title}</AppText>
             <View className="flex flex-row flex-wrap gap-2">
-              {route?.tags.map((tag, idx) => (
+              {route?.tags.map((tag: string, idx: number) => (
                 <Chip label={tag} key={`${tag}-${idx}`} />
               ))}
             </View>
           </View>
           <FavoriteActionButton
+            disabled={isFavoritePending}
             selected={route?.favorited}
             onClick={() =>
               toggleFavorite({
@@ -79,7 +82,16 @@ export default function RouteDetailPlaceholderScreen() {
             />
           </View>
         </View>
-        <Button onPress={() => openExternalUrl(route?.externalMapUrl ?? "")}>
+        <Button
+          disabled={!canOpenNavigation}
+          onPress={() => {
+            if (!route.externalMapUrl) {
+              return;
+            }
+
+            openExternalUrl(route.externalMapUrl);
+          }}
+        >
           네비게이션
         </Button>
         {route?.content && <MarkdownContentNative content={route.content} />}
