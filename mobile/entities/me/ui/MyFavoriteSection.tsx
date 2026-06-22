@@ -1,5 +1,5 @@
 import { View } from "react-native";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 
 import { useMyFavorites } from "../model";
 import { Button, Pagination } from "@/components/common";
@@ -39,13 +39,28 @@ export function MyFavoriteSection() {
     Math.ceil(activeTotal / MY_FAVORITE_SECTION_PAGE_SIZE)
   );
 
+  useEffect(() => {
+    if (currentPage > totalPages) {
+      setPage(totalPages);
+    }
+  }, [currentPage, totalPages]);
+
+  function handleSelectTab(nextTab: TFavoriteTab) {
+    if (nextTab === tab) {
+      return;
+    }
+
+    setTab(nextTab);
+    setPage(1);
+  }
+
   return (
     <>
       {/* 게시글, 경로 탭 */}
       <View className="w-full flex-row items-center justify-evenly gap-2 rounded-[20px]">
         <Button
           onPress={() => {
-            setTab("post");
+            handleSelectTab("post");
           }}
           disabled={isSubmitting}
           selected={tab === "post"}
@@ -56,7 +71,7 @@ export function MyFavoriteSection() {
         </Button>
         <Button
           onPress={() => {
-            setTab("route");
+            handleSelectTab("route");
           }}
           disabled={isSubmitting}
           selected={tab === "route"}

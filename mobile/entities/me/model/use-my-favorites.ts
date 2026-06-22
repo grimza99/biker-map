@@ -30,5 +30,6 @@ export function useMyFavorites<T extends FavoriteTargetType>(
         `${API_PATHS.me.favorites}?type=${type}&${favoriteQuery}`
       ),
     enabled,
+    placeholderData: (previousData) => previousData,
   });
 }
