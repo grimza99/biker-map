@@ -82,7 +82,7 @@ export default function TermsPage() {
       <section className="grid gap-3">
         <h2>제8조 문의</h2>
         <p className="text-muted">
-          `서비스 이용약관 관련 문의는 gbtmxlf0808@gmail.com로 연락해 주세요.`,
+          서비스 이용약관 관련 문의는 gbtmxlf0808@gmail.com로 연락해 주세요.
         </p>
       </section>
     </PageWrapper>

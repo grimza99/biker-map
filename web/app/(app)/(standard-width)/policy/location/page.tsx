@@ -82,7 +82,7 @@ export default function LocationPage() {
       <section className="grid gap-3">
         <h2>제7조 위치정보 관리 담당자</h2>
         <p className="text-muted">
-          위치정보 관련 문의 및 권리 행사는 gbtmxf0808@gmail.com 으로 접수할 수
+          위치정보 관련 문의 및 권리 행사는 gbtmxlf0808@gmail.com 으로 접수할 수
           있습니다.
         </p>
       </section>
