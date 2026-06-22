@@ -117,27 +117,27 @@ export function useLiveBikers({
       return;
     }
 
-    const now = Date.now();
-    const hasSameCoordinate =
-      lastUploadedCoordinateRef.current?.lat === currentLocation.lat &&
-      lastUploadedCoordinateRef.current?.lng === currentLocation.lng;
+    void uploadCurrentLocationIfDue(currentLocation, sharingSession);
+  }, [currentLocation, enabled, isAppActive, isSharingEnabled, sharingSession]);
 
+  useEffect(() => {
     if (
-      hasSameCoordinate &&
-      now - lastUploadedAtRef.current <
-        BIKER_LOCATION_UPLOAD_INTERVAL_SECONDS * 1000
+      !enabled ||
+      !isSharingEnabled ||
+      !isAppActive ||
+      !sharingSession ||
+      !currentLocation
     ) {
       return;
     }
 
-    if (
-      now - lastUploadedAtRef.current <
-      BIKER_LOCATION_UPLOAD_INTERVAL_SECONDS * 1000
-    ) {
-      return;
-    }
+    const interval = setInterval(() => {
+      void uploadCurrentLocationIfDue(currentLocation, sharingSession);
+    }, BIKER_LOCATION_UPLOAD_INTERVAL_SECONDS * 1000);
 
-    void uploadCurrentLocation(currentLocation, sharingSession);
+    return () => {
+      clearInterval(interval);
+    };
   }, [currentLocation, enabled, isAppActive, isSharingEnabled, sharingSession]);
 
   async function toggleSharing(nextValue: boolean) {
@@ -299,6 +299,33 @@ export function useLiveBikers({
       isUploadingRef.current = false;
       setIsSyncing(false);
     }
+  }
+
+  async function uploadCurrentLocationIfDue(
+    location: TLocationCoordinate,
+    session: SharingSession
+  ) {
+    const now = Date.now();
+    const hasSameCoordinate =
+      lastUploadedCoordinateRef.current?.lat === location.lat &&
+      lastUploadedCoordinateRef.current?.lng === location.lng;
+
+    if (
+      hasSameCoordinate &&
+      now - lastUploadedAtRef.current <
+        BIKER_LOCATION_UPLOAD_INTERVAL_SECONDS * 1000
+    ) {
+      return;
+    }
+
+    if (
+      now - lastUploadedAtRef.current <
+      BIKER_LOCATION_UPLOAD_INTERVAL_SECONDS * 1000
+    ) {
+      return;
+    }
+
+    await uploadCurrentLocation(location, session);
   }
 
   async function fetchNearbyBikers(location: TLocationCoordinate) {
