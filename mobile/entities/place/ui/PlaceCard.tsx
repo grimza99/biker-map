@@ -2,7 +2,11 @@ import { Ionicons } from "@expo/vector-icons";
 import { type Href, useRouter } from "expo-router";
 import { Pressable, View } from "react-native";
 
-import { bikerMapTheme, PlaceListItem } from "@package-shared/index";
+import {
+  bikerMapTheme,
+  placeCategoryOptions,
+  PlaceListItem,
+} from "@package-shared/index";
 
 import {
   AppText,
@@ -26,6 +30,10 @@ export function PlaceCard({ place }: PlaceCardProps) {
     } as unknown as Href);
   };
 
+  const label = placeCategoryOptions.find(
+    (option) => option.value === place.category
+  )?.label;
+
   return (
     <DefaultCardContainer>
       <Pressable
@@ -40,7 +48,7 @@ export function PlaceCard({ place }: PlaceCardProps) {
             {place.address}
           </AppText>
         </View>
-        <Chip label={place.category} />
+        <Chip label={label ?? place.category} />
       </Pressable>
       <View className="flex flex-row gap-2">
         <Button
