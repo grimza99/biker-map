@@ -51,8 +51,10 @@ export function useLiveBikers({
   const isUploadingRef = useRef(false);
   const isStartingSharingRef = useRef(false);
   const isStoppingSharingRef = useRef(false);
+  const isAppActiveRef = useRef(AppState.currentState === "active");
   const lastUploadedAtRef = useRef(0);
   const lastUploadedCoordinateRef = useRef<TLocationCoordinate | null>(null);
+  const sharingIntentRef = useRef(false);
 
   useEffect(() => {
     if (!enabled) {
@@ -64,6 +66,8 @@ export function useLiveBikers({
       setSharingSession(null);
       lastUploadedAtRef.current = 0;
       lastUploadedCoordinateRef.current = null;
+      sharingIntentRef.current = false;
+      isAppActiveRef.current = AppState.currentState === "active";
     }
   }, [enabled]);
 
@@ -75,7 +79,9 @@ export function useLiveBikers({
     const subscription = AppState.addEventListener(
       "change",
       (nextAppState: AppStateStatus) => {
-        setIsAppActive(nextAppState === "active");
+        const nextIsAppActive = nextAppState === "active";
+        isAppActiveRef.current = nextIsAppActive;
+        setIsAppActive(nextIsAppActive);
       }
     );
 
@@ -142,10 +148,12 @@ export function useLiveBikers({
     setErrorMessage(null);
 
     if (nextValue) {
+      sharingIntentRef.current = true;
       setIsSharingEnabled(true);
       return;
     }
 
+    sharingIntentRef.current = false;
     setIsSharingEnabled(false);
     await stopSharingSession(false);
   }
@@ -176,6 +184,11 @@ export function useLiveBikers({
         sessionId: response.data.sharingSessionId,
         sessionVersion: response.data.sharingSessionVersion,
       };
+
+      if (!sharingIntentRef.current || !isAppActiveRef.current) {
+        await sendSharingOff(nextSession);
+        return;
+      }
 
       setSharingSession(nextSession);
 
@@ -227,6 +240,7 @@ export function useLiveBikers({
       );
     } finally {
       if (!preserveSharingIntent) {
+        sharingIntentRef.current = false;
         setIsSharingEnabled(false);
       }
       setSharingSession(null);
@@ -236,6 +250,17 @@ export function useLiveBikers({
       isStoppingSharingRef.current = false;
       setIsSyncing(false);
     }
+  }
+
+  async function sendSharingOff(session: SharingSession) {
+    await apiFetch.post<TUpdateMyBikerSharingResponseData>(
+      API_PATHS.bikers.mySharing,
+      {
+        sharingStatus: "off",
+        sharingSessionId: session.sessionId,
+        sharingSessionVersion: session.sessionVersion,
+      }
+    );
   }
 
   async function uploadCurrentLocation(
