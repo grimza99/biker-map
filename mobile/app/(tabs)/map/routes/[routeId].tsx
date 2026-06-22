@@ -34,7 +34,7 @@ export default function RouteDetailPlaceholderScreen() {
           <View className="flex flex-col gap-3 flex-1">
             <AppText className="text-3xl">{route?.title}</AppText>
             <View className="flex flex-row flex-wrap gap-2">
-              {route?.tags.map((tag, idx) => (
+              {route?.tags.map((tag: string, idx: number) => (
                 <Chip label={tag} key={`${tag}-${idx}`} />
               ))}
             </View>

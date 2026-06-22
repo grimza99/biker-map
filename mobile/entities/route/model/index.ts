@@ -1,1 +1,1 @@
-export { useRouteListQuery } from "./use-route-query";
+export { useRouteDetailQuery, useRouteListQuery } from "./use-route-query";
