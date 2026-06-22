@@ -1,12 +1,12 @@
-import type { RealtimeMode } from "../types/ws";
 import type { TBikerLocationSharingStatus } from "../types/biker";
+import type { RealtimeMode } from "../types/ws";
 
 export const BIKER_LOCATION_SHARING_STATUSES = [
   "off",
   "foreground",
 ] as const satisfies readonly TBikerLocationSharingStatus[];
 
-export const BIKER_LOCATION_UPLOAD_INTERVAL_SECONDS = 5;
+export const BIKER_LOCATION_UPLOAD_INTERVAL_SECONDS = 10;
 export const DEFAULT_BIKERS_NEARBY_RADIUS_METERS = 5000;
 export const MAX_BIKERS_NEARBY_RADIUS_METERS = 5000;
 export const DEFAULT_BIKERS_NEARBY_LIMIT = 50;
