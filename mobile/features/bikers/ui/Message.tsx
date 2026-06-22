@@ -1,13 +1,13 @@
 import { AppText } from "@/components/common";
-import { cn, ProfileIdentity } from "@/shared";
-import { IBiker } from "@package-shared/types";
+import { cn } from "@/shared";
+import type { BikerPreview } from "@/entities/bikers";
 import { View } from "react-native";
 
 interface IMessageProps {
   id: string;
   message: string;
   isOwn: boolean;
-  author: IBiker;
+  author: BikerPreview;
 }
 export function Message({ message, isOwn, author }: IMessageProps) {
   return (
@@ -18,7 +18,9 @@ export function Message({ message, isOwn, author }: IMessageProps) {
           isOwn ? "items-end" : "items-start"
         )}
       >
-        <ProfileIdentity name={author.nickname} avatarUrl={null} />
+        <AppText className="text-xs font-semibold" tone="muted">
+          {author.nickname}
+        </AppText>
         <View
           className={cn(
             "border border-none w-fit max-w-50 rounded-2xl py-1.5 px-3 min-w-30",

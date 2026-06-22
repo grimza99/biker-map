@@ -6,15 +6,15 @@ import {
   Chip,
   DefaultCardContainer,
 } from "@/components/common";
-import { IBiker } from "@package-shared/types";
 import { Href, useRouter } from "expo-router";
+import type { BikerPreview } from "@/entities/bikers";
 import { MOBILE_PATHS } from "@/shared";
 
 interface BikerCardProps {
-  biker: IBiker;
+  biker: BikerPreview;
 }
 
-function buildMockChatId(biker: IBiker) {
+function buildMockChatId(biker: BikerPreview) {
   return [biker.nickname, biker.bikeBrand, biker.bikeModel]
     .map((value) => value.trim().toLowerCase().replace(/\s+/g, "-"))
     .filter(Boolean)

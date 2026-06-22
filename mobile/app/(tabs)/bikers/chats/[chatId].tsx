@@ -1,7 +1,7 @@
 import { useLocalSearchParams } from "expo-router";
 
+import type { BikerPreview } from "@/entities/bikers";
 import { Message } from "@/features/bikers";
-import { IBiker } from "@package-shared/types";
 import { useId, useState } from "react";
 import { Button, Input } from "@/components/common";
 import {
@@ -20,14 +20,14 @@ export default function BikerChatScreen() {
   const { chatId } = useLocalSearchParams<{ chatId: string }>();
   const [message, setMessage] = useState("");
   const id = useId();
-  const me: IBiker = {
+  const me: BikerPreview = {
     nickname: "나",
     bikeBrand: "",
     bikeModel: "",
     distance: "",
     proficiency: "",
   };
-  const you: IBiker = {
+  const you: BikerPreview = {
     nickname: "상대방",
     bikeBrand: "",
     bikeModel: "",
@@ -68,6 +68,7 @@ export default function BikerChatScreen() {
           <Input
             value={message}
             onChange={(e) => handleChageMessage(e.nativeEvent.text)}
+            placeholder="메시지를 입력하세요"
             className="flex-1"
           />
           <Button onPress={handleSendMessage} style={styles.sendButton}>

@@ -9,14 +9,14 @@ import {
   BottomSheetContent,
   BottomSheetTrigger,
 } from "@/components/common";
-import { IBiker } from "@package-shared/types";
+import type { BikerPreview } from "@/entities/bikers";
 import { BikerCard } from "./BikerCard";
 
 interface IBikersBottomSheetProps {
   defaultOpen?: boolean;
   onOpenChange?: (open: boolean) => void;
   open?: boolean;
-  bikers: IBiker[];
+  bikers: BikerPreview[];
 }
 
 export function BikersBottomSheet({
