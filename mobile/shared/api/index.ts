@@ -7,4 +7,5 @@ export {
   getApiAuthState,
   persistAuthResponse,
   restoreApiAuthState,
+  subscribeApiAuthState,
 } from "./http";

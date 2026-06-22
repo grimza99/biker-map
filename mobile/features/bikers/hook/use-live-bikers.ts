@@ -46,7 +46,7 @@ export function useLiveBikers({
   currentLocation,
   enabled,
 }: UseLiveBikersOptions): UseLiveBikersResult {
-  const { user } = useSession();
+  const { accessToken, user } = useSession();
   const [isSharingEnabled, setIsSharingEnabled] = useState(false);
   const [isAppActive, setIsAppActive] = useState(
     AppState.currentState === "active"
@@ -111,8 +111,6 @@ export function useLiveBikers({
     }
 
     const currentUserId = user?.userId;
-    const accessToken = getApiAuthState().accessToken;
-
     if (!currentUserId || !accessToken) {
       setErrorMessage("실시간 위치 구독을 시작할 인증 정보가 없습니다.");
       return;
@@ -138,8 +136,14 @@ export function useLiveBikers({
           throw new Error("지원하지 않는 실시간 위치 설정입니다.");
         }
 
+        const latestAccessToken = getApiAuthState().accessToken;
+
+        if (!latestAccessToken) {
+          throw new Error("실시간 위치 구독에 필요한 토큰을 확인할 수 없습니다.");
+        }
+
         const supabase = createSupabaseRealtimeClient();
-        supabase.realtime.setAuth(accessToken);
+        supabase.realtime.setAuth(latestAccessToken);
 
         const channel = supabase
           .channel(response.data.channel)
@@ -227,7 +231,14 @@ export function useLiveBikers({
         void cleanup();
       }
     };
-  }, [enabled, isAppActive, isSharingEnabled, sharingSession, user?.userId]);
+  }, [
+    accessToken,
+    enabled,
+    isAppActive,
+    isSharingEnabled,
+    sharingSession,
+    user?.userId,
+  ]);
 
   useEffect(() => {
     if (!enabled || !isSharingEnabled || !isAppActive || sharingSession) {
