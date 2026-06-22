@@ -6,8 +6,14 @@ import { useMyFavorites, useMyPosts } from "../model";
 import { Profile } from "@/shared/ui";
 
 export function SummaryProfile() {
-  const { data: favoritePosts } = useMyFavorites("post");
-  const { data: favoriteRoutes } = useMyFavorites("route");
+  const { data: favoritePosts } = useMyFavorites(
+    { page: 0, pageSize: 0 },
+    "post"
+  );
+  const { data: favoriteRoutes } = useMyFavorites(
+    { page: 0, pageSize: 0 },
+    "route"
+  );
   const { data: myPosts } = useMyPosts({ page: 1, pageSize: 1 });
 
   const totalFavoriteCount =
