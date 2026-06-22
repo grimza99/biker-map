@@ -10,7 +10,7 @@
 - 위치 공유 상태는 `off | foreground`만 사용한다.
 - `foreground`는 앱이 화면에 보이는 동안만 위치를 공유한다.
 - 다른 앱으로 전환했다가 다시 돌아오면 위치 수집과 realtime 동기화를 다시 시작한다.
-- foreground 위치 공유 업로드 기준은 `5초` 주기다.
+- foreground 위치 공유 업로드 기준은 `10초` 주기다.
 - nearby 기본 반경은 `5000m`로 한다.
 - nearby snapshot 기본 `limit`은 `50`이다.
 - 최신 위치 상태 1건만 저장한다.
