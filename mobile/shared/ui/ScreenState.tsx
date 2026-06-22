@@ -5,7 +5,6 @@ import { Feather, Ionicons } from "@expo/vector-icons";
 import { bikerMapTheme } from "@package-shared/constants";
 import { AppText, Button } from "@/components/common";
 import { useRouter } from "expo-router";
-import { AppScreen } from "@/components/shell";
 
 type TStatevariant = "error" | "not-found";
 
@@ -28,37 +27,34 @@ export function ScreenState({
   const resolvedIcon = icon ? icon : stateVariantIconMap[variant];
   const router = useRouter();
   return (
-    <AppScreen
-      containerStyle={{
-        display: "flex",
-        justifyContent: "center",
-        alignItems: "center",
-      }}
+    <View
+      className={cn(
+        "flex justify-center items-center min-h-200 w-full flex-col gap-20 bg-bg flex-1",
+        className
+      )}
     >
-      <View className="flex justify-center items-center min-h-200 w-full flex-col gap-20">
-        <View className="flex flex-col gap-5 justify-center items-center">
-          {resolvedIcon}
-          <AppText className="text-3xl">{title}</AppText>
-          {description && (
-            <AppText tone="muted" className="text-lg">
-              {description}
-            </AppText>
-          )}
-        </View>
-        {refetch && (
-          <Button onPress={() => refetch()}>
-            <Ionicons
-              name="reload"
-              size={24}
-              color={bikerMapTheme.colors.accent}
-            />
-          </Button>
+      <View className="flex flex-col gap-5 justify-center items-center">
+        {resolvedIcon}
+        <AppText className="text-3xl">{title}</AppText>
+        {description && (
+          <AppText tone="muted" className="text-lg">
+            {description}
+          </AppText>
         )}
-        <Button onPress={() => router.back()}>
-          <AppText>돌아가기</AppText>
-        </Button>
       </View>
-    </AppScreen>
+      {refetch && (
+        <Button onPress={() => refetch()}>
+          <Ionicons
+            name="reload"
+            size={24}
+            color={bikerMapTheme.colors.accent}
+          />
+        </Button>
+      )}
+      <Button onPress={() => router.back()}>
+        <AppText>돌아가기</AppText>
+      </Button>
+    </View>
   );
 }
 
