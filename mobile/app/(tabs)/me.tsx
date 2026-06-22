@@ -53,13 +53,7 @@ const meFloatingMenuOptions: Array<{
     label: "내 정보",
   },
   {
-    icon: (
-      <Feather
-        name="user-minus"
-        size={24}
-        color={bikerMapTheme.colors.accent}
-      />
-    ),
+    icon: <Feather name="user-minus" size={24} color="white" />,
     id: "delete-account",
     label: "회원 탈퇴",
   },
@@ -129,18 +123,6 @@ export default function MeScreen() {
             {activeContent.rightHandle && activeContent.rightHandle}
           </View>
           {activeContent.content}
-
-          <GlobalFloatingMenu<FloatingMenuOptionId>
-            options={meFloatingMenuOptions}
-            onSelect={(option) => {
-              if (option.id === "delete-account") {
-                setIsDeleteAccountClicked(true);
-                return;
-              }
-
-              setActiveMenu(option.id as MeScreenContentId);
-            }}
-          />
         </>
       ) : (
         <>
@@ -150,6 +132,17 @@ export default function MeScreen() {
       <DeleteAccountModal
         isOpen={isDeleteAccountClicked}
         onClose={() => setIsDeleteAccountClicked(false)}
+      />
+      <GlobalFloatingMenu<FloatingMenuOptionId>
+        options={meFloatingMenuOptions}
+        onSelect={(option) => {
+          if (option.id === "delete-account") {
+            setIsDeleteAccountClicked(true);
+            return;
+          }
+
+          setActiveMenu(option.id as MeScreenContentId);
+        }}
       />
     </AppScreen>
   );
