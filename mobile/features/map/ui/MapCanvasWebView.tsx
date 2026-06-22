@@ -5,6 +5,7 @@ import { WebView, type WebViewMessageEvent } from "react-native-webview";
 import {
   PlaceListItem,
   RouteMapPathItem,
+  TBikerPresenceItem,
   TLocationCoordinate,
   bikerMapTheme,
 } from "@package-shared/index";
@@ -13,6 +14,7 @@ import { AppText } from "@/components/common";
 
 type MapCanvasWebViewProps = {
   activeFilter: string;
+  bikerPresences?: TBikerPresenceItem[];
   currentLocation?: TLocationCoordinate | null;
   focusedPlaceId?: string | null;
   onMapReady?: () => void;
@@ -30,6 +32,7 @@ type BridgeEvent =
   | {
       payload: {
         activeFilter: string;
+        bikerPresences: TBikerPresenceItem[];
         currentLocation: TLocationCoordinate | null;
         focusedPlaceId: string | null;
         places: PlaceListItem[];
@@ -46,6 +49,7 @@ type WebViewLoadErrorEvent = {
 
 export function MapCanvasWebView({
   activeFilter,
+  bikerPresences = [],
   currentLocation = null,
   focusedPlaceId = null,
   onMapReady,
@@ -70,6 +74,7 @@ export function MapCanvasWebView({
       type: "SET_MAP_DATA",
       payload: {
         activeFilter,
+        bikerPresences,
         currentLocation,
         focusedPlaceId,
         places,
@@ -80,7 +85,15 @@ export function MapCanvasWebView({
     webViewRef.current?.injectJavaScript(
       `window.__receiveFromNative?.(${JSON.stringify(message)}); true;`
     );
-  }, [activeFilter, currentLocation, focusedPlaceId, isReady, places, routes]);
+  }, [
+    activeFilter,
+    bikerPresences,
+    currentLocation,
+    focusedPlaceId,
+    isReady,
+    places,
+    routes,
+  ]);
 
   function handleMessage(event: WebViewMessageEvent) {
     try {
@@ -191,6 +204,7 @@ function buildMapHtml(clientId: string) {
 
       var map = null;
       var activeMarkers = [];
+      var activeBikerMarkers = [];
       var activeRoutePolylines = [];
       var activeCurrentLocationMarker = null;
       var sdkScriptUrl = ${serializedScriptUrl};
@@ -224,6 +238,18 @@ function buildMapHtml(clientId: string) {
           + '</div>';
       }
 
+      function makeBikerMarkerContent(nickname, isMe) {
+        var safeName = escapeHtml(nickname);
+        var color = isMe ? '#0095FF' : '#F97316';
+        var ringColor = isMe ? 'rgba(0,149,255,0.18)' : 'rgba(249,115,22,0.16)';
+
+        return '<div style="position:relative;min-width:18px;height:18px;">'
+          + '<div style="position:absolute;bottom:24px;left:50%;transform:translateX(-50%);padding:5px 8px;border-radius:999px;background:rgba(12,16,22,0.92);border:1px solid rgba(99,114,130,0.32);white-space:nowrap;font-size:11px;font-weight:800;color:#f5f7fb;">' + safeName + '</div>'
+          + '<div style="position:absolute;left:50%;top:50%;width:22px;height:22px;border-radius:999px;transform:translate(-50%,-50%);background:' + ringColor + ';"></div>'
+          + '<div style="position:absolute;left:50%;top:50%;width:14px;height:14px;border-radius:999px;transform:translate(-50%,-50%);background:' + color + ';border:2px solid rgba(245,247,251,0.95);box-shadow:0 4px 12px rgba(0,0,0,0.28);"></div>'
+          + '</div>';
+      }
+
       function escapeHtml(value) {
         return String(value || '')
           .replace(/&/g, '&amp;')
@@ -236,6 +262,11 @@ function buildMapHtml(clientId: string) {
       function clearMarkers() {
         activeMarkers.forEach(function(m) { m.setMap(null); });
         activeMarkers = [];
+      }
+
+      function clearBikerMarkers() {
+        activeBikerMarkers.forEach(function(marker) { marker.setMap(null); });
+        activeBikerMarkers = [];
       }
 
       function clearRoutePolylines() {
@@ -261,11 +292,13 @@ function buildMapHtml(clientId: string) {
 
       function renderMapData(payload) {
         clearMarkers();
+        clearBikerMarkers();
         clearRoutePolylines();
         clearCurrentLocationMarker();
         if (!map) return;
 
         var places = payload.places;
+        var bikerPresences = payload.bikerPresences || [];
         var currentLocation = payload.currentLocation;
         var routes = payload.routes || [];
         var focusedId = payload.focusedPlaceId;
@@ -327,6 +360,30 @@ function buildMapHtml(clientId: string) {
           bounds = extendBounds(bounds, position);
         });
 
+        bikerPresences.forEach(function(biker) {
+          if (!biker || !biker.location) return;
+          if (!Number.isFinite(Number(biker.location.lat)) || !Number.isFinite(Number(biker.location.lng))) {
+            return;
+          }
+
+          var bikerPosition = new naver.maps.LatLng(
+            Number(biker.location.lat),
+            Number(biker.location.lng)
+          );
+
+          var bikerMarker = new naver.maps.Marker({
+            position: bikerPosition,
+            map: map,
+            icon: {
+              content: makeBikerMarkerContent(biker.nickname, Boolean(biker.isMe)),
+              anchor: new naver.maps.Point(11, 11)
+            }
+          });
+
+          activeBikerMarkers.push(bikerMarker);
+          bounds = extendBounds(bounds, bikerPosition);
+        });
+
         if (
           currentLocation &&
           Number.isFinite(Number(currentLocation.lat)) &&
@@ -349,7 +406,7 @@ function buildMapHtml(clientId: string) {
         }
 
         if (bounds) {
-          if (places.length === 0 && routes.length === 0 && currentLocation) {
+          if (places.length === 0 && routes.length === 0 && bikerPresences.length === 0 && currentLocation) {
             map.setCenter(
               new naver.maps.LatLng(
                 Number(currentLocation.lat),
