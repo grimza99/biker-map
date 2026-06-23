@@ -4,8 +4,7 @@ export type CommunityCategorySlug =
   | "notice"
   | "question"
   | "info"
-  | "free"
-  | "all";
+  | "free";
 
 export type CommunityPost = {
   id: string;

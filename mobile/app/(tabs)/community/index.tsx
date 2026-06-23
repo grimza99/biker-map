@@ -1,6 +1,6 @@
 import { Feather, Ionicons } from "@expo/vector-icons";
 import { type Href, useRouter } from "expo-router";
-import { ScrollView, View } from "react-native";
+import { ActivityIndicator, ScrollView, View } from "react-native";
 import { useState } from "react";
 
 import {
@@ -17,31 +17,60 @@ import { MOBILE_PATHS, ScreenState } from "@/shared";
 import { usePostList } from "@/entities/community";
 
 const COMMUNITY_PAGE_SIZE = 5;
+type CommunityCategoryFilter = CommunityCategorySlug | "all";
+
 const COMMUNITY_CATEGORY_FILTERS: {
   label: string;
-  value: CommunityCategorySlug;
+  value: CommunityCategoryFilter;
 }[] = [{ label: "전체", value: "all" }, ...communityCategoryOptions];
 
 export default function CommunityScreen() {
   const router = useRouter();
   const [search, setSearch] = useState("");
   const [searchQuery, setSearchQuery] = useState("");
-  const [selectedCategory, setSelectedCategory] = useState<
-    CommunityCategorySlug | "all"
-  >("all");
+  const [selectedCategory, setSelectedCategory] =
+    useState<CommunityCategoryFilter>("all");
   const [currentPage, setCurrentPage] = useState(1);
 
-  const { data: postListData } = usePostList({
-    category: selectedCategory,
+  const {
+    data: postListData,
+    isLoading,
+    isError,
+    error,
+    refetch,
+  } = usePostList({
+    category: selectedCategory === "all" ? undefined : selectedCategory,
     search: searchQuery,
     page: currentPage,
     pageSize: COMMUNITY_PAGE_SIZE,
     sort: "latest",
   });
 
-  if (!postListData) {
+  if (isLoading && !postListData) {
     return (
-      <ScreenState title="데이터를 불러오는데 실패 했습니다." variant="error" />
+      <AppScreen title="커뮤니티">
+        <View className="flex-1 items-center justify-center rounded-3xl bg-panel py-8">
+          <ActivityIndicator color={bikerMapTheme.colors.accent} />
+          <AppText tone="muted" className="text-sm">
+            게시글을 불러오는 중입니다.
+          </AppText>
+        </View>
+      </AppScreen>
+    );
+  }
+
+  if (isError || !postListData) {
+    return (
+      <ScreenState
+        title="데이터를 불러오는데 실패 했습니다."
+        description={
+          error instanceof Error ? error.message : "잠시 후 다시 시도해주세요."
+        }
+        variant="error"
+        refetch={() => {
+          void refetch();
+        }}
+      />
     );
   }
 
@@ -51,6 +80,7 @@ export default function CommunityScreen() {
 
   const handleSearch = () => {
     setSearchQuery(search);
+    setCurrentPage(1);
   };
   return (
     <AppScreen
@@ -101,6 +131,7 @@ export default function CommunityScreen() {
               selected={selectedCategory === category.value}
               onPress={() => {
                 setSelectedCategory(category.value);
+                setCurrentPage(1);
               }}
             >
               {category.label}

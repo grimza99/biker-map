@@ -27,6 +27,7 @@ export function usePostList(query: CommunityPostsQuery = {}) {
       const res = await apiFetch.get<PostsListResponseData>(endpoint);
       return res;
     },
+    placeholderData: (previousData) => previousData,
   });
 }
 

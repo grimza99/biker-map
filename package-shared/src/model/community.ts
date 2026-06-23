@@ -24,5 +24,4 @@ export const categoryLabelMap: Record<CommunityCategorySlug, string> = {
   question: "질문",
   info: "정보",
   free: "자유",
-  all: "전체",
 };
