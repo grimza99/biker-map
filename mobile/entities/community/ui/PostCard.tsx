@@ -8,6 +8,7 @@ import {
   DefaultCardContainer,
   MetaCounts,
 } from "@/components/common";
+import { formatRelative, MOBILE_PATHS } from "@/shared";
 
 type PostCardProps = {
   post: CommunityPost;
@@ -20,7 +21,7 @@ export function PostCard({ post, categoryLabel }: PostCardProps) {
 
   const handlePressDetail = () => {
     router.push({
-      pathname: "/(tabs)/community/[postId]",
+      pathname: MOBILE_PATHS.community.detailPost,
       params: { postId: post.id },
     } as unknown as Href);
   };
@@ -32,12 +33,16 @@ export function PostCard({ post, categoryLabel }: PostCardProps) {
             <View className="flex-row items-center gap-2">
               <Chip label={categoryLabel} className={chipColor} />
               {post.pinned && <Chip label="고정" />}
-              <AppText className="m-0 max-w-20 truncate text-xl font-semibold tracking-(--tracking-heading-md)">
+              <AppText
+                className="m-0 max-w-55 text-xl font-semibold tracking-(--tracking-heading-md)"
+                numberOfLines={1}
+                ellipsizeMode="tail"
+              >
                 {post.title}
               </AppText>
             </View>
             <AppText tone="muted" className="text-xs">
-              {post.timeLabel}
+              {formatRelative(post.timeLabel)}
             </AppText>
           </View>
 
