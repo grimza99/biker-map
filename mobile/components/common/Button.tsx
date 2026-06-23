@@ -8,7 +8,6 @@ import {
 } from "react-native";
 import type {
   PressableProps,
-  PressableStateCallbackType,
   StyleProp,
   TextStyle,
   ViewStyle,

@@ -5,7 +5,8 @@
   "main": "expo-router/entry",
   "scripts": {
     "dev": "expo start",
-    "start": "expo start"
+    "start": "expo start",
+    "lint": "expo lint"
   },
   "dependencies": {
     "@expo/metro-config": "~55.0.9",
@@ -42,6 +43,8 @@
     "@types/react": "^19.2.14",
     "babel-plugin-module-resolver": "^5.0.3",
     "babel-preset-expo": "~55.0.8",
+    "eslint": "^9.0.0",
+    "eslint-config-expo": "~55.0.1",
     "postcss": "^8.5.15",
     "tailwindcss": "^4.2.2",
     "typescript": "^5.9.3"

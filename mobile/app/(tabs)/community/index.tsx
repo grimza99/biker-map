@@ -16,10 +16,10 @@ import { PostCard } from "@/entities/community/ui/PostCard";
 import { AppScreen } from "@/components/shell";
 
 const COMMUNITY_PAGE_SIZE = 5;
-const COMMUNITY_CATEGORY_FILTERS: Array<{
+const COMMUNITY_CATEGORY_FILTERS: {
   label: string;
   value: CommunityCategorySlug | "all";
-}> = [{ label: "전체", value: "all" }, ...communityCategoryOptions];
+}[] = [{ label: "전체", value: "all" }, ...communityCategoryOptions];
 
 export default function CommunityScreen() {
   const [isLoading, setIsLoading] = useState(true);
