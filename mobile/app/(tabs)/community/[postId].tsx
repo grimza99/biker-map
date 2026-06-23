@@ -1,6 +1,6 @@
 import { Feather } from "@expo/vector-icons";
 import { useLocalSearchParams } from "expo-router";
-import { ActivityIndicator, Alert, Pressable, View } from "react-native";
+import { ActivityIndicator, Alert, Image, Pressable, View } from "react-native";
 
 import {
   CHIP_COLOR,
@@ -23,7 +23,7 @@ import {
 } from "@/components/common";
 import { AppScreen } from "@/components/shell";
 import { useSession } from "@/features/session/model";
-import { formatRelative } from "@/shared";
+import { formatRelative, openExternalUrl } from "@/shared";
 import { FavoriteActionButton, useToggleFavorite } from "@/features/favorite";
 import { useCreatePostComment } from "@/features/community";
 import { useState } from "react";
@@ -142,14 +142,24 @@ export default function PostDetailScreen() {
 
           {post.images?.length ? (
             <DefaultCardContainer containerStyle="rounded-3xl bg-panel">
-              <View className="gap-2.5">
+              <View className="gap-3">
                 {post.images.map((image) => (
-                  <AppText
+                  <Pressable
                     key={image}
-                    className="text-sm font-semibold text-active"
+                    accessibilityRole="imagebutton"
+                    accessibilityLabel={`${post.title} 이미지 열기`}
+                    className="overflow-hidden rounded-2xl border border-border bg-panel-soft"
+                    onPress={() => void openExternalUrl(image)}
                   >
-                    {image}
-                  </AppText>
+                    <View className="aspect-4/3 w-full">
+                      <Image
+                        source={{ uri: image }}
+                        accessibilityLabel={`${post.title} 이미지`}
+                        className="h-full w-full"
+                        resizeMode="contain"
+                      />
+                    </View>
+                  </Pressable>
                 ))}
               </View>
             </DefaultCardContainer>
