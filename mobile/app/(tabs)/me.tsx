@@ -3,7 +3,7 @@ import { type ReactNode, useState } from "react";
 import { View } from "react-native";
 import { Redirect } from "expo-router";
 
-import { bikerMapTheme } from "@package-shared/constants";
+import { bikerMapTheme } from "@package-shared/index";
 import { AppText, GlobalFloatingMenu } from "@/components/common";
 import { AppScreen } from "../../components/shell";
 import { useSession } from "../../features/session/model";
@@ -26,7 +26,8 @@ const meFloatingMenuOptions: {
   icon: ReactNode;
   id: FloatingMenuOptionId;
   label: string;
-}[] = [
+  tone?: "default" | "danger";
+}> = [
   {
     icon: (
       <Ionicons name="heart" size={24} color={bikerMapTheme.colors.accent} />
@@ -53,15 +54,10 @@ const meFloatingMenuOptions: {
     label: "내 정보",
   },
   {
-    icon: (
-      <Feather
-        name="user-minus"
-        size={24}
-        color={bikerMapTheme.colors.accent}
-      />
-    ),
+    icon: <Feather name="user-minus" size={24} color="white" />,
     id: "delete-account",
     label: "회원 탈퇴",
+    tone: "danger",
   },
 ];
 
@@ -116,7 +112,22 @@ export default function MeScreen() {
   const activeContent = activeMenuContent[activeMenu];
 
   return (
-    <AppScreen title="마이페이지">
+    <AppScreen
+      title="마이페이지"
+      overlay={
+        <GlobalFloatingMenu<FloatingMenuOptionId>
+          options={meFloatingMenuOptions}
+          onSelect={(option) => {
+            if (option.id === "delete-account") {
+              setIsDeleteAccountClicked(true);
+              return;
+            }
+
+            setActiveMenu(option.id as MeScreenContentId);
+          }}
+        />
+      }
+    >
       {/* todo : authenticated 에 따라서 tab 자체를 보호 */}
       {isAuthenticated ? (
         <>
@@ -129,18 +140,6 @@ export default function MeScreen() {
             {activeContent.rightHandle && activeContent.rightHandle}
           </View>
           {activeContent.content}
-
-          <GlobalFloatingMenu<FloatingMenuOptionId>
-            options={meFloatingMenuOptions}
-            onSelect={(option) => {
-              if (option.id === "delete-account") {
-                setIsDeleteAccountClicked(true);
-                return;
-              }
-
-              setActiveMenu(option.id as MeScreenContentId);
-            }}
-          />
         </>
       ) : (
         <>
