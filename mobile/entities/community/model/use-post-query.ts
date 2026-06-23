@@ -9,6 +9,7 @@ import { useQuery } from "@tanstack/react-query";
 
 import { apiFetch } from "@/shared";
 
+/**----------------------------------- post detail --------------------------------- */
 export function usePostDetail(postId: string) {
   return useQuery<ApiResponse<PostDetailResponseData>>({
     queryKey: queryKeys.post(postId),
@@ -17,6 +18,8 @@ export function usePostDetail(postId: string) {
     enabled: Boolean(postId),
   });
 }
+
+/**----------------------------------- post comments --------------------------------- */
 
 export function usePostComments(postId: string) {
   return useQuery<ApiResponse<PostCommentsResponseData>>({
