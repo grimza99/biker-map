@@ -253,12 +253,14 @@
 - snapshot 실패
   - 우선 재시도 가능한 에러 상태로 둔다.
 - realtime subscribe 실패
-  - snapshot 기반 화면은 유지하고, 재연결 전략은 후속 단계에서 추가한다.
+  - snapshot 기반 화면은 유지한다.
+  - 현재는 `1초 -> 2초 -> 4초` backoff로 최대 `3회`까지 자동 재시도한다.
+  - 이후에도 실패하면 에러 상태를 유지하고 자동 재시도는 중단한다.
 
 ## 7. 이후 진행 예정 사항
 
 1. 모바일 `sharingIntent`의 persistence 범위를 정한다.
-2. realtime subscribe 실패/재연결 실패 시 재시도 전략을 구체화한다.
-3. 실기기 기준 background 복귀, 네트워크 복귀, 장시간 idle 시나리오를 수동 검증한다.
-4. cleanup route 운영 로그/알림 기준을 정한다.
-5. scale 이슈가 생기면 `bikers-location` 채널 분할 전략을 검토한다.
+2. 실기기 기준 background 복귀, 네트워크 복귀, 장시간 idle 시나리오를 수동 검증한다.
+3. cleanup route 운영 로그/알림 기준을 정한다.
+4. scale 이슈가 생기면 `bikers-location` 채널 분할 전략을 검토한다.
+5. 재시도 한도를 넘긴 뒤 사용자가 수동으로 다시 붙을 UX가 필요한지 검토한다.
