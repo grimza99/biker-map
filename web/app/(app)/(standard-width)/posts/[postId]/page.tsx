@@ -31,6 +31,7 @@ import {
   Profile,
 } from "@shared/ui";
 import { MessageSquare } from "lucide-react";
+import Image from "next/image";
 
 export default function PostDetailPage() {
   const params = useParams<{ postId: string }>();
@@ -163,25 +164,33 @@ export default function PostDetailPage() {
           </div>
         </div>
       </div>
-      <div className="grid gap-4">
+      <div className="flex flex-col gap-4">
         <p className="m-0 whitespace-pre-wrap leading-8 text-text/92">
           {post.content}
         </p>
-        {post.images?.length && (
-          <div className="grid gap-2 md:grid-cols-2">
-            {post.images.map((image) => (
-              <a
-                key={image}
-                href={image}
-                target="_blank"
-                rel="noreferrer"
-                className="rounded-2xl border border-border bg-panel-solid px-4 py-3 text-sm text-accent transition hover:-translate-y-0.5"
-              >
-                {image}
-              </a>
-            ))}
-          </div>
-        )}
+        <div className="mx-auto w-full max-w-300">
+          {post.images?.length && (
+            <div className="grid gap-2">
+              {post.images.map((image) => (
+                <a
+                  key={image}
+                  href={image}
+                  target="_blank"
+                  rel="noreferrer"
+                  className="relative block aspect-4/3"
+                >
+                  <Image
+                    src={image}
+                    alt={`${post.title} 이미지`}
+                    fill
+                    sizes="(max-width: 1000px) 100vw, 500px"
+                    className="object-contain"
+                  />
+                </a>
+              ))}
+            </div>
+          )}
+        </div>
         <CommunityEngagementBar
           targetType="post"
           targetId={post.id}
