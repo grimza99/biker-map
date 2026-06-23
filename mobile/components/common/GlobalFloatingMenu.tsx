@@ -9,6 +9,7 @@ import { Button } from "./Button";
 import { AppText } from "./AppText";
 
 export type GlobalFloatingMenuOption<T> = {
+  accessibilityLabel?: string;
   description?: string;
   disabled?: boolean;
   icon?: ReactNode;
@@ -69,7 +70,9 @@ export function GlobalFloatingMenu<T>({
             return (
               <Button
                 key={option.id as string}
-                accessibilityLabel={triggerAccessibilityLabel}
+                accessibilityLabel={
+                  option.accessibilityLabel ?? option.label
+                }
                 accessibilityRole="button"
                 accessibilityState={{ expanded: isOpen }}
                 className={cn(
