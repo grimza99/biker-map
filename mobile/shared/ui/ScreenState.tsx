@@ -13,6 +13,7 @@ interface IScreenStateProps {
   description?: string;
   variant: TStatevariant;
   icon?: ReactNode;
+  canGoBack?: boolean;
   refetch?: () => void;
   className?: string;
 }
@@ -22,6 +23,7 @@ export function ScreenState({
   variant,
   icon,
   refetch,
+  canGoBack = true,
   className,
 }: IScreenStateProps) {
   const resolvedIcon = icon ? icon : stateVariantIconMap[variant];
@@ -51,9 +53,11 @@ export function ScreenState({
           />
         </Button>
       )}
-      <Button onPress={() => router.back()}>
-        <AppText>돌아가기</AppText>
-      </Button>
+      {canGoBack && (
+        <Button onPress={() => router.back()}>
+          <AppText>돌아가기</AppText>
+        </Button>
+      )}
     </View>
   );
 }

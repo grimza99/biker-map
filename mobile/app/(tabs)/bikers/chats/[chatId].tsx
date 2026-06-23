@@ -1,9 +1,9 @@
 import { useLocalSearchParams } from "expo-router";
 
 import { Message } from "@/features/bikers";
+import { AppText, Button, Input } from "@/components/common";
 import { IBiker } from "@package-shared/types";
 import { useId, useState } from "react";
-import { Button, Input } from "@/components/common";
 import {
   KeyboardAvoidingView,
   Platform,
@@ -14,7 +14,6 @@ import {
 } from "react-native";
 import { Feather } from "@expo/vector-icons";
 import { SafeAreaView } from "react-native-safe-area-context";
-import { AppText } from "@/components/common";
 
 export default function BikerChatScreen() {
   const { chatId } = useLocalSearchParams<{ chatId: string }>();
