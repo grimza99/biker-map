@@ -11,6 +11,7 @@ import { ReactNode } from "react";
 import { bikerMapTheme } from "@package-shared/constants/theme";
 
 import { cn } from "@/shared";
+import { MOBILE_PATHS } from "@/shared/constants/paths";
 import { AppText } from "../common";
 
 type TabRoute = {
@@ -39,7 +40,7 @@ const TAB_ROUTES: TabRoute[] = [
   },
   {
     key: "community",
-    href: "/(tabs)/community",
+    href: MOBILE_PATHS.community.entry,
     label: "커뮤니티",
     icon: ({ size, color }) => (
       <Ionicons name="chatbubbles" size={size} color={color} />
@@ -66,7 +67,7 @@ const TAB_ROUTES: TabRoute[] = [
 type MobileTabBarProps = {
   state: {
     index: number;
-    routes: Array<{ key: string; name: string }>;
+    routes: { key: string; name: string }[];
   };
 };
 

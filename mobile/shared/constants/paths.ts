@@ -15,4 +15,9 @@ export const MOBILE_PATHS = {
     chat: `${TABS}/bikers/chats/[chatId]` as const,
   },
   detailPlace: `${TABS}${PATHS.map.entry}/places/[placeId]` as const,
+  community: {
+    entry: `${TABS}/community` as const,
+    detail: `${TABS}/community/[postId]` as const,
+    new: `${TABS}/community/new` as const,
+  },
 };
