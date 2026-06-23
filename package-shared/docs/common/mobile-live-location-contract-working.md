@@ -16,6 +16,7 @@
 - nearby snapshot 기본 `limit`은 `50`이다.
 - 최신 위치 상태 1건만 저장한다.
 - stale timeout은 `30초`로 한다.
+- stale cleanup cron 주기는 `2분`으로 한다.
 - `biker_presence`는 위치 이력 테이블이 아니라 현재 공유 중인 유저의 최신 위치 1건만 보관하는 active presence 테이블이다.
 - 사용자가 `sharingStatus=off`로 전환하거나 foreground 공유가 종료되면 presence row를 삭제한다.
 - 앱이 foreground로 복귀하고 사용자의 공유 의도가 여전히 on이면 첫 위치 update 시 presence row를 다시 생성하거나 upsert한다.
