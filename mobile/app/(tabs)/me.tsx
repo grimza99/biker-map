@@ -22,7 +22,7 @@ type FloatingMenuOptionId =
   | "delete-account";
 type MeScreenContentId = "favorite" | "my-post" | "my-info";
 
-const meFloatingMenuOptions: Array<{
+const meFloatingMenuOptions: {
   icon: ReactNode;
   id: FloatingMenuOptionId;
   label: string;
