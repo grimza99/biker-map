@@ -16,6 +16,7 @@
 - nearby snapshot 기본 `limit`은 `50`이다.
 - 최신 위치 상태 1건만 저장한다.
 - stale timeout은 `30초`로 한다.
+- Vercel Hobby cron 한도 때문에 stale row의 실제 삭제는 별도 작업으로 남겨 두고, 현재 nearby 조회는 `expires_at > now()` 기준으로만 active presence를 노출한다.
 - `biker_presence`는 위치 이력 테이블이 아니라 현재 공유 중인 유저의 최신 위치 1건만 보관하는 active presence 테이블이다.
 - 사용자가 `sharingStatus=off`로 전환하거나 foreground 공유가 종료되면 presence row를 삭제한다.
 - 앱이 foreground로 복귀하고 사용자의 공유 의도가 여전히 on이면 첫 위치 update 시 presence row를 다시 생성하거나 upsert한다.
@@ -44,10 +45,12 @@
 - `POST /api/mobile/bikers/me/sharing`가 구현되었다.
 - `GET/POST /api/mobile/bikers/me/location`이 구현되었다.
 - `GET /api/mobile/bikers/nearby`가 구현되었다.
+- `GET /api/mobile/bikers/realtime-config`가 구현되었다.
 - `sharingSessionId + sharingSessionVersion` 기반 세션 검증과 late location guard가 반영되었다.
 - stale location, 미래 시각 `observedAt`, 날짜변경선 근처 거리 계산 이슈 대응이 반영되었다.
 - `me/location` 성공 시 `biker:presence-sync` broadcast가 나가도록 구현되었다.
 - `me/sharing`의 `off` 처리 시 `biker:presence-leave` broadcast가 나가도록 구현되었다.
+- expired presence는 현재 `nearby` 조회에서 제외되도록 반영되었다.
 
 ### Mobile
 
@@ -55,7 +58,11 @@
 - `useLiveBikers` 훅이 추가되어 `me/sharing -> me/location -> nearby snapshot` 흐름이 붙었다.
 - `MapCanvasWebView`가 `TBikerPresenceItem[]` marker 렌더링을 지원하게 되었다.
 - 앱이 background로 내려가면 foreground 공유 정책에 따라 sharing 세션을 종료하고, foreground 복귀 시 다시 sharing 세션을 시작하는 흐름이 반영되었다.
-- 현재 모바일은 snapshot 기반 nearby 표시까지 구현되었고, realtime subscribe는 아직 미구현이다.
+- 위치가 고정되어도 presence가 만료되지 않도록 heartbeat 재업로드가 반영되었다.
+- `supabase-realtime` 기반 `bikers-location` subscribe가 반영되었다.
+- `biker:presence-sync`, `biker:presence-leave` 수신 시 `nearbyBikers` state merge/remove가 반영되었다.
+- access token refresh 이후에도 realtime auth가 최신 토큰을 따라가도록 동기화 로직이 반영되었다.
+- 모바일 `.env.example`와 README에 realtime용 Supabase public env 예시가 반영되었다.
 
 ## 4. DB 최신 위치 상태 기준
 
@@ -148,8 +155,6 @@
   - `biker_presence` upsert 성공 후 `biker:presence-sync` broadcast
 - `POST /me/sharing` with `sharingStatus=off`
   - row 삭제 성공 후 `biker:presence-leave` broadcast
-- stale cleanup
-  - 만료된 row를 삭제한 뒤 `biker:presence-leave` broadcast
 
 ### 모바일 반영 기준
 
@@ -165,7 +170,7 @@
 - channel은 MVP에서 전역 `bikers-location` 단일 채널로 시작한다.
 - 이 구조는 반경 밖 유저 event도 받을 수 있으므로, 모바일은 현재 반경/지도 상태 기준으로 표시 여부를 한 번 더 필터링할 수 있다.
 - 이후 scale 이슈가 생기면 region/cell 기반 채널 분리 또는 서버 scoped config로 확장한다.
-- 현재는 서버 broadcast까지만 반영되었고, 모바일 subscribe/connect 단계는 아직 남아 있다.
+- 현재는 서버 broadcast와 모바일 subscribe/connect까지 반영된 상태다.
 
 ## 6. 모바일 연동 순서 기준
 
@@ -191,6 +196,8 @@
    - `POST /api/mobile/bikers/me/sharing`
    - `POST /api/mobile/bikers/me/location`
    - `GET /api/mobile/bikers/nearby`
+   - `GET /api/mobile/bikers/realtime-config`
+   - realtime subscribe
 
 ### 현재 위치 update 주기
 
@@ -206,6 +213,7 @@
 3. foreground 상태이면 `POST /api/mobile/bikers/me/sharing`으로 세션을 연다.
 4. 첫 위치를 받으면 `POST /api/mobile/bikers/me/location`을 호출한다.
 5. 이어서 nearby snapshot을 조회한다.
+6. realtime channel을 subscribe 한다.
 
 ### 현재 토글 off
 
@@ -230,6 +238,8 @@
    - `POST /api/mobile/bikers/me/sharing`
    - `POST /api/mobile/bikers/me/location`
    - `GET /api/mobile/bikers/nearby`
+   - `GET /api/mobile/bikers/realtime-config`
+   - realtime subscribe
 
 ### 에러 처리 기준
 
@@ -242,12 +252,14 @@
 - snapshot 실패
   - 우선 재시도 가능한 에러 상태로 둔다.
 - realtime subscribe 실패
-  - snapshot 기반 화면은 유지하고, 재연결 전략은 후속 단계에서 추가한다.
+  - snapshot 기반 화면은 유지한다.
+  - 초기 subscribe 실패 시 `1초 -> 2초 -> 4초` backoff로 최대 `3회`까지 자동 재시도한다.
+  - 이후에도 실패하면 에러 상태를 유지하고 자동 재시도는 중단한다.
 
 ## 7. 이후 진행 예정 사항
 
-1. `GET /api/mobile/bikers/realtime-config` route를 구현한다.
-2. 모바일에서 `supabase-realtime` subscribe를 붙여 snapshot 이후 delta를 반영한다.
-3. `biker:presence-sync`, `biker:presence-leave` 수신 시 `nearbyBikers` state merge/remove 로직을 추가한다.
-4. stale presence 정리 cron 또는 cleanup job을 확정한다.
-5. 모바일 `sharingIntent`의 persistence 범위를 정한다.
+1. 모바일 `sharingIntent`의 persistence 범위를 정한다.
+2. 실기기 기준 background 복귀, 네트워크 복귀, 장시간 idle 시나리오를 수동 검증한다.
+3. scale 이슈가 생기면 별도 scheduler 또는 `bikers-location` 채널 분할 전략을 함께 검토한다.
+4. stale row 실제 삭제 시점과 운영 방식(cron, manual job, 다른 write path 연계)을 확정한다.
+5. cleanup 실패 로그와 운영 대응 기준을 정한다.

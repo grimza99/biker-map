@@ -46,6 +46,7 @@ export function useLiveBikers({
   currentLocation,
   enabled,
 }: UseLiveBikersOptions): UseLiveBikersResult {
+  const [realtimeRetryKey, setRealtimeRetryKey] = useState(0);
   const { accessToken, user } = useSession();
   const [isSharingEnabled, setIsSharingEnabled] = useState(false);
   const [isAppActive, setIsAppActive] = useState(
@@ -66,6 +67,7 @@ export function useLiveBikers({
   const lastUploadedCoordinateRef = useRef<TLocationCoordinate | null>(null);
   const sharingIntentRef = useRef(false);
   const currentLocationRef = useRef<TLocationCoordinate | null>(currentLocation);
+  const realtimeRetryAttemptRef = useRef(0);
 
   useEffect(() => {
     currentLocationRef.current = currentLocation;
@@ -83,6 +85,8 @@ export function useLiveBikers({
       lastUploadedCoordinateRef.current = null;
       sharingIntentRef.current = false;
       isAppActiveRef.current = AppState.currentState === "active";
+      realtimeRetryAttemptRef.current = 0;
+      setRealtimeRetryKey(0);
     }
   }, [enabled]);
 
@@ -118,6 +122,7 @@ export function useLiveBikers({
 
     let cancelled = false;
     let cleanup: (() => Promise<void> | void) | null = null;
+    let retryTimer: ReturnType<typeof setTimeout> | null = null;
 
     async function subscribeRealtime() {
       try {
@@ -207,6 +212,7 @@ export function useLiveBikers({
           throw new Error("실시간 위치 채널 구독에 실패했습니다.");
         }
 
+        realtimeRetryAttemptRef.current = 0;
         cleanup = async () => {
           await supabase.removeChannel(channel);
         };
@@ -220,6 +226,18 @@ export function useLiveBikers({
             ? error.message
             : "실시간 위치 구독을 시작하지 못했습니다."
         );
+
+        if (realtimeRetryAttemptRef.current >= 3) {
+          return;
+        }
+
+        const nextAttempt = realtimeRetryAttemptRef.current + 1;
+        realtimeRetryAttemptRef.current = nextAttempt;
+        const retryDelayMs = Math.min(1000 * 2 ** (nextAttempt - 1), 8000);
+
+        retryTimer = setTimeout(() => {
+          setRealtimeRetryKey((current) => current + 1);
+        }, retryDelayMs);
       }
     }
 
@@ -227,6 +245,9 @@ export function useLiveBikers({
 
     return () => {
       cancelled = true;
+      if (retryTimer) {
+        clearTimeout(retryTimer);
+      }
       if (cleanup) {
         void cleanup();
       }
@@ -236,6 +257,7 @@ export function useLiveBikers({
     enabled,
     isAppActive,
     isSharingEnabled,
+    realtimeRetryKey,
     sharingSession,
     user?.userId,
   ]);
