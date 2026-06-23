@@ -1,8 +1,0 @@
-{
-  "crons": [
-    {
-      "path": "/api/internal/mobile/bikers/cleanup-stale",
-      "schedule": "*/2 * * * *"
-    }
-  ]
-}
