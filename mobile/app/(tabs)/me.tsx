@@ -22,11 +22,11 @@ type FloatingMenuOptionId =
   | "delete-account";
 type MeScreenContentId = "favorite" | "my-post" | "my-info";
 
-const meFloatingMenuOptions: Array<{
+const meFloatingMenuOptions: {
   icon: ReactNode;
   id: FloatingMenuOptionId;
   label: string;
-}> = [
+}[] = [
   {
     icon: (
       <Ionicons name="heart" size={24} color={bikerMapTheme.colors.accent} />

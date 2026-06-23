@@ -7,6 +7,7 @@
     "build:web": "npm --prefix web run build",
     "start:web": "npm --prefix web run start",
     "lint:web": "npm --prefix web run lint",
+    "lint:mobile": "npm --prefix mobile run lint",
     "dev:mobile": "npm --prefix mobile run dev -- --clear",
     "ci:all": "npm ci && npm --prefix mobile ci",
     "supabase:start": "supabase start",

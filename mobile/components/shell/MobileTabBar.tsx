@@ -66,7 +66,7 @@ const TAB_ROUTES: TabRoute[] = [
 type MobileTabBarProps = {
   state: {
     index: number;
-    routes: Array<{ key: string; name: string }>;
+    routes: { key: string; name: string }[];
   };
 };
 
