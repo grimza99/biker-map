@@ -36,11 +36,18 @@ type UseLiveBikersOptions = {
 
 type UseLiveBikersResult = {
   errorMessage: string | null;
+  canRetryRealtime: boolean;
   isSharingEnabled: boolean;
+  isRealtimeRetrying: boolean;
   isSyncing: boolean;
   nearbyBikers: TBikerPresenceItem[];
+  realtimeErrorMessage: string | null;
+  retryRealtime: () => void;
   toggleSharing: (nextValue: boolean) => Promise<void>;
 };
+
+const MAX_REALTIME_RETRY_COUNT = 3;
+const REALTIME_RETRY_DELAY_MS = [2000, 5000, 10000] as const;
 
 export function useLiveBikers({
   currentLocation,
@@ -53,10 +60,16 @@ export function useLiveBikers({
   );
   const [isSyncing, setIsSyncing] = useState(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
+  const [realtimeErrorMessage, setRealtimeErrorMessage] = useState<
+    string | null
+  >(null);
+  const [isRealtimeRetrying, setIsRealtimeRetrying] = useState(false);
+  const [canRetryRealtime, setCanRetryRealtime] = useState(false);
   const [nearbyBikers, setNearbyBikers] = useState<TBikerPresenceItem[]>([]);
   const [sharingSession, setSharingSession] = useState<SharingSession | null>(
     null
   );
+  const [realtimeRetryKey, setRealtimeRetryKey] = useState(0);
 
   const isUploadingRef = useRef(false);
   const isStartingSharingRef = useRef(false);
@@ -66,6 +79,10 @@ export function useLiveBikers({
   const lastUploadedCoordinateRef = useRef<TLocationCoordinate | null>(null);
   const sharingIntentRef = useRef(false);
   const currentLocationRef = useRef<TLocationCoordinate | null>(currentLocation);
+  const realtimeRetryCountRef = useRef(0);
+  const realtimeRetryTimerRef = useRef<ReturnType<typeof setTimeout> | null>(
+    null
+  );
 
   useEffect(() => {
     currentLocationRef.current = currentLocation;
@@ -73,14 +90,19 @@ export function useLiveBikers({
 
   useEffect(() => {
     if (!enabled) {
+      clearRealtimeRetryTimer();
       setIsAppActive(AppState.currentState === "active");
       setIsSharingEnabled(false);
+      setIsRealtimeRetrying(false);
+      setCanRetryRealtime(false);
       setIsSyncing(false);
       setErrorMessage(null);
+      setRealtimeErrorMessage(null);
       setNearbyBikers([]);
       setSharingSession(null);
       lastUploadedAtRef.current = 0;
       lastUploadedCoordinateRef.current = null;
+      realtimeRetryCountRef.current = 0;
       sharingIntentRef.current = false;
       isAppActiveRef.current = AppState.currentState === "active";
     }
@@ -107,6 +129,11 @@ export function useLiveBikers({
 
   useEffect(() => {
     if (!enabled || !isSharingEnabled || !isAppActive || !sharingSession) {
+      clearRealtimeRetryTimer();
+      realtimeRetryCountRef.current = 0;
+      setIsRealtimeRetrying(false);
+      setCanRetryRealtime(false);
+      setRealtimeErrorMessage(null);
       return;
     }
 
@@ -118,9 +145,53 @@ export function useLiveBikers({
 
     let cancelled = false;
     let cleanup: (() => Promise<void> | void) | null = null;
+    let isChannelCleanup = false;
+    let hasHandledTerminalStatus = false;
+
+    async function removeRealtimeChannel() {
+      if (!cleanup) {
+        return;
+      }
+
+      isChannelCleanup = true;
+      await cleanup();
+      cleanup = null;
+    }
+
+    function scheduleRealtimeRetry(message: string) {
+      clearRealtimeRetryTimer();
+
+      const nextRetryCount = realtimeRetryCountRef.current + 1;
+
+      if (nextRetryCount > MAX_REALTIME_RETRY_COUNT) {
+        realtimeRetryCountRef.current = 0;
+        setIsRealtimeRetrying(false);
+        setCanRetryRealtime(true);
+        setRealtimeErrorMessage(
+          `${message} 자동 재연결에 실패했습니다. 다시 연결해 주세요.`
+        );
+        return;
+      }
+
+      realtimeRetryCountRef.current = nextRetryCount;
+      setIsRealtimeRetrying(true);
+      setCanRetryRealtime(false);
+      setRealtimeErrorMessage(
+        `실시간 연결이 끊어져 다시 연결 중입니다. (${nextRetryCount}/${MAX_REALTIME_RETRY_COUNT})`
+      );
+
+      realtimeRetryTimerRef.current = setTimeout(() => {
+        realtimeRetryTimerRef.current = null;
+        setRealtimeRetryKey((current) => current + 1);
+      }, getRealtimeRetryDelayMs(nextRetryCount));
+    }
 
     async function subscribeRealtime() {
       try {
+        setIsRealtimeRetrying(realtimeRetryCountRef.current > 0);
+        setCanRetryRealtime(false);
+        setRealtimeErrorMessage(null);
+
         const response = await apiFetch.get<TBikerRealtimeConfigResponseData>(
           API_PATHS.bikers.realtimeConfig
         );
@@ -194,28 +265,47 @@ export function useLiveBikers({
 
         const status = await new Promise<string>((resolve) => {
           channel.subscribe((nextStatus) => {
+            if (
+              nextStatus === "CHANNEL_ERROR" ||
+              nextStatus === "TIMED_OUT" ||
+              nextStatus === "CLOSED"
+            ) {
+              if (!hasHandledTerminalStatus && !isChannelCleanup) {
+                hasHandledTerminalStatus = true;
+                void removeRealtimeChannel();
+                scheduleRealtimeRetry("실시간 위치 연결이 끊어졌습니다.");
+              }
+              resolve(nextStatus);
+              return;
+            }
+
             resolve(nextStatus);
           });
         });
 
         if (cancelled) {
+          isChannelCleanup = true;
           await supabase.removeChannel(channel);
           return;
         }
 
         if (status !== "SUBSCRIBED") {
-          throw new Error("실시간 위치 채널 구독에 실패했습니다.");
+          return;
         }
 
         cleanup = async () => {
           await supabase.removeChannel(channel);
         };
+        realtimeRetryCountRef.current = 0;
+        setIsRealtimeRetrying(false);
+        setCanRetryRealtime(false);
+        setRealtimeErrorMessage(null);
       } catch (error) {
         if (cancelled) {
           return;
         }
 
-        setErrorMessage(
+        scheduleRealtimeRetry(
           error instanceof Error
             ? error.message
             : "실시간 위치 구독을 시작하지 못했습니다."
@@ -227,7 +317,9 @@ export function useLiveBikers({
 
     return () => {
       cancelled = true;
+      clearRealtimeRetryTimer();
       if (cleanup) {
+        isChannelCleanup = true;
         void cleanup();
       }
     };
@@ -236,6 +328,7 @@ export function useLiveBikers({
     enabled,
     isAppActive,
     isSharingEnabled,
+    realtimeRetryKey,
     sharingSession,
     user?.userId,
   ]);
@@ -303,6 +396,7 @@ export function useLiveBikers({
       return;
     }
 
+    clearRealtimeRetryState();
     sharingIntentRef.current = false;
     setIsSharingEnabled(false);
     await stopSharingSession(false);
@@ -389,6 +483,7 @@ export function useLiveBikers({
           : "위치 공유를 종료하지 못했습니다."
       );
     } finally {
+      clearRealtimeRetryState();
       if (!preserveSharingIntent) {
         sharingIntentRef.current = false;
         setIsSharingEnabled(false);
@@ -493,13 +588,50 @@ export function useLiveBikers({
     setNearbyBikers(response.data.items);
   }
 
+  function retryRealtime() {
+    if (!enabled || !isSharingEnabled || !isAppActive || !sharingSession) {
+      return;
+    }
+
+    clearRealtimeRetryState();
+    setRealtimeRetryKey((current) => current + 1);
+  }
+
+  function clearRealtimeRetryState() {
+    clearRealtimeRetryTimer();
+    realtimeRetryCountRef.current = 0;
+    setIsRealtimeRetrying(false);
+    setCanRetryRealtime(false);
+    setRealtimeErrorMessage(null);
+  }
+
+  function clearRealtimeRetryTimer() {
+    if (!realtimeRetryTimerRef.current) {
+      return;
+    }
+
+    clearTimeout(realtimeRetryTimerRef.current);
+    realtimeRetryTimerRef.current = null;
+  }
+
   return {
     errorMessage,
+    canRetryRealtime,
     isSharingEnabled,
+    isRealtimeRetrying,
     isSyncing,
     nearbyBikers,
+    realtimeErrorMessage,
+    retryRealtime,
     toggleSharing,
   };
+}
+
+function getRealtimeRetryDelayMs(retryCount: number) {
+  return (
+    REALTIME_RETRY_DELAY_MS[retryCount - 1] ??
+    REALTIME_RETRY_DELAY_MS[REALTIME_RETRY_DELAY_MS.length - 1]
+  );
 }
 
 function upsertNearbyBiker(
