@@ -33,13 +33,21 @@ export function AuthVerifyDialog({
   };
 
   const handleSMSSendSubmit = async () => {
-    await sendSMSMutation();
+    try {
+      await sendSMSMutation();
+    } catch {
+      // mutation onError에서 사용자 피드백을 처리하고, 이벤트 핸들러에서는 rejection만 소비한다.
+    }
   };
 
   const handleVerifyCodeSubmit = async () => {
-    await checkCodeMutation();
-    onSuccess();
-  }
+    try {
+      await checkCodeMutation();
+      onSuccess();
+    } catch {
+      // mutation onError에서 사용자 피드백을 처리하고, 이벤트 핸들러에서는 rejection만 소비한다.
+    }
+  };
 
   return (
     <CommonModal

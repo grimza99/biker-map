@@ -25,6 +25,9 @@ export function useSendSMSVerificationCodeMutation(
           body: JSON.stringify(payload),
         }
       ),
+    onError: () => {
+      Alert.alert("인증번호 발송에 실패 했습니다. 잠시후 다시 시도해 주세요");
+    },
   });
 }
 
