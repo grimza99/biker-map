@@ -1,83 +1,56 @@
 import { Feather, Ionicons } from "@expo/vector-icons";
 import { type Href, useRouter } from "expo-router";
-import { Alert, ScrollView, View } from "react-native";
-import { useCallback, useEffect, useState } from "react";
+import { ScrollView, View } from "react-native";
+import { useState } from "react";
 
 import {
   categoryLabelMap,
   communityCategoryOptions,
   type CommunityCategorySlug,
-  type CommunityPost,
   bikerMapTheme,
 } from "@package-shared/index";
 
 import { AppText, Button, Input, Pagination } from "@/components/common";
-import { getCommunityPostList } from "@/entities/community/model/community-post-api";
 import { PostCard } from "@/entities/community/ui/PostCard";
 import { AppScreen } from "@/components/shell";
-import { MOBILE_PATHS } from "@/shared";
+import { MOBILE_PATHS, ScreenState } from "@/shared";
+import { usePostList } from "@/entities/community";
 
 const COMMUNITY_PAGE_SIZE = 5;
 const COMMUNITY_CATEGORY_FILTERS: {
   label: string;
-  value: CommunityCategorySlug | "all";
+  value: CommunityCategorySlug;
 }[] = [{ label: "전체", value: "all" }, ...communityCategoryOptions];
 
 export default function CommunityScreen() {
   const router = useRouter();
-  const [isLoading, setIsLoading] = useState(true);
   const [search, setSearch] = useState("");
-
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedCategory, setSelectedCategory] = useState<
     CommunityCategorySlug | "all"
   >("all");
   const [currentPage, setCurrentPage] = useState(1);
-  const [totalPostCount, setTotalPostCount] = useState(0);
-  const [postList, setPostList] = useState<CommunityPost[]>([]);
 
-  const loadPostList = useCallback(async () => {
-    try {
-      const communityPostListData = await getCommunityPostList({
-        category: selectedCategory === "all" ? undefined : selectedCategory,
-        page: currentPage,
-        pageSize: COMMUNITY_PAGE_SIZE,
-        search: searchQuery,
-        sort: "latest",
-      });
+  const { data: postListData } = usePostList({
+    category: selectedCategory,
+    search: searchQuery,
+    page: currentPage,
+    pageSize: COMMUNITY_PAGE_SIZE,
+    sort: "latest",
+  });
 
-      setPostList(communityPostListData.data.items);
-      setTotalPostCount(
-        communityPostListData.meta?.total ??
-          communityPostListData.data.items.length
-      );
-    } catch (error) {
-      Alert.alert(
-        "커뮤니티 조회 실패",
-        error instanceof Error ? error.message : "오류가 발생했습니다."
-      );
-    } finally {
-      setIsLoading(false);
-    }
-  }, [currentPage, searchQuery, selectedCategory]);
-
-  useEffect(() => {
-    void loadPostList();
-  }, [loadPostList]);
-
-  const totalPages = Math.max(
-    1,
-    Math.ceil(totalPostCount / COMMUNITY_PAGE_SIZE)
-  );
-
-  if (isLoading) {
-    return null;
-    //todo isLoading
+  if (!postListData) {
+    return (
+      <ScreenState title="데이터를 불러오는데 실패 했습니다." variant="error" />
+    );
   }
+
+  const postList = postListData.data.items;
+  const totalPost = postListData?.meta?.total ?? postListData.data.items.length;
+  const totalPages = Math.max(1, Math.ceil(totalPost / COMMUNITY_PAGE_SIZE));
 
   const handleSearch = () => {
     setSearchQuery(search);
-    setCurrentPage(1);
   };
   return (
     <AppScreen
@@ -128,7 +101,6 @@ export default function CommunityScreen() {
               selected={selectedCategory === category.value}
               onPress={() => {
                 setSelectedCategory(category.value);
-                setCurrentPage(1);
               }}
             >
               {category.label}
@@ -139,7 +111,7 @@ export default function CommunityScreen() {
 
       <View className="flex-row items-center justify-between">
         <AppText tone="subtle" className="text-sm font-semibold">
-          총 {totalPostCount}개의 글
+          총 {totalPost}개의 글
         </AppText>
       </View>
 
@@ -153,14 +125,13 @@ export default function CommunityScreen() {
             />
           ))
         ) : (
-          <View className="items-center gap-2 rounded-3xl border border-border bg-panel px-4 py-6">
-            <AppText className="text-base font-semibold">
-              조건에 맞는 글이 없습니다.
-            </AppText>
-            <AppText tone="muted" className="text-sm">
-              카테고리나 검색어를 조정해 다시 확인해보세요.
-            </AppText>
-          </View>
+          <ScreenState
+            title=""
+            description="조건에 맞는 글이 없습니다."
+            variant="not-found"
+            canGoBack={false}
+            className="min-h-100"
+          />
         )}
       </View>
 
