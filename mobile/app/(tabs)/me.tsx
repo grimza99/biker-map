@@ -3,7 +3,7 @@ import { type ReactNode, useState } from "react";
 import { View } from "react-native";
 import { Redirect } from "expo-router";
 
-import { bikerMapTheme } from "@package-shared/constants";
+import { bikerMapTheme } from "@package-shared/index";
 import { AppText, GlobalFloatingMenu } from "@/components/common";
 import { AppScreen } from "../../components/shell";
 import { useSession } from "../../features/session/model";
@@ -110,7 +110,22 @@ export default function MeScreen() {
   const activeContent = activeMenuContent[activeMenu];
 
   return (
-    <AppScreen title="마이페이지">
+    <AppScreen
+      title="마이페이지"
+      overlay={
+        <GlobalFloatingMenu<FloatingMenuOptionId>
+          options={meFloatingMenuOptions}
+          onSelect={(option) => {
+            if (option.id === "delete-account") {
+              setIsDeleteAccountClicked(true);
+              return;
+            }
+
+            setActiveMenu(option.id as MeScreenContentId);
+          }}
+        />
+      }
+    >
       {/* todo : authenticated 에 따라서 tab 자체를 보호 */}
       {isAuthenticated ? (
         <>
@@ -132,17 +147,6 @@ export default function MeScreen() {
       <DeleteAccountModal
         isOpen={isDeleteAccountClicked}
         onClose={() => setIsDeleteAccountClicked(false)}
-      />
-      <GlobalFloatingMenu<FloatingMenuOptionId>
-        options={meFloatingMenuOptions}
-        onSelect={(option) => {
-          if (option.id === "delete-account") {
-            setIsDeleteAccountClicked(true);
-            return;
-          }
-
-          setActiveMenu(option.id as MeScreenContentId);
-        }}
       />
     </AppScreen>
   );

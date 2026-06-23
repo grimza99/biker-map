@@ -1,9 +1,8 @@
 import { Ionicons } from "@expo/vector-icons";
 import { type ReactNode, useState } from "react";
-import { Pressable, StyleSheet, View } from "react-native";
+import { Pressable, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
-import { bikerMapTheme } from "@package-shared/constants/theme";
 import { cn } from "@/shared";
 
 import { Button } from "./Button";
@@ -57,7 +56,7 @@ export function GlobalFloatingMenu<T>({
 
   return (
     <View
-      className="absolute bottom-4 right-5 z-50 flex flex-col items-end gap-3"
+      className="absolute bottom-0 right-5 z-50 flex flex-col items-end gap-3"
       pointerEvents="box-none"
       style={{ paddingBottom: Math.max(insets.bottom, 10) }}
     >
