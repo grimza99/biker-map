@@ -55,7 +55,8 @@
 - `useLiveBikers` 훅이 추가되어 `me/sharing -> me/location -> nearby snapshot` 흐름이 붙었다.
 - `MapCanvasWebView`가 `TBikerPresenceItem[]` marker 렌더링을 지원하게 되었다.
 - 앱이 background로 내려가면 foreground 공유 정책에 따라 sharing 세션을 종료하고, foreground 복귀 시 다시 sharing 세션을 시작하는 흐름이 반영되었다.
-- 현재 모바일은 snapshot 기반 nearby 표시까지 구현되었고, realtime subscribe는 아직 미구현이다.
+- 모바일 `supabase-realtime` subscribe가 반영되어 `biker:presence-sync`, `biker:presence-leave` delta를 지도에 반영한다.
+- realtime 연결 실패 시 자동 재시도를 수행하고, 재시도 한도 초과 후에는 인라인 에러와 수동 `다시 연결` UX를 노출한다.
 
 ## 4. DB 최신 위치 상태 기준
 
@@ -242,12 +243,12 @@
 - snapshot 실패
   - 우선 재시도 가능한 에러 상태로 둔다.
 - realtime subscribe 실패
-  - snapshot 기반 화면은 유지하고, 재연결 전략은 후속 단계에서 추가한다.
+  - snapshot 기반 화면은 유지한다.
+  - 자동 재시도를 최대 3회 수행한다.
+  - 자동 재시도 한도 초과 후에는 인라인 에러와 수동 `다시 연결` 액션을 노출한다.
 
 ## 7. 이후 진행 예정 사항
 
-1. `GET /api/mobile/bikers/realtime-config` route를 구현한다.
-2. 모바일에서 `supabase-realtime` subscribe를 붙여 snapshot 이후 delta를 반영한다.
-3. `biker:presence-sync`, `biker:presence-leave` 수신 시 `nearbyBikers` state merge/remove 로직을 추가한다.
-4. stale presence 정리 cron 또는 cleanup job을 확정한다.
-5. 모바일 `sharingIntent`의 persistence 범위를 정한다.
+1. 모바일 `sharingIntent`의 persistence 범위를 정한다.
+2. realtime 수동 재연결 UX에 Alert 또는 toast가 추가로 필요한지 확정한다.
+3. 채팅용 websocket을 `bikers-location`, `notifications`와 분리된 feature로 설계한다.
