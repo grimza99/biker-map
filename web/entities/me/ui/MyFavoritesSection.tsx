@@ -1,9 +1,9 @@
 "use client";
+import { useState } from "react";
+import { FavoriteTargetType, categoryLabelMap } from "@package-shared/index";
 
 import { CommunityPostCard } from "@/entities/community";
 import { RouteCard } from "@/entities/route/ui/RouteCard";
-import { FavoriteTargetType } from "@package-shared/index";
-import { categoryLabelMap } from "@package-shared/model";
 import {
   EmptyState,
   ErrorState,
@@ -13,7 +13,7 @@ import {
   TabsContent,
   TabsList,
 } from "@shared/ui";
-import { useState } from "react";
+
 import { useMyFavorites } from "../model";
 
 const FAVORITE_PAGE_SIZE = 4;
@@ -22,6 +22,7 @@ export function MyFavoritesSection() {
   const [page, setPage] = useState(1);
   const [favoriteType, setFavoriteType] = useState<FavoriteTargetType>("post");
   const currentPage = Math.max(page, 1);
+
   const favoritePostsQuery = useMyFavorites(
     { page: currentPage, pageSize: FAVORITE_PAGE_SIZE },
     "post",

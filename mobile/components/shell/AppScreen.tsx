@@ -28,12 +28,16 @@ export function AppScreen({
         contentContainerClassName="gap-[18px] pb-7"
         showsVerticalScrollIndicator={false}
       >
-        <AppText className="text-[34px] font-extrabold leading-10">
-          {title}
-        </AppText>
-        <AppText className="text-[15px] leading-5.5" tone="muted">
-          {description}
-        </AppText>
+        {title && (
+          <AppText className="text-[34px] font-extrabold leading-10">
+            {title}
+          </AppText>
+        )}
+        {description && (
+          <AppText className="text-[15px] leading-5.5" tone="muted">
+            {description}
+          </AppText>
+        )}
         {children}
       </ScrollView>
     </SafeAreaView>

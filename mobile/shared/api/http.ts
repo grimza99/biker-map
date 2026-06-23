@@ -51,6 +51,7 @@ type ApiFetchWithMethods = typeof apiFetchBase & {
 
 const requestInterceptors = new Set<RequestInterceptor>();
 const responseInterceptors = new Set<ResponseInterceptor>();
+const authStateListeners = new Set<(state: ApiAuthState) => void>();
 
 let apiAuthState: ApiAuthState = {
   accessToken: null,
@@ -95,6 +96,16 @@ export function getApiAuthState() {
   return apiAuthState;
 }
 
+export function subscribeApiAuthState(
+  listener: (state: ApiAuthState) => void
+) {
+  authStateListeners.add(listener);
+
+  return () => {
+    authStateListeners.delete(listener);
+  };
+}
+
 export async function restoreApiAuthState() {
   const [accessToken, refreshToken, storedSession] = await Promise.all([
     SecureStore.getItemAsync(ACCESS_TOKEN_KEY),
@@ -108,7 +119,7 @@ export async function restoreApiAuthState() {
     session: parseStoredSession(storedSession),
   };
 
-  apiAuthState = nextState;
+  applyApiAuthState(nextState);
   return nextState;
 }
 
@@ -124,11 +135,11 @@ export async function persistAuthResponse(data: AuthResponseData) {
 }
 
 export async function clearApiAuthState() {
-  apiAuthState = {
+  applyApiAuthState({
     accessToken: null,
     refreshToken: null,
     session: null,
-  };
+  });
 
   await Promise.all([
     SecureStore.deleteItemAsync(ACCESS_TOKEN_KEY),
@@ -302,7 +313,7 @@ async function refreshAccessToken() {
 }
 
 async function writeApiAuthState(nextState: ApiAuthState) {
-  apiAuthState = nextState;
+  applyApiAuthState(nextState);
 
   await Promise.all([
     writeSecureValue(ACCESS_TOKEN_KEY, nextState.accessToken),
@@ -312,6 +323,14 @@ async function writeApiAuthState(nextState: ApiAuthState) {
       nextState.session ? JSON.stringify(nextState.session) : null
     ),
   ]);
+}
+
+function applyApiAuthState(nextState: ApiAuthState) {
+  apiAuthState = nextState;
+
+  for (const listener of authStateListeners) {
+    listener(apiAuthState);
+  }
 }
 
 function buildApiUrl(input: string | URL) {

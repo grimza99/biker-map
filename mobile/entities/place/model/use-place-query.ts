@@ -3,6 +3,7 @@ import { useQuery } from "@tanstack/react-query";
 import {
   API_PATHS,
   buildPlaceQuery,
+  PlaceDetail,
   type PlaceListItem,
   type PlacesListResponseData,
   type PlacesQuery,
@@ -32,5 +33,20 @@ export function usePlaceList(query: PlacesQuery) {
         search: query.search,
       },
     ],
+  });
+}
+
+/**------------------------------------- place detail --------------------------------*/
+export function usePlaceDetail(placeId: string) {
+  return useQuery({
+    queryKey: ["place-detail", placeId],
+    queryFn: async () => {
+      const res = await apiFetch.get<PlaceDetail>(
+        API_PATHS.places.detail(placeId)
+      );
+      return res.data;
+    },
+
+    enabled: Boolean(placeId),
   });
 }

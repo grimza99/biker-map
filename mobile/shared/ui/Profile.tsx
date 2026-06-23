@@ -26,11 +26,17 @@ export function Profile() {
       />
       <View className="gap-1">
         <AppText className="text-3xl font-bold">{name}</AppText>
-        <View className="flex flex-row gap-2">
-          <AppText tone="muted">{bikeBrand}</AppText>
-          <AppText>·</AppText>
-          <AppText tone="muted">{bikeModel}</AppText>
-        </View>
+        {bikeBrand && bikeModel ? (
+          <View className="flex flex-row gap-2">
+            <AppText tone="muted">{bikeBrand}</AppText>
+            <AppText>·</AppText>
+            <AppText tone="muted">{bikeModel}</AppText>
+          </View>
+        ) : (
+          <AppText tone="muted" className="text-sm">
+            바이크 정보 없음
+          </AppText>
+        )}
         <View className="flex flex-row gap-1.5">
           <Chip
             label={verificationLabel}

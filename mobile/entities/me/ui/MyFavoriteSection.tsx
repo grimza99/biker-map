@@ -1,5 +1,5 @@
 import { View } from "react-native";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 
 import { useMyFavorites } from "../model";
 import { Button, Pagination } from "@/components/common";
@@ -12,19 +12,47 @@ const MY_FAVORITE_SECTION_PAGE_SIZE = 5;
 export function MyFavoriteSection() {
   const [tab, setTab] = useState<TFavoriteTab>("post");
   const [page, setPage] = useState(1);
-  const { data: favoritePostData } = useMyFavorites("post");
-  const { data: favoriteRouteData } = useMyFavorites("route");
+  const currentPage = Math.max(page, 1);
 
-  const totalPages = Math.max(
-    1,
-    Math.ceil(
-      (favoritePostData?.meta?.total || 0) / MY_FAVORITE_SECTION_PAGE_SIZE
-    )
+  const { data: favoritePostData } = useMyFavorites(
+    { page: currentPage, pageSize: MY_FAVORITE_SECTION_PAGE_SIZE },
+    "post",
+    tab === "post"
+  );
+  const { data: favoriteRouteData } = useMyFavorites(
+    { page: currentPage, pageSize: MY_FAVORITE_SECTION_PAGE_SIZE },
+    "route",
+    tab === "route"
   );
   const isSubmitting = false;
 
   const favoritedPostList = favoritePostData?.data.items;
   const favoritedRouteList = favoriteRouteData?.data.items;
+
+  const activeTotal =
+    tab === "post"
+      ? favoritePostData?.meta?.total ?? 0
+      : favoriteRouteData?.meta?.total ?? 0;
+
+  const totalPages = Math.max(
+    1,
+    Math.ceil(activeTotal / MY_FAVORITE_SECTION_PAGE_SIZE)
+  );
+
+  useEffect(() => {
+    if (currentPage > totalPages) {
+      setPage(totalPages);
+    }
+  }, [currentPage, totalPages]);
+
+  function handleSelectTab(nextTab: TFavoriteTab) {
+    if (nextTab === tab) {
+      return;
+    }
+
+    setTab(nextTab);
+    setPage(1);
+  }
 
   return (
     <>
@@ -32,7 +60,7 @@ export function MyFavoriteSection() {
       <View className="w-full flex-row items-center justify-evenly gap-2 rounded-[20px]">
         <Button
           onPress={() => {
-            setTab("post");
+            handleSelectTab("post");
           }}
           disabled={isSubmitting}
           selected={tab === "post"}
@@ -43,7 +71,7 @@ export function MyFavoriteSection() {
         </Button>
         <Button
           onPress={() => {
-            setTab("route");
+            handleSelectTab("route");
           }}
           disabled={isSubmitting}
           selected={tab === "route"}
@@ -70,7 +98,7 @@ export function MyFavoriteSection() {
         </View>
       )}
       <Pagination
-        currentPage={page}
+        currentPage={currentPage}
         totalPages={totalPages}
         onPageChange={(newPage) => setPage(newPage)}
       />
