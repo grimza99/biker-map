@@ -3,19 +3,20 @@ import { type ReactNode, useState } from "react";
 import { Pressable, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
-import { bikerMapTheme } from "@package-shared/constants/theme";
 import { cn } from "@/shared";
 
 import { Button } from "./Button";
 import { AppText } from "./AppText";
 
 export type GlobalFloatingMenuOption<T> = {
+  accessibilityLabel?: string;
   description?: string;
   disabled?: boolean;
   icon?: ReactNode;
   id: T | string;
   label: string;
   rightSlot?: ReactNode;
+  tone?: "default" | "danger";
 };
 
 export type GlobalFloatingMenuProps<T> = {
@@ -56,84 +57,78 @@ export function GlobalFloatingMenu<T>({
   const close = () => setResolvedOpen(false);
 
   return (
-    <>
-      <View
-        className="absolute bottom-4 right-5 z-50 flex flex-col items-end gap-3"
-        pointerEvents="box-none"
-        style={{ paddingBottom: Math.max(insets.bottom, 10) }}
-      >
-        {isOpen && (
-          <>
-            {options.map((option) => {
-              const isDraw = option.id === "draw";
+    <View
+      className="absolute bottom-0 right-5 z-50 flex flex-col items-end gap-3"
+      pointerEvents="box-none"
+      style={{ paddingBottom: Math.max(insets.bottom, 10) }}
+    >
+      {isOpen && (
+        <>
+          {options.map((option) => {
+            const isDanger = option.tone === "danger";
 
-              return (
-                <Button
-                  key={option.id as string}
-                  accessibilityLabel={triggerAccessibilityLabel}
-                  accessibilityRole="button"
-                  accessibilityState={{ expanded: isOpen }}
+            return (
+              <Button
+                key={option.id as string}
+                accessibilityLabel={
+                  option.accessibilityLabel ?? option.label
+                }
+                accessibilityRole="button"
+                accessibilityState={{ expanded: isOpen }}
+                className={cn(
+                  "bg-white rounded-2xl w-36 py-2",
+                  isDanger && "bg-danger"
+                )}
+                onPress={() => {
+                  onSelect(option);
+
+                  if (closeOnSelect) {
+                    close();
+                  }
+                }}
+              >
+                {option.icon && option.icon}
+                <AppText
                   className={cn(
-                    "w-37.5 bg-white border-2",
-                    isDraw && "bg-[rgba(229, 87, 47, 0.2)]"
+                    "font-extrabold text-black",
+                    isDanger && "text-text"
                   )}
-                  onPress={() => {
-                    onSelect(option);
-
-                    if (closeOnSelect) {
-                      close();
-                    }
-                  }}
+                  numberOfLines={1}
                 >
-                  {option.icon && option.icon}
-                  <View className="min-w-0 flex-1">
-                    <AppText
-                      className={cn(
-                        "font-extrabold text-black",
-                        isDraw && "text-accent-strong"
-                      )}
-                      numberOfLines={1}
-                    >
-                      {option.label}
-                    </AppText>
-                    {option.description && (
-                      <AppText
-                        className="text-[11px]"
-                        numberOfLines={1}
-                        tone="muted"
-                      >
-                        {option.description}
-                      </AppText>
-                    )}
-                  </View>
-                  {option.rightSlot && option.rightSlot}
-                </Button>
-              );
-            })}
-          </>
+                  {option.label}
+                </AppText>
+                {option.description && (
+                  <AppText
+                    className="text-[11px]"
+                    numberOfLines={1}
+                    tone="muted"
+                  >
+                    {option.description}
+                  </AppText>
+                )}
+                {option.rightSlot && option.rightSlot}
+              </Button>
+            );
+          })}
+        </>
+      )}
+      <Pressable
+        accessibilityLabel={triggerAccessibilityLabel}
+        accessibilityRole="button"
+        accessibilityState={{ expanded: isOpen }}
+        className="min-h-14 min-w-14 flex-row items-center justify-center gap-2 rounded-full border border-accent bg-accent"
+        onPress={() => {
+          if (isOpen) setResolvedOpen(false);
+          else setResolvedOpen(true);
+        }}
+      >
+        {triggerIcon ?? (
+          <Ionicons name="reorder-three" size={26} color="white" />
         )}
-        <Pressable
-          accessibilityLabel={triggerAccessibilityLabel}
-          accessibilityRole="button"
-          accessibilityState={{ expanded: isOpen }}
-          className="min-h-14 min-w-14 flex-row items-center justify-center gap-2 rounded-full border border-accent bg-accent"
-          onPress={() => {
-            if (isOpen) setResolvedOpen(false);
-            else setResolvedOpen(true);
-          }}
-        >
-          {triggerIcon ?? (
-            <Ionicons
-              name="reorder-three"
-              size={26}
-              color={bikerMapTheme.colors.bg}
-            />
-          )}
-          {triggerLabel && (
-            <AppText className="text-sm font-extrabold">{triggerLabel}</AppText>
-          )}
-        </Pressable>
-      </View>
-    </>
+        {triggerLabel && (
+          <AppText className="text-sm font-extrabold">{triggerLabel}</AppText>
+        )}
+      </Pressable>
+    </View>
   );
 }

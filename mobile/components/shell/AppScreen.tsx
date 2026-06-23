@@ -1,4 +1,4 @@
-import { type PropsWithChildren } from "react";
+import { type PropsWithChildren, type ReactNode } from "react";
 import { ScrollView, StyleProp, StyleSheet, ViewStyle } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
@@ -10,6 +10,7 @@ type AppScreenProps = PropsWithChildren<{
   title?: string;
   description?: string;
   containerStyle?: StyleProp<ViewStyle>;
+  overlay?: ReactNode;
 }>;
 
 export function AppScreen({
@@ -17,6 +18,7 @@ export function AppScreen({
   description,
   children,
   containerStyle,
+  overlay,
 }: AppScreenProps) {
   return (
     <SafeAreaView
@@ -40,6 +42,7 @@ export function AppScreen({
         )}
         {children}
       </ScrollView>
+      {overlay}
     </SafeAreaView>
   );
 }
