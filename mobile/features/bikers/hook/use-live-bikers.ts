@@ -18,11 +18,7 @@ import {
 } from "@package-shared/index";
 
 import { useSession } from "@/features/session/model";
-import {
-  apiFetch,
-  createSupabaseRealtimeClient,
-  getApiAuthState,
-} from "@/shared";
+import { apiFetch, useSupabaseBroadcastRealtime } from "@/shared";
 
 type SharingSession = {
   sessionId: string;
@@ -36,9 +32,13 @@ type UseLiveBikersOptions = {
 
 type UseLiveBikersResult = {
   errorMessage: string | null;
+  canRetryRealtime: boolean;
   isSharingEnabled: boolean;
+  isRealtimeRetrying: boolean;
   isSyncing: boolean;
   nearbyBikers: TBikerPresenceItem[];
+  realtimeErrorMessage: string | null;
+  retryRealtime: () => void;
   toggleSharing: (nextValue: boolean) => Promise<void>;
 };
 
@@ -46,7 +46,6 @@ export function useLiveBikers({
   currentLocation,
   enabled,
 }: UseLiveBikersOptions): UseLiveBikersResult {
-  const [realtimeRetryKey, setRealtimeRetryKey] = useState(0);
   const { accessToken, user } = useSession();
   const [isSharingEnabled, setIsSharingEnabled] = useState(false);
   const [isAppActive, setIsAppActive] = useState(
@@ -66,12 +65,108 @@ export function useLiveBikers({
   const lastUploadedAtRef = useRef(0);
   const lastUploadedCoordinateRef = useRef<TLocationCoordinate | null>(null);
   const sharingIntentRef = useRef(false);
-  const currentLocationRef = useRef<TLocationCoordinate | null>(currentLocation);
-  const realtimeRetryAttemptRef = useRef(0);
+  const currentLocationRef = useRef<TLocationCoordinate | null>(
+    currentLocation
+  );
 
   useEffect(() => {
     currentLocationRef.current = currentLocation;
   }, [currentLocation]);
+
+  const currentUserId = user?.userId ?? null;
+  const realtimeEnabled =
+    enabled &&
+    isSharingEnabled &&
+    isAppActive &&
+    Boolean(sharingSession) &&
+    Boolean(currentUserId);
+
+  const realtimeConnectionKey = sharingSession
+    ? `${currentUserId ?? "anonymous"}:${sharingSession.sessionId}:${
+        sharingSession.sessionVersion
+      }`
+    : null;
+
+  const {
+    canRetry: canRetryRealtime,
+    errorMessage: realtimeErrorMessage,
+    isRetrying: isRealtimeRetrying,
+    retry: retryRealtime,
+  } = useSupabaseBroadcastRealtime({
+    accessToken,
+    authMissingMessage: "실시간 위치 구독을 시작할 인증 정보가 없습니다.",
+    bindings: [
+      {
+        event: "biker:presence-sync",
+        onMessage: (payload) => {
+          const event = payload as TBikerPresenceSyncEvent;
+          const liveLocation = currentLocationRef.current;
+
+          if (!event?.presence || event.presence.userId === currentUserId) {
+            return;
+          }
+
+          if (!liveLocation) {
+            return;
+          }
+
+          const distanceMeters = calculateDistanceMeters(
+            liveLocation.lat,
+            liveLocation.lng,
+            event.presence.location.lat,
+            event.presence.location.lng
+          );
+
+          if (distanceMeters > DEFAULT_BIKERS_NEARBY_RADIUS_METERS) {
+            setNearbyBikers((current) =>
+              current.filter((item) => item.userId !== event.presence.userId)
+            );
+            return;
+          }
+
+          setNearbyBikers((current) =>
+            upsertNearbyBiker(current, {
+              ...event.presence,
+              isMe: false,
+            })
+          );
+        },
+      },
+      {
+        event: "biker:presence-leave",
+        onMessage: (payload) => {
+          const event = payload as TBikerPresenceLeaveEvent;
+
+          if (!event?.userId || event.userId === currentUserId) {
+            return;
+          }
+
+          setNearbyBikers((current) =>
+            current.filter((item) => item.userId !== event.userId)
+          );
+        },
+      },
+    ],
+    connectionKey: realtimeConnectionKey,
+    disconnectedMessage: "실시간 위치 연결이 끊어졌습니다.",
+    enabled: realtimeEnabled,
+    loadChannelConfig: async () => {
+      const response = await apiFetch.get<TBikerRealtimeConfigResponseData>(
+        API_PATHS.bikers.realtimeConfig
+      );
+
+      if (
+        response.data.mode !== DEFAULT_BIKER_REALTIME_MODE ||
+        !response.data.channel
+      ) {
+        throw new Error("지원하지 않는 실시간 위치 설정입니다.");
+      }
+
+      return {
+        channelName: response.data.channel,
+      };
+    },
+  });
 
   useEffect(() => {
     if (!enabled) {
@@ -85,8 +180,6 @@ export function useLiveBikers({
       lastUploadedCoordinateRef.current = null;
       sharingIntentRef.current = false;
       isAppActiveRef.current = AppState.currentState === "active";
-      realtimeRetryAttemptRef.current = 0;
-      setRealtimeRetryKey(0);
     }
   }, [enabled]);
 
@@ -108,159 +201,6 @@ export function useLiveBikers({
       subscription.remove();
     };
   }, [enabled]);
-
-  useEffect(() => {
-    if (!enabled || !isSharingEnabled || !isAppActive || !sharingSession) {
-      return;
-    }
-
-    const currentUserId = user?.userId;
-    if (!currentUserId || !accessToken) {
-      setErrorMessage("실시간 위치 구독을 시작할 인증 정보가 없습니다.");
-      return;
-    }
-
-    let cancelled = false;
-    let cleanup: (() => Promise<void> | void) | null = null;
-    let retryTimer: ReturnType<typeof setTimeout> | null = null;
-
-    async function subscribeRealtime() {
-      try {
-        const response = await apiFetch.get<TBikerRealtimeConfigResponseData>(
-          API_PATHS.bikers.realtimeConfig
-        );
-
-        if (cancelled) {
-          return;
-        }
-
-        if (
-          response.data.mode !== DEFAULT_BIKER_REALTIME_MODE ||
-          !response.data.channel
-        ) {
-          throw new Error("지원하지 않는 실시간 위치 설정입니다.");
-        }
-
-        const latestAccessToken = getApiAuthState().accessToken;
-
-        if (!latestAccessToken) {
-          throw new Error("실시간 위치 구독에 필요한 토큰을 확인할 수 없습니다.");
-        }
-
-        const supabase = createSupabaseRealtimeClient();
-        supabase.realtime.setAuth(latestAccessToken);
-
-        const channel = supabase
-          .channel(response.data.channel)
-          .on("broadcast", { event: "biker:presence-sync" }, ({ payload }) => {
-            const event = payload as TBikerPresenceSyncEvent;
-            const liveLocation = currentLocationRef.current;
-
-            if (!event?.presence || event.presence.userId === currentUserId) {
-              return;
-            }
-
-            if (!liveLocation) {
-              return;
-            }
-
-            const distanceMeters = calculateDistanceMeters(
-              liveLocation.lat,
-              liveLocation.lng,
-              event.presence.location.lat,
-              event.presence.location.lng
-            );
-
-            if (distanceMeters > DEFAULT_BIKERS_NEARBY_RADIUS_METERS) {
-              setNearbyBikers((current) =>
-                current.filter((item) => item.userId !== event.presence.userId)
-              );
-              return;
-            }
-
-            setNearbyBikers((current) =>
-              upsertNearbyBiker(current, {
-                ...event.presence,
-                isMe: false,
-              })
-            );
-          })
-          .on("broadcast", { event: "biker:presence-leave" }, ({ payload }) => {
-            const event = payload as TBikerPresenceLeaveEvent;
-
-            if (!event?.userId || event.userId === currentUserId) {
-              return;
-            }
-
-            setNearbyBikers((current) =>
-              current.filter((item) => item.userId !== event.userId)
-            );
-          });
-
-        const status = await new Promise<string>((resolve) => {
-          channel.subscribe((nextStatus) => {
-            resolve(nextStatus);
-          });
-        });
-
-        if (cancelled) {
-          await supabase.removeChannel(channel);
-          return;
-        }
-
-        if (status !== "SUBSCRIBED") {
-          throw new Error("실시간 위치 채널 구독에 실패했습니다.");
-        }
-
-        realtimeRetryAttemptRef.current = 0;
-        cleanup = async () => {
-          await supabase.removeChannel(channel);
-        };
-      } catch (error) {
-        if (cancelled) {
-          return;
-        }
-
-        setErrorMessage(
-          error instanceof Error
-            ? error.message
-            : "실시간 위치 구독을 시작하지 못했습니다."
-        );
-
-        if (realtimeRetryAttemptRef.current >= 3) {
-          return;
-        }
-
-        const nextAttempt = realtimeRetryAttemptRef.current + 1;
-        realtimeRetryAttemptRef.current = nextAttempt;
-        const retryDelayMs = Math.min(1000 * 2 ** (nextAttempt - 1), 8000);
-
-        retryTimer = setTimeout(() => {
-          setRealtimeRetryKey((current) => current + 1);
-        }, retryDelayMs);
-      }
-    }
-
-    void subscribeRealtime();
-
-    return () => {
-      cancelled = true;
-      if (retryTimer) {
-        clearTimeout(retryTimer);
-      }
-      if (cleanup) {
-        void cleanup();
-      }
-    };
-  }, [
-    accessToken,
-    enabled,
-    isAppActive,
-    isSharingEnabled,
-    realtimeRetryKey,
-    sharingSession,
-    user?.userId,
-  ]);
 
   useEffect(() => {
     if (!enabled || !isSharingEnabled || !isAppActive || sharingSession) {
@@ -348,7 +288,10 @@ export function useLiveBikers({
         }
       );
 
-      if (!response.data.sharingSessionId || !response.data.sharingSessionVersion) {
+      if (
+        !response.data.sharingSessionId ||
+        !response.data.sharingSessionVersion
+      ) {
         throw new Error("위치 공유 세션 응답이 올바르지 않습니다.");
       }
 
@@ -517,9 +460,13 @@ export function useLiveBikers({
 
   return {
     errorMessage,
+    canRetryRealtime,
     isSharingEnabled,
+    isRealtimeRetrying,
     isSyncing,
     nearbyBikers,
+    realtimeErrorMessage,
+    retryRealtime,
     toggleSharing,
   };
 }

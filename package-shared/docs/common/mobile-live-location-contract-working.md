@@ -4,6 +4,7 @@
 
 - `주변 바이커` 실시간 위치 공유 기능의 다음 단계로 `web BFF`, `DB`, `Realtime` 구조를 정리한다.
 - 이미 확정한 `package-shared` 계약을 기준으로 서버 설계와 모바일 연동 순서를 구체화한다.
+- 현재 문서는 "이미 반영된 기반 작업"과 "다음 구현 단계"를 구분해 관리한다.
 
 ## 2. 현재 결정 사항
 
@@ -15,6 +16,7 @@
 - nearby snapshot 기본 `limit`은 `50`이다.
 - 최신 위치 상태 1건만 저장한다.
 - stale timeout은 `30초`로 한다.
+- Vercel Hobby cron 한도 때문에 stale row의 실제 삭제는 별도 작업으로 남겨 두고, 현재 nearby 조회는 `expires_at > now()` 기준으로만 active presence를 노출한다.
 - `biker_presence`는 위치 이력 테이블이 아니라 현재 공유 중인 유저의 최신 위치 1건만 보관하는 active presence 테이블이다.
 - 사용자가 `sharingStatus=off`로 전환하거나 foreground 공유가 종료되면 presence row를 삭제한다.
 - 앱이 foreground로 복귀하고 사용자의 공유 의도가 여전히 on이면 첫 위치 update 시 presence row를 다시 생성하거나 upsert한다.
@@ -22,9 +24,45 @@
 - WS feature는 `notifications`, `bikers-location`, `chat` 3개로 분리한다.
 - 구현 우선순위는 `notifications 유지 -> bikers-location 상세화 -> chat placeholder 유지`로 간다.
 
-## 3. Open Question
+## 3. 현재까지 진행 완료
 
-- 현재 없음
+### Shared 계약
+
+- `package-shared`에 live biker 관련 API path, 타입, 상수, ws event 타입이 반영되었다.
+- 위치 공유 상태는 `off | foreground`로 고정되었다.
+- nearby query/response, my sharing/location request/response 계약이 반영되었다.
+- realtime event는 `biker:presence-sync`, `biker:presence-leave` 기준으로 정리되었다.
+
+### DB / Migration
+
+- `public.biker_presence` migration이 반영되었다.
+- `public.biker_sharing_session` migration이 반영되었다.
+- `biker_sharing_session.session_version` backfill 및 unique index가 반영되었다.
+- 두 테이블의 RLS, 인덱스, `updated_at` trigger가 반영되었다.
+
+### Web BFF
+
+- `POST /api/mobile/bikers/me/sharing`가 구현되었다.
+- `GET/POST /api/mobile/bikers/me/location`이 구현되었다.
+- `GET /api/mobile/bikers/nearby`가 구현되었다.
+- `GET /api/mobile/bikers/realtime-config`가 구현되었다.
+- `sharingSessionId + sharingSessionVersion` 기반 세션 검증과 late location guard가 반영되었다.
+- stale location, 미래 시각 `observedAt`, 날짜변경선 근처 거리 계산 이슈 대응이 반영되었다.
+- `me/location` 성공 시 `biker:presence-sync` broadcast가 나가도록 구현되었다.
+- `me/sharing`의 `off` 처리 시 `biker:presence-leave` broadcast가 나가도록 구현되었다.
+- expired presence는 현재 `nearby` 조회에서 제외되도록 반영되었다.
+
+### Mobile
+
+- `mobile/app/(tabs)/bikers/index.tsx`가 placeholder에서 실제 위치 공유 화면으로 연결되었다.
+- `useLiveBikers` 훅이 추가되어 `me/sharing -> me/location -> nearby snapshot` 흐름이 붙었다.
+- `MapCanvasWebView`가 `TBikerPresenceItem[]` marker 렌더링을 지원하게 되었다.
+- 앱이 background로 내려가면 foreground 공유 정책에 따라 sharing 세션을 종료하고, foreground 복귀 시 다시 sharing 세션을 시작하는 흐름이 반영되었다.
+- 모바일 `supabase-realtime` subscribe가 반영되어 `biker:presence-sync`, `biker:presence-leave` delta를 지도에 반영한다.
+- realtime 연결 실패 시 자동 재시도를 수행하고, 재시도 한도 초과 후에는 인라인 에러와 수동 `다시 연결` UX를 노출한다.
+- 위치가 고정되어도 presence가 만료되지 않도록 heartbeat 재업로드가 반영되었다.
+- access token refresh 이후에도 realtime auth가 최신 토큰을 따라가도록 동기화 로직이 반영되었다.
+- 모바일 `.env.example`와 README에 realtime용 Supabase public env 예시가 반영되었다.
 
 ## 4. DB 최신 위치 상태 기준
 
@@ -39,7 +77,7 @@
 - 사용자가 `off`로 전환하거나 foreground 공유가 종료되면 row를 삭제한다.
 - 앱이 foreground로 복귀하고 공유 의도가 여전히 on이면 첫 위치 update에서 row를 다시 생성하거나 upsert한다.
 
-### 컬럼 초안
+### 컬럼 기준
 
 - `user_id uuid primary key`
   - `public.profiles(id)` FK
@@ -55,7 +93,7 @@
 - `created_at timestamptz not null default now()`
 - `updated_at timestamptz not null default now()`
 
-### 제약 조건 초안
+### 제약 조건 기준
 
 - `lat`는 `-90` 이상 `90` 이하여야 한다.
 - `lng`는 `-180` 이상 `180` 이하여야 한다.
@@ -63,7 +101,7 @@
 - `speed_kph`는 `0` 이상이어야 한다.
 - `heading`은 `0` 이상 `360` 미만 또는 `null`이어야 한다.
 
-### 인덱스 초안
+### 인덱스 기준
 
 - PK: `user_id`
 - `expires_at`
@@ -93,7 +131,7 @@
 - realtime은 snapshot 이후 발생하는 delta만 반영한다.
 - MVP transport는 `supabase-realtime`이고, feature는 `bikers-location`이다.
 
-### subscribe 순서
+### 목표 subscribe 순서
 
 1. 모바일이 현재 위치를 확보한다.
 2. `GET /api/mobile/bikers/nearby`로 snapshot을 조회한다.
@@ -117,8 +155,6 @@
   - `biker_presence` upsert 성공 후 `biker:presence-sync` broadcast
 - `POST /me/sharing` with `sharingStatus=off`
   - row 삭제 성공 후 `biker:presence-leave` broadcast
-- stale cleanup
-  - 만료된 row를 삭제한 뒤 `biker:presence-leave` broadcast
 
 ### 모바일 반영 기준
 
@@ -134,6 +170,7 @@
 - channel은 MVP에서 전역 `bikers-location` 단일 채널로 시작한다.
 - 이 구조는 반경 밖 유저 event도 받을 수 있으므로, 모바일은 현재 반경/지도 상태 기준으로 표시 여부를 한 번 더 필터링할 수 있다.
 - 이후 scale 이슈가 생기면 region/cell 기반 채널 분리 또는 서버 scoped config로 확장한다.
+- 현재는 서버 broadcast와 모바일 subscribe/connect까지 반영된 상태다.
 
 ## 6. 모바일 연동 순서 기준
 
@@ -149,56 +186,56 @@
 - `realtimeSubscription`
   - `bikers-location` channel subscription 핸들
 
-### 최초 진입
+### 현재 반영된 최초 진입 흐름
 
 1. 사용자가 `주변 바이커` 화면에 진입한다.
 2. 인증 상태를 확인한다.
 3. `sharingIntent=off`면 현재 위치만 표시하고, 다른 유저 실시간 공유 흐름은 시작하지 않는다.
 4. `sharingIntent=on`이면 foreground 위치 수집을 시작한다.
 5. 첫 `currentLocation` 확보 후 아래 순서로 실행한다.
+   - `POST /api/mobile/bikers/me/sharing`
    - `POST /api/mobile/bikers/me/location`
    - `GET /api/mobile/bikers/nearby`
    - `GET /api/mobile/bikers/realtime-config`
    - realtime subscribe
 
-### 위치 update 주기
+### 현재 위치 update 주기
 
 1. `useCurrentLocation`이 새 위치를 받는다.
-2. 마지막 업로드 시점과 비교해 `5초`가 지났으면 업로드 대상으로 본다.
+2. 마지막 업로드 시점과 비교해 `10초`가 지났으면 업로드 대상으로 본다.
 3. `POST /api/mobile/bikers/me/location`으로 최신 위치를 전송한다.
-4. 성공 시 내 marker state를 갱신한다.
+4. 성공 시 nearby snapshot을 다시 조회한다.
 
-### 토글 on
+### 현재 토글 on
 
 1. 사용자가 위치 공유 토글을 켠다.
 2. `sharingIntent`를 로컬에 `on`으로 저장한다.
-3. foreground 위치 수집을 시작한다.
+3. foreground 상태이면 `POST /api/mobile/bikers/me/sharing`으로 세션을 연다.
 4. 첫 위치를 받으면 `POST /api/mobile/bikers/me/location`을 호출한다.
-5. 이어서 snapshot 조회와 realtime subscribe를 시작한다.
+5. 이어서 nearby snapshot을 조회한다.
+6. realtime channel을 subscribe 한다.
 
-### 토글 off
+### 현재 토글 off
 
 1. 사용자가 위치 공유 토글을 끈다.
 2. `sharingIntent`를 로컬에 `off`로 저장한다.
 3. `POST /api/mobile/bikers/me/sharing`에 `sharingStatus=off`를 보낸다.
-4. 위치 watch를 중단한다.
-5. realtime subscription을 해제한다.
-6. 다른 유저 marker state를 비우거나, UX 결정에 따라 snapshot 없는 기본 상태로 되돌린다.
+4. sharing session과 nearby marker state를 정리한다.
 
-### foreground -> background
+### 현재 foreground -> background
 
 1. 앱이 background로 전환된다.
 2. `sharingIntent=on`이어도 foreground 정책이므로 위치 공유는 중단한다.
 3. `POST /api/mobile/bikers/me/sharing`에 `sharingStatus=off`를 보낸다.
-4. 위치 watch를 중단한다.
-5. realtime subscription을 해제한다.
+4. nearby marker state를 비운다.
 
-### background -> foreground 복귀
+### 현재 background -> foreground 복귀
 
 1. 앱이 다시 foreground로 돌아온다.
 2. `sharingIntent=off`면 위치 공유 흐름을 재시작하지 않는다.
 3. `sharingIntent=on`이면 foreground 위치 수집을 다시 시작한다.
 4. 첫 위치를 다시 받으면 아래 순서로 재동기화한다.
+   - `POST /api/mobile/bikers/me/sharing`
    - `POST /api/mobile/bikers/me/location`
    - `GET /api/mobile/bikers/nearby`
    - `GET /api/mobile/bikers/realtime-config`
@@ -213,12 +250,18 @@
   - 다음 위치 주기에서 재시도한다.
   - 즉시 토글 off로 바꾸지 않는다.
 - snapshot 실패
-  - 내 위치 업로드와 realtime subscribe는 분리해서 판단하지 않고, 우선 재시도 가능한 에러 상태로 둔다.
+  - 우선 재시도 가능한 에러 상태로 둔다.
 - realtime subscribe 실패
-  - snapshot 기반 화면은 유지하고, 재연결 전략은 후속 단계에서 추가한다.
+  - snapshot 기반 화면은 유지한다.
+  - 자동 재시도를 최대 3회 수행한다.
+  - 자동 재시도 한도 초과 후에는 인라인 에러와 수동 `다시 연결` 액션을 노출한다.
 
 ## 7. 이후 진행 예정 사항
 
-1. `package-shared` 계약과 문서 기준으로 `web BFF` endpoint 초안 반영
-2. `biker_presence` migration / RLS / cleanup 전략 구체화
-3. 모바일 `sharingIntent + AppState + realtime` 상태 관리 설계 구체화
+1. 모바일 `sharingIntent`의 persistence 범위를 정한다.
+2. realtime 수동 재연결 UX에 Alert 또는 toast가 추가로 필요한지 확정한다.
+3. 실기기 기준 background 복귀, 네트워크 복귀, 장시간 idle 시나리오를 수동 검증한다.
+4. scale 이슈가 생기면 별도 scheduler 또는 `bikers-location` 채널 분할 전략을 함께 검토한다.
+5. stale row 실제 삭제 시점과 운영 방식(cron, manual job, 다른 write path 연계)을 확정한다.
+6. cleanup 실패 로그와 운영 대응 기준을 정한다.
+7. 채팅용 websocket을 `bikers-location`, `notifications`와 분리된 feature로 설계한다.
