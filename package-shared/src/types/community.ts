@@ -1,6 +1,11 @@
 import type { ReactionSummary } from "./reaction";
 
-export type CommunityCategorySlug = "notice" | "question" | "info" | "free";
+export type CommunityCategorySlug =
+  | "notice"
+  | "question"
+  | "info"
+  | "free"
+  | "all";
 
 export type CommunityPost = {
   id: string;
