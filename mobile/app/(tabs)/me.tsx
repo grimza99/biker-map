@@ -27,7 +27,7 @@ const meFloatingMenuOptions: {
   id: FloatingMenuOptionId;
   label: string;
   tone?: "default" | "danger";
-}> = [
+}[] = [
   {
     icon: (
       <Ionicons name="heart" size={24} color={bikerMapTheme.colors.accent} />
