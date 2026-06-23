@@ -10,6 +10,7 @@ import {
 } from "@package-shared/index";
 import { apiFetch } from "@/shared";
 import { Alert } from "react-native";
+import { useSession } from "@/features/session/model";
 
 /**--------------------------------verification code 문자 보내기 -------------------- */
 export function useSendSMSVerificationCodeMutation(
@@ -30,7 +31,7 @@ export function useSendSMSVerificationCodeMutation(
 /**--------------------------------인증 code 일치 확인 ------------------------------- */
 export function useVerifyMuation(payload: IVerificationCodeCheckBody) {
   const queryClient = useQueryClient();
-
+  const { setSession } = useSession();
   return useMutation({
     mutationFn: () =>
       apiFetch<AuthVerifyResponseData>(API_PATHS.auth.verify, {
@@ -39,6 +40,7 @@ export function useVerifyMuation(payload: IVerificationCodeCheckBody) {
       }),
     onSuccess: async (response) => {
       const nextSession = response.data;
+      setSession(nextSession);
       queryClient.setQueryData<ApiResponse<MeResponseData>>(queryKeys.session, {
         data: {
           authenticated: Boolean(nextSession),
