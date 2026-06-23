@@ -87,7 +87,7 @@ export default function CommunityPostsPage() {
       <div className="flex flex-1 gap-3 w-full flex-col items-start md:flex-row md:items-end">
         <Input
           type="search"
-          placeholder="제목, 본문, 작성자명으로 검색"
+          placeholder="제목, 본문으로 검색"
           value={searchInput}
           onChange={(event) => {
             const nextValue = event.target.value;
