@@ -16,7 +16,7 @@
 - nearby snapshot 기본 `limit`은 `50`이다.
 - 최신 위치 상태 1건만 저장한다.
 - stale timeout은 `30초`로 한다.
-- Vercel Hobby 플랜 한도로 인해 별도 cron은 두지 않고, stale cleanup은 nearby 요청 경로에서 opportunistic하게 수행한다.
+- Vercel Hobby cron 한도 때문에 stale row의 실제 삭제는 별도 작업으로 남겨 두고, 현재 nearby 조회는 `expires_at > now()` 기준으로만 active presence를 노출한다.
 - `biker_presence`는 위치 이력 테이블이 아니라 현재 공유 중인 유저의 최신 위치 1건만 보관하는 active presence 테이블이다.
 - 사용자가 `sharingStatus=off`로 전환하거나 foreground 공유가 종료되면 presence row를 삭제한다.
 - 앱이 foreground로 복귀하고 사용자의 공유 의도가 여전히 on이면 첫 위치 update 시 presence row를 다시 생성하거나 upsert한다.
@@ -50,7 +50,7 @@
 - stale location, 미래 시각 `observedAt`, 날짜변경선 근처 거리 계산 이슈 대응이 반영되었다.
 - `me/location` 성공 시 `biker:presence-sync` broadcast가 나가도록 구현되었다.
 - `me/sharing`의 `off` 처리 시 `biker:presence-leave` broadcast가 나가도록 구현되었다.
-- expired presence는 `nearby` 요청 시 opportunistic cleanup + `biker:presence-leave` broadcast로 정리되도록 반영되었다.
+- expired presence는 현재 `nearby` 조회에서 제외되도록 반영되었다.
 
 ### Mobile
 
@@ -115,7 +115,6 @@
 - 본인 row는 nearby snapshot 응답에서 제외한다.
 - 비정상 종료나 네트워크 단절로 `off` 호출이 누락될 수 있으므로 stale row 정리는 별도 필요하다.
 - stale row 정리는 우선 조회 제외로 처리하고, 실제 삭제는 cron 또는 정리 작업으로 분리한다.
-- 현재는 Vercel Hobby 한도 때문에 별도 cron을 두지 않고, nearby 요청 시 expired row를 opportunistic cleanup 한다.
 
 ### 설계 메모
 
@@ -156,8 +155,6 @@
   - `biker_presence` upsert 성공 후 `biker:presence-sync` broadcast
 - `POST /me/sharing` with `sharingStatus=off`
   - row 삭제 성공 후 `biker:presence-leave` broadcast
-- stale cleanup
-  - nearby 요청 경로에서 만료된 row를 삭제한 뒤 `biker:presence-leave` broadcast
 
 ### 모바일 반영 기준
 
@@ -257,12 +254,12 @@
 - realtime subscribe 실패
   - snapshot 기반 화면은 유지한다.
   - 현재는 `1초 -> 2초 -> 4초` backoff로 최대 `3회`까지 자동 재시도한다.
-  - 이후에도 실패하면 에러 상태를 유지하고 자동 재시도는 중단한다.
+  - 이후에도 실패하면 인라인 에러와 수동 `다시 연결` UX를 노출하고 자동 재시도는 중단한다.
 
 ## 7. 이후 진행 예정 사항
 
 1. 모바일 `sharingIntent`의 persistence 범위를 정한다.
 2. 실기기 기준 background 복귀, 네트워크 복귀, 장시간 idle 시나리오를 수동 검증한다.
 3. scale 이슈가 생기면 별도 scheduler 또는 `bikers-location` 채널 분할 전략을 함께 검토한다.
-4. 재시도 한도를 넘긴 뒤 사용자가 수동으로 다시 붙을 UX가 필요한지 검토한다.
-5. cleanup/broadcast 실패 로그의 운영 기준을 정한다.
+4. stale row 실제 삭제 시점과 운영 방식(cron, manual job, 다른 write path 연계)을 확정한다.
+5. cleanup 실패 로그와 운영 대응 기준을 정한다.

@@ -7,8 +7,6 @@ import {
   MAX_BIKERS_NEARBY_LIMIT,
   MAX_BIKERS_NEARBY_RADIUS_METERS,
   BIKER_LOCATION_SHARING_STATUSES,
-  DEFAULT_BIKER_REALTIME_CHANNEL,
-  type TBikerPresenceLeaveEvent,
   TBikerPresenceItem,
   TBikersNearbyResponseData,
 } from "@package-shared/index";
@@ -92,8 +90,6 @@ export async function GET(request: NextRequest) {
   const bounds = buildBounds(query.lat, query.lng, query.radiusMeters);
   const supabase = createSupabaseServiceClient();
 
-  await cleanupExpiredPresenceRows(supabase, nowIso);
-
   let candidateRows: BikerPresenceNearbyRow[];
   try {
     candidateRows = await loadNearbyPresenceCandidates(
@@ -147,35 +143,6 @@ export async function GET(request: NextRequest) {
   } satisfies TBikersNearbyResponseData;
 
   return ok(response);
-}
-
-async function cleanupExpiredPresenceRows(
-  supabase: ReturnType<typeof createSupabaseServiceClient>,
-  nowIso: string
-) {
-  const { data, error } = await supabase
-    .from("biker_presence")
-    .delete()
-    .lte("expires_at", nowIso)
-    .select("user_id, expires_at");
-
-  if (error) {
-    console.error("[mobile/bikers/nearby] stale presence cleanup failed", {
-      error,
-    });
-    return;
-  }
-
-  const deletedRows = (data ?? []) as Array<{
-    user_id: string;
-    expires_at: string;
-  }>;
-
-  await Promise.all(
-    deletedRows.map((row) =>
-      broadcastBikerPresenceLeave(row.user_id, row.expires_at)
-    )
-  );
 }
 
 async function loadNearbyPresenceCandidates(
@@ -262,45 +229,6 @@ function mapNearbyPresenceItem(
     updatedAt: row.updated_at,
     expiresAt: row.expires_at,
   };
-}
-
-async function broadcastBikerPresenceLeave(userId: string, expiresAt: string) {
-  const event: TBikerPresenceLeaveEvent = {
-    type: "biker:presence-leave",
-    userId,
-    expiresAt,
-  };
-
-  try {
-    await sendBikerRealtimeBroadcast(event.type, event);
-  } catch (error) {
-    console.error("[mobile/bikers/nearby] presence-leave broadcast failed", {
-      userId,
-      error,
-    });
-  }
-}
-
-async function sendBikerRealtimeBroadcast(
-  event: TBikerPresenceLeaveEvent["type"],
-  payload: TBikerPresenceLeaveEvent
-) {
-  const supabase = createSupabaseServiceClient();
-  const channel = supabase.channel(DEFAULT_BIKER_REALTIME_CHANNEL);
-
-  try {
-    const result = await channel.send({
-      type: "broadcast",
-      event,
-      payload,
-    });
-
-    if (result !== "ok") {
-      throw new Error(`broadcast send failed: ${result}`);
-    }
-  } finally {
-    await supabase.removeChannel(channel);
-  }
 }
 
 function buildBounds(lat: number, lng: number, radiusMeters: number) {
