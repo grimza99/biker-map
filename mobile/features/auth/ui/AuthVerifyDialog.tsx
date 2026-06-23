@@ -8,10 +8,12 @@ import { TextInputChangeEvent, View } from "react-native";
 interface IAuthVerifyDialogProps {
   open: boolean;
   onOpenChange: () => void;
+  onSuccess: () => void;
 }
 export function AuthVerifyDialog({
   open,
   onOpenChange,
+  onSuccess,
 }: IAuthVerifyDialogProps) {
   const [phone, setPhone] = useState("");
   const [code, setCode] = useState("");
@@ -20,10 +22,7 @@ export function AuthVerifyDialog({
     useSendSMSVerificationCodeMutation({
       phone,
     });
-  const { mutateAsync: checkCodeMutation } = useVerifyMuation({
-    phone,
-    code,
-  });
+  const { mutateAsync: checkCodeMutation } = useVerifyMuation({ phone, code });
   const { timerText, remainingSeconds } = useRemainingTime(
     data?.data.expiresAt
   );
@@ -39,7 +38,8 @@ export function AuthVerifyDialog({
 
   const handleVerifyCodeSubmit = async () => {
     await checkCodeMutation();
-  };
+    onSuccess();
+  }
 
   return (
     <CommonModal
