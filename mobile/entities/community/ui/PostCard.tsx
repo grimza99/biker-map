@@ -21,7 +21,7 @@ export function PostCard({ post, categoryLabel }: PostCardProps) {
 
   const handlePressDetail = () => {
     router.push({
-      pathname: MOBILE_PATHS.community.detailPost,
+      pathname: MOBILE_PATHS.community.detail,
       params: { postId: post.id },
     } as unknown as Href);
   };

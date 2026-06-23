@@ -16,7 +16,8 @@ export const MOBILE_PATHS = {
   },
   detailPlace: `${TABS}${PATHS.map.entry}/places/[placeId]` as const,
   community: {
-    list: `${TABS}/community/index` as const,
-    detailPost: `${TABS}/community/[postId]` as const,
+    entry: `${TABS}/community` as const,
+    detail: `${TABS}/community/[postId]` as const,
+    new: `${TABS}/community/new` as const,
   },
 };

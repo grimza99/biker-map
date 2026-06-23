@@ -26,6 +26,7 @@ const meFloatingMenuOptions: Array<{
   icon: ReactNode;
   id: FloatingMenuOptionId;
   label: string;
+  tone?: "default" | "danger";
 }> = [
   {
     icon: (
@@ -56,6 +57,7 @@ const meFloatingMenuOptions: Array<{
     icon: <Feather name="user-minus" size={24} color="white" />,
     id: "delete-account",
     label: "회원 탈퇴",
+    tone: "danger",
   },
 ];
 

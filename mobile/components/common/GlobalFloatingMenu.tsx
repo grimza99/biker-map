@@ -15,6 +15,7 @@ export type GlobalFloatingMenuOption<T> = {
   id: T | string;
   label: string;
   rightSlot?: ReactNode;
+  tone?: "default" | "danger";
 };
 
 export type GlobalFloatingMenuProps<T> = {
@@ -63,7 +64,7 @@ export function GlobalFloatingMenu<T>({
       {isOpen && (
         <>
           {options.map((option) => {
-            const isDeleteAccount = option.id === "delete-account";
+            const isDanger = option.tone === "danger";
 
             return (
               <Button
@@ -73,7 +74,7 @@ export function GlobalFloatingMenu<T>({
                 accessibilityState={{ expanded: isOpen }}
                 className={cn(
                   "bg-white rounded-2xl w-36 py-2",
-                  isDeleteAccount && "bg-danger"
+                  isDanger && "bg-danger"
                 )}
                 onPress={() => {
                   onSelect(option);
@@ -87,7 +88,7 @@ export function GlobalFloatingMenu<T>({
                 <AppText
                   className={cn(
                     "font-extrabold text-black",
-                    isDeleteAccount && "text-text"
+                    isDanger && "text-text"
                   )}
                   numberOfLines={1}
                 >
