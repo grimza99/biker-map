@@ -12,6 +12,9 @@ export type WsConnectionResponseData = {
   channel?: string;
   mode: RealtimeMode;
   feature?: RealtimeFeature;
+  connectionToken?: string;
+  connectionPayload?: Record<string, unknown>;
+  expiresAt?: string;
 };
 
 export type TNotificationRealtimeConfigResponseData =
