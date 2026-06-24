@@ -51,15 +51,16 @@ const workflowItems = [
 function LandingButtonRow() {
   return (
     <div className="flex flex-wrap gap-3">
-      <Link href={PATHS.map.entry}>
-        <Button className="shadow-[0_10px_28px_rgba(229,87,47,0.28)]">
+      <Button className="shadow-[0_10px_28px_rgba(229,87,47,0.28)]" asChild>
+        <Link href={PATHS.map.entry}>
           지도 보기
           <Compass className="h-4 w-4" />
-        </Button>
-      </Link>
-      <Link href={PATHS.community.entry}>
-        <Button variant="secondary">커뮤니티 가기</Button>
-      </Link>
+        </Link>
+      </Button>
+
+      <Button variant="secondary" asChild>
+        <Link href={PATHS.community.entry}>커뮤니티 가기 </Link>
+      </Button>
     </div>
   );
 }
