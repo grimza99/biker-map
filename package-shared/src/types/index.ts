@@ -1,6 +1,7 @@
 export * from "./api";
 export * from "./auth";
 export * from "./biker";
+export * from "./chat";
 export * from "./community";
 export * from "./favorite";
 export * from "./me";
