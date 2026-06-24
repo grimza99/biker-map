@@ -23,7 +23,7 @@ export type TChatMessagePreview = {
 };
 
 export type TChatMessage = TChatMessagePreview & {
-  clientMessageId?: string | null;
+  clientMessageId: string;
   author: TChatParticipantProfile;
 };
 
@@ -52,7 +52,7 @@ export type TChatMessageListResponseData = {
 
 export type TCreateChatMessageBody = {
   body: string;
-  clientMessageId?: string | null;
+  clientMessageId: string;
 };
 
 export type TCreateChatMessageResponseData = {
