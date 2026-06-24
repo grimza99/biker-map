@@ -53,6 +53,7 @@
 - `TChatMessageListResponseData`
 - `TCreateChatMessageBody`
 - `TCreateChatMessageResponseData`
+- `TChatRealtimeConfigResponseData`
 
 ### 재사용 기준
 
@@ -85,6 +86,7 @@
 - 실시간 연결은 snapshot 이후 delta만 반영해야 한다.
 - 메시지 전송 실패, 중복 전송, 재연결 후 누락 메시지 보정 흐름이 있어야 한다.
 - typing, join/leave는 보조 이벤트로 취급하고 메시지 저장 성공보다 우선하지 않는다.
+- optimistic send와 dedupe 기준으로 `clientMessageId`는 request/message/realtime payload에서 모두 필수로 유지한다.
 
 ### shared 계약 기준
 
@@ -100,6 +102,7 @@
 - `TChatMessage`
 - `TChatMessageListResponseData`
 - `TCreateChatMessageBody`
+- `TChatRealtimeConfigResponseData`
 
 ## 비교 대상
 
@@ -130,7 +133,7 @@
 1. 모바일이 `GET /api/mobile/bikers/chats/:chatId`로 방 메타와 참여 권한을 확인한다.
 2. 모바일이 `GET /api/mobile/bikers/chats/:chatId/messages`로 최근 메시지 snapshot을 받는다.
 3. 모바일이 `GET /api/mobile/bikers/chats/:chatId/realtime-config`를 호출한다.
-4. BFF가 access token을 검증하고, 외부 realtime 서비스용 short-lived token 또는 signed config를 발급한다.
+4. BFF가 access token을 검증하고, 외부 realtime 서비스용 short-lived token 또는 opaque connection payload를 발급한다.
 5. 모바일이 외부 WebSocket endpoint에 연결한다.
 6. 메시지 전송은 기본적으로 `POST /api/mobile/bikers/chats/:chatId/messages`로 보낸다.
 7. 서버가 DB 저장 성공 후 외부 realtime으로 `chat:message` event를 publish 한다.
@@ -154,7 +157,7 @@
 
 - 모바일 -> BFF: `Authorization` bearer token 필수
 - BFF는 `requireApiSession(request)`로 사용자 검증 후 room participant 여부를 체크해야 한다.
-- 외부 realtime 연결 정보는 BFF가 room 범위와 만료 시간을 가진 short-lived token으로 내려주는 방식이 적합하다.
+- 외부 realtime 연결 정보는 BFF가 room 범위와 만료 시간을 가진 `connectionToken` 또는 `connectionPayload` 형태로 내려주는 방식이 적합하다.
 - 모바일은 refresh token을 socket 서버로 직접 보내지 않는다.
 - room join 권한, message write 권한, typing/presence publish 권한을 분리해서 본다.
 
@@ -285,7 +288,7 @@
 - realtime은 항상 snapshot 이후 delta만 반영한다.
 - `package-shared/src/types/ws.ts`의 event 타입은 유지하되, 특정 vendor 전용 payload로 오염시키지 않는다.
 - 모바일은 `useChatConnection(chatId)` 같은 추상화만 사용하고, 화면에서 Supabase client를 직접 다루지 않는다.
-- `GET /api/mobile/bikers/chats/:chatId/realtime-config`는 장기적으로 `mode: "supabase-realtime" | "websocket"` 분기를 유지할 수 있어야 한다.
+- `GET /api/mobile/bikers/chats/:chatId/realtime-config`는 장기적으로 `mode: "supabase-realtime" | "websocket"` 분기를 유지하고, `connectionToken` 또는 `connectionPayload`를 담을 수 있어야 한다.
 
 ### 추천
 - 운영 장기안: `1) Vercel + Next.js + 외부 API`
@@ -361,7 +364,7 @@ Supabase 공식 문서 기준으로 확인한 값:
 
 ### 5단계: 필요 시 외부 API 전환
 - 외부 realtime provider를 붙인다.
-- `GET realtime-config`에서 room 범위 short-lived token을 발급한다.
+- `GET realtime-config`에서 room 범위 `connectionToken` 또는 `connectionPayload`를 발급한다.
 - mobile adapter 구현체만 교체하고 화면/DTO/BFF snapshot 계약은 유지한다.
 
 ### 6단계: UX 보강
@@ -398,7 +401,7 @@ Supabase 공식 문서 기준으로 확인한 값:
 - 외부 realtime provider를 무엇으로 고를지 아직 미정이다.
 - 1:1 채팅 room 생성 규칙과 차단/신고 정책이 아직 정의되지 않았다.
 - unread count와 push notification 연동 시 BFF 이벤트 설계가 추가로 필요하다.
-- `package-shared/src/types/ws.ts`에는 event 껍데기만 있고 실제 room/message DTO는 아직 없다.
+- `package-shared/src/types/ws.ts`와 `package-shared/src/types/chat.ts`에는 room/message DTO와 realtime event 타입이 반영되어 있다.
 
 ## 결론
 
