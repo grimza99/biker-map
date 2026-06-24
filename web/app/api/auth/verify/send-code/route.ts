@@ -1,6 +1,5 @@
 import {
   badRequest,
-  createSupabaseApiClient,
   internalServerError,
   mapVerification,
   ok,
@@ -9,11 +8,12 @@ import {
 } from "@/shared";
 import { getSupabaseAuthSession } from "@/shared/api/auth";
 import { getProfileStatus } from "@/shared/api/supabase-profiles";
+import { createSupabaseServiceClient } from "@/shared/lib/supabase";
 import {
   createVerificationCode,
   hashVerificationCode,
   sendVerificationSms,
-} from "@/shared/lib";
+} from "@/shared/lib/sms";
 import { ISendVerificationCodeBody } from "@package-shared/index";
 import z from "zod";
 
@@ -36,7 +36,7 @@ export async function POST(request: Request) {
 
   const expiresAt = new Date(Date.now() + 3 * 60 * 1000).toISOString();
 
-  const supabase = createSupabaseApiClient(request);
+  const supabase = createSupabaseServiceClient();
 
   let profileStatus = null;
   try {

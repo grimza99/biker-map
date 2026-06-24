@@ -1,6 +1,5 @@
 import {
   badRequest,
-  createSupabaseApiClient,
   internalServerError,
   mapMe,
   ok,
@@ -9,7 +8,8 @@ import {
 } from "@/shared";
 import { getSupabaseAuthSession } from "@/shared/api/auth";
 import { getProfileStatus } from "@/shared/api/supabase-profiles";
-import { isVerificationCodeMatched } from "@/shared/lib";
+import { createSupabaseServiceClient } from "@/shared/lib/supabase";
+import { isVerificationCodeMatched } from "@/shared/lib/sms";
 import { IVerificationCodeCheckBody } from "@package-shared/index";
 import z from "zod";
 
@@ -32,7 +32,7 @@ export async function POST(request: Request) {
 
   const { phone } = payload;
 
-  const supabase = createSupabaseApiClient(request);
+  const supabase = createSupabaseServiceClient();
 
   const { data, error } = await supabase
     .from("sms_verifications")
