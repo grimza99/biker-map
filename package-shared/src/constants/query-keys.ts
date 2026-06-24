@@ -1,8 +1,16 @@
 export const queryKeys = {
   bikersRoot: ["bikers"] as const,
+  bikerChatsRoot: ["bikers", "chats"] as const,
   myBikerLocation: ["bikers", "me", "location"] as const,
   myBikerSharing: ["bikers", "me", "sharing"] as const,
   bikerRealtimeConfig: ["bikers", "realtime-config"] as const,
+  bikerChatRoom: (chatId: string) => ["bikers", "chats", chatId] as const,
+  bikerChatMessages: (
+    chatId: string,
+    params?: Record<string, string | number | undefined>
+  ) => ["bikers", "chats", chatId, "messages", params ?? {}] as const,
+  bikerChatRealtimeConfig: (chatId: string) =>
+    ["bikers", "chats", chatId, "realtime-config"] as const,
   nearbyBikers: (params?: Record<string, string | number | undefined>) =>
     ["bikers", "nearby", params ?? {}] as const,
   postsRoot: ["posts"] as const,
