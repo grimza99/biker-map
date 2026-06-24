@@ -5,6 +5,7 @@ import { useMyFavorites } from "../model";
 import { Button, Pagination } from "@/components/common";
 import { PostCard } from "@/entities/community";
 import { RouteCard } from "@/entities/route";
+import { ListItemSkeleton } from "@/widgets/ui";
 
 type TFavoriteTab = "post" | "route";
 const MY_FAVORITE_SECTION_PAGE_SIZE = 5;
@@ -14,16 +15,18 @@ export function MyFavoriteSection() {
   const [page, setPage] = useState(1);
   const currentPage = Math.max(page, 1);
 
-  const { data: favoritePostData } = useMyFavorites(
-    { page: currentPage, pageSize: MY_FAVORITE_SECTION_PAGE_SIZE },
-    "post",
-    tab === "post"
-  );
-  const { data: favoriteRouteData } = useMyFavorites(
-    { page: currentPage, pageSize: MY_FAVORITE_SECTION_PAGE_SIZE },
-    "route",
-    tab === "route"
-  );
+  const { data: favoritePostData, isLoading: isFavoritePostLoading } =
+    useMyFavorites(
+      { page: currentPage, pageSize: MY_FAVORITE_SECTION_PAGE_SIZE },
+      "post",
+      tab === "post"
+    );
+  const { data: favoriteRouteData, isLoading: isFavoriteRouteLoading } =
+    useMyFavorites(
+      { page: currentPage, pageSize: MY_FAVORITE_SECTION_PAGE_SIZE },
+      "route",
+      tab === "route"
+    );
   const isSubmitting = false;
 
   const favoritedPostList = favoritePostData?.data.items;
@@ -83,19 +86,39 @@ export function MyFavoriteSection() {
       </View>
       {/* 즐겨찾기 게시글 list */}
       {tab === "post" && (
-        <View className="flex flex-col gap-2.5">
-          {favoritedPostList?.map((post) => (
-            <PostCard key={post.id} post={post} categoryLabel={post.category} />
-          ))}
-        </View>
+        <>
+          {isFavoritePostLoading ? (
+            <View className="gap-2">
+              <ListItemSkeleton /> <ListItemSkeleton />
+            </View>
+          ) : (
+            <View className="flex flex-col gap-2.5">
+              {favoritedPostList?.map((post) => (
+                <PostCard
+                  key={post.id}
+                  post={post}
+                  categoryLabel={post.category}
+                />
+              ))}
+            </View>
+          )}
+        </>
       )}
       {/* 즐겨찾기 경로 list */}
       {tab === "route" && (
-        <View className="flex flex-col gap-2.5">
-          {favoritedRouteList?.map((route) => (
-            <RouteCard key={route.id} route={route} />
-          ))}
-        </View>
+        <>
+          {isFavoriteRouteLoading ? (
+            <View className="gap-2">
+              <ListItemSkeleton /> <ListItemSkeleton />
+            </View>
+          ) : (
+            <View className="flex flex-col gap-2.5">
+              {favoritedRouteList?.map((route) => (
+                <RouteCard key={route.id} route={route} />
+              ))}
+            </View>
+          )}
+        </>
       )}
       <Pagination
         currentPage={currentPage}
