@@ -5,32 +5,59 @@ import { AppText, Button, Chip } from "@/components/common";
 import { AppScreen } from "@/components/shell";
 import { RouteMetaRow, useRouteDetailQuery } from "@/entities/route";
 import { MarkdownContentNative } from "@/shared/lib/markdown";
-import { openExternalUrl } from "@/shared";
+import { openExternalUrl, ScreenState } from "@/shared";
 import { FavoriteActionButton, useToggleFavorite } from "@/features/favorite";
 import { regionLabel } from "@package-shared/model";
 import { RouteRegion } from "@package-shared/index";
+import { DetailContentSkeleton } from "@/widgets/ui";
 
 export default function RouteDetailPlaceholderScreen() {
   const { routeId } = useLocalSearchParams<{ routeId: string }>();
-  const { data } = useRouteDetailQuery(routeId);
+  const { data, isError, isLoading } = useRouteDetailQuery(routeId);
 
   const { isPending: isFavoritePending, mutateAsync: toggleFavorite } =
     useToggleFavorite({
-    targetType: "route",
-    targetId: routeId,
-  });
+      targetType: "route",
+      targetId: routeId,
+    });
   const route = data?.data;
   const canOpenNavigation = Boolean(route?.externalMapUrl);
 
-  if (!route) return null;
+  if (isLoading) {
+    return <DetailContentSkeleton />;
+  }
+  if (isError) {
+    return (
+      <AppScreen title="상세 경로">
+        <ScreenState
+          variant="error"
+          title="경로를 찾지 못했습니다."
+          description="잠시후 다시 시도해 주세요"
+        />
+      </AppScreen>
+    );
+  }
+  if (!route) {
+    return (
+      <AppScreen title="상세 경로">
+        <ScreenState
+          variant="not-found"
+          title=""
+          description="삭제되었거나 존재하지 않는 경로입니다."
+        />
+      </AppScreen>
+    );
+  }
+
   const {
     distanceKm,
     departureRegion,
     destinationRegion,
     estimatedDurationMinutes,
   } = route;
+
   return (
-    <AppScreen title="경로 상세">
+    <AppScreen title="상세 경로">
       <ScrollView contentContainerStyle={{ flexDirection: "column", gap: 16 }}>
         <View className="flex flex-row items-start justify-between">
           <View className="flex flex-col gap-3 flex-1">
