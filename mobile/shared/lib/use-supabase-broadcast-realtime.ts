@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from "react";
+import type { RealtimeChannel, SupabaseClient } from "@supabase/supabase-js";
 
 import { getApiAuthState } from "../api";
 import { createSupabaseRealtimeClient } from "./supabase-realtime";
@@ -84,14 +85,17 @@ export function useSupabaseBroadcastRealtime({
     let cleanup: (() => Promise<void> | void) | null = null;
     let isChannelCleanup = false;
     let hasHandledTerminalStatus = false;
+    let supabase: SupabaseClient | null = null;
+    let channel: RealtimeChannel | null = null;
 
     async function removeRealtimeChannel() {
-      if (!cleanup) {
+      if (!supabase || !channel) {
         return;
       }
 
       isChannelCleanup = true;
-      await cleanup();
+      await supabase.removeChannel(channel);
+      channel = null;
       cleanup = null;
     }
 
@@ -146,10 +150,10 @@ export function useSupabaseBroadcastRealtime({
           throw new Error(latestOptionsRef.current.authMissingMessage);
         }
 
-        const supabase = createSupabaseRealtimeClient();
+        supabase = createSupabaseRealtimeClient();
         supabase.realtime.setAuth(latestAccessToken);
 
-        let channel = supabase.channel(config.channelName);
+        channel = supabase.channel(config.channelName);
 
         for (const binding of latestOptionsRef.current.bindings) {
           channel = channel.on(
@@ -161,8 +165,9 @@ export function useSupabaseBroadcastRealtime({
           );
         }
 
+        const activeChannel = channel;
         const status = await new Promise<string>((resolve) => {
-          channel.subscribe((nextStatus) => {
+          activeChannel.subscribe((nextStatus) => {
             if (
               nextStatus === "CHANNEL_ERROR" ||
               nextStatus === "TIMED_OUT" ||
@@ -183,7 +188,8 @@ export function useSupabaseBroadcastRealtime({
 
         if (cancelled) {
           isChannelCleanup = true;
-          await supabase.removeChannel(channel);
+          await supabase.removeChannel(activeChannel);
+          channel = null;
           return;
         }
 
@@ -192,7 +198,12 @@ export function useSupabaseBroadcastRealtime({
         }
 
         cleanup = async () => {
+          if (!supabase || !channel) {
+            return;
+          }
+
           await supabase.removeChannel(channel);
+          channel = null;
         };
 
         retryCountRef.current = 0;
@@ -221,6 +232,13 @@ export function useSupabaseBroadcastRealtime({
       if (cleanup) {
         isChannelCleanup = true;
         void cleanup();
+        return;
+      }
+
+      if (channel && supabase) {
+        isChannelCleanup = true;
+        void supabase.removeChannel(channel);
+        channel = null;
       }
     };
   }, [accessToken, authMissingMessage, connectionKey, enabled, retryNonce]);
