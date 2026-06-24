@@ -1,6 +1,6 @@
 import { Feather } from "@expo/vector-icons";
 import { useMemo, useState } from "react";
-import { ActivityIndicator, ScrollView, View } from "react-native";
+import { ScrollView, View } from "react-native";
 
 import {
   bikerMapTheme,
@@ -20,6 +20,8 @@ import {
 } from "@/components/common";
 import { RouteCard, useRouteListQuery } from "@/entities/route";
 import { AppScreen } from "../../components/shell";
+import { ListItemSkeleton } from "@/widgets/ui";
+import { ScreenState } from "@/shared";
 
 const ROUTE_PAGE_SIZE = 5;
 const REGION_OPTIONS = routeRegionOptions.map((option) => ({
@@ -161,47 +163,28 @@ export default function RoutesScreen() {
       </View>
 
       {/* route list loading, error, empty return */}
-      {routesQuery.isLoading || isWaitingForPage ? (
-        <View className="items-center justify-center rounded-3xl border border-border bg-panel-solid py-10">
-          <ActivityIndicator color={bikerMapTheme.colors.accent} size="small" />
-          <AppText className="mt-3 text-sm font-bold" tone="muted">
-            라이딩 경로를 불러오는 중입니다.
-          </AppText>
-        </View>
-      ) : null}
+      {routesQuery.isLoading || isWaitingForPage ? <ListItemSkeleton /> : null}
 
-      {routesQuery.isError ? (
-        <View className="gap-2 rounded-3xl border border-danger/40 bg-panel-solid p-4">
-          <AppText className="text-base font-extrabold" tone="danger">
-            라이딩 경로를 불러오지 못했습니다.
-          </AppText>
-          <AppText className="text-sm leading-5" tone="muted">
-            {routesQuery.error.message}
-          </AppText>
-          <Button
-            variant="secondary"
-            onPress={() => {
-              void routesQuery.refetch();
-            }}
-          >
-            다시 시도
-          </Button>
-        </View>
-      ) : null}
+      {routesQuery.isError && (
+        <ScreenState
+          variant="error"
+          title=" 라이딩 경로를 불러오지 못했습니다."
+          refetch={() => {
+            void routesQuery.refetch();
+          }}
+        />
+      )}
 
-      {!routesQuery.isLoading &&
-      !isWaitingForPage &&
-      !routesQuery.isError &&
-      visibleRoutes.length === 0 ? (
-        <View className="items-center gap-2 rounded-3xl border border-border bg-panel-solid px-4 py-8">
-          <AppText className="text-base font-extrabold">
-            조건에 맞는 경로가 없습니다.
-          </AppText>
-          <AppText className="text-center text-sm leading-5" tone="muted">
-            검색어나 필터를 조정해 다시 확인해보세요.
-          </AppText>
-        </View>
-      ) : null}
+      {visibleRoutes.length === 0 && (
+        <ScreenState
+          variant="not-found"
+          title=""
+          description="조건에 맞는 경로가 없습니다."
+          refetch={() => {
+            void routesQuery.refetch();
+          }}
+        />
+      )}
 
       {/* applied filter */}
       {!routesQuery.isLoading &&
