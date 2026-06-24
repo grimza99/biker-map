@@ -209,6 +209,8 @@ export default function PostDetailScreen() {
                 title=""
                 variant="not-found"
                 description="아직 등록된 댓글이 없습니다. 첫 댓글을 남겨보세요!"
+                canGoBack={false}
+                className="min-h-40 gap-6 rounded-2xl border border-border bg-panel-soft px-4 py-6"
               />
             )}
           </View>

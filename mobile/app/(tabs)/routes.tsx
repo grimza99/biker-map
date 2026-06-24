@@ -12,7 +12,6 @@ import {
 
 import {
   AppText,
-  Button,
   Chip,
   DropdownMenu,
   Input,
@@ -175,7 +174,10 @@ export default function RoutesScreen() {
         />
       )}
 
-      {visibleRoutes.length === 0 && (
+      {!routesQuery.isLoading &&
+      !isWaitingForPage &&
+      !routesQuery.isError &&
+      visibleRoutes.length === 0 && (
         <ScreenState
           variant="not-found"
           title=""
