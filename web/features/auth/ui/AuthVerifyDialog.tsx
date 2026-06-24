@@ -93,7 +93,10 @@ export function AuthVerifyDialog({
                   </div>
                 )}
               </div>
-              <Button disabled={remainingSeconds < 1} type="submit">
+              <Button
+                disabled={remainingSeconds < 1 || code.length < 6}
+                type="submit"
+              >
                 확인
               </Button>
             </form>
