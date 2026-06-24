@@ -1,6 +1,6 @@
 import { Feather, Ionicons } from "@expo/vector-icons";
 import { type Href, useRouter } from "expo-router";
-import { ActivityIndicator, ScrollView, View } from "react-native";
+import { ScrollView, View } from "react-native";
 import { useState } from "react";
 
 import {
@@ -11,10 +11,10 @@ import {
 } from "@package-shared/index";
 
 import { AppText, Button, Input, Pagination } from "@/components/common";
-import { PostCard } from "@/entities/community/ui/PostCard";
 import { AppScreen } from "@/components/shell";
 import { MOBILE_PATHS, ScreenState } from "@/shared";
-import { usePostList } from "@/entities/community";
+import { usePostList, PostCard } from "@/entities/community";
+import { ListSkeleton } from "@/widgets/ui";
 
 const COMMUNITY_PAGE_SIZE = 5;
 type CommunityCategoryFilter = CommunityCategorySlug | "all";
@@ -49,12 +49,7 @@ export default function CommunityScreen() {
   if (isLoading && !postListData) {
     return (
       <AppScreen title="커뮤니티">
-        <View className="flex-1 items-center justify-center rounded-3xl bg-panel py-8">
-          <ActivityIndicator color={bikerMapTheme.colors.accent} />
-          <AppText tone="muted" className="text-sm">
-            게시글을 불러오는 중입니다.
-          </AppText>
-        </View>
+        <ListSkeleton />
       </AppScreen>
     );
   }

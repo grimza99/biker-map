@@ -1,6 +1,7 @@
 import { Feather } from "@expo/vector-icons";
 import { useLocalSearchParams } from "expo-router";
-import { ActivityIndicator, Alert, Image, Pressable, View } from "react-native";
+import { Alert, Image, Pressable, View } from "react-native";
+import { useState } from "react";
 
 import {
   CHIP_COLOR,
@@ -23,10 +24,16 @@ import {
 } from "@/components/common";
 import { AppScreen } from "@/components/shell";
 import { useSession } from "@/features/session/model";
-import { formatRelative, openExternalUrl } from "@/shared";
+import {
+  formatRelative,
+  Indicator,
+  openExternalUrl,
+  ScreenState,
+} from "@/shared";
 import { FavoriteActionButton, useToggleFavorite } from "@/features/favorite";
 import { useCreatePostComment } from "@/features/community";
-import { useState } from "react";
+
+import { DetailContentSkeleton } from "@/widgets/ui";
 
 export default function PostDetailScreen() {
   const { postId } = useLocalSearchParams<{ postId: string }>();
@@ -36,7 +43,7 @@ export default function PostDetailScreen() {
   const {
     data: postResponse,
     isLoading,
-    error,
+    refetch,
     isError,
   } = usePostDetail(postId ?? "");
   const {
@@ -74,23 +81,14 @@ export default function PostDetailScreen() {
   return (
     <AppScreen containerStyle={{ padding: 0 }}>
       {isLoading ? (
-        <DefaultCardContainer containerStyle="items-center rounded-3xl bg-panel py-8">
-          <ActivityIndicator color={bikerMapTheme.colors.accent} />
-          <AppText tone="muted" className="text-sm">
-            게시글을 불러오는 중입니다.
-          </AppText>
-        </DefaultCardContainer>
+        <DetailContentSkeleton />
       ) : isError || !post ? (
-        <DefaultCardContainer containerStyle="rounded-3xl bg-panel">
-          <AppText className="text-lg font-bold">
-            게시글을 불러오지 못했습니다.
-          </AppText>
-          <AppText tone="muted" className="text-sm leading-5.5">
-            {error instanceof Error
-              ? error.message
-              : "잠시 후 다시 시도해주세요."}
-          </AppText>
-        </DefaultCardContainer>
+        <ScreenState
+          title="게시글을 불러오지 못했습니다."
+          description="게시글을 불러오지 못했습니다."
+          variant="error"
+          refetch={refetch}
+        />
       ) : (
         <>
           <View className="bg-panel px-2 py-4">
@@ -190,18 +188,13 @@ export default function PostDetailScreen() {
           </View>
           <View className="gap-3">
             {isCommentsLoading ? (
-              <DefaultCardContainer containerStyle="items-center rounded-3xl bg-panel py-7">
-                <ActivityIndicator color={bikerMapTheme.colors.accent} />
-                <AppText tone="muted" className="text-sm">
-                  댓글을 불러오는 중입니다.
-                </AppText>
-              </DefaultCardContainer>
+              <Indicator />
             ) : isCommentsError ? (
-              <DefaultCardContainer containerStyle="rounded-3xl bg-panel">
-                <AppText className="text-base font-bold">
-                  댓글을 불러오지 못했습니다. 잠시 후 다시 시도해주세요
-                </AppText>
-              </DefaultCardContainer>
+              <ScreenState
+                title=""
+                variant="error"
+                description=" 댓글을 불러오지 못했습니다. 잠시 후 다시 시도해주세요"
+              />
             ) : comments.length > 0 ? (
               comments.map((comment) => (
                 <CommentThread
@@ -212,9 +205,11 @@ export default function PostDetailScreen() {
                 />
               ))
             ) : (
-              <AppText tone="muted" className="text-sm leading-5.5 pl-5">
-                아직 등록된 댓글이 없습니다. 첫 댓글을 남겨보세요!
-              </AppText>
+              <ScreenState
+                title=""
+                variant="not-found"
+                description="아직 등록된 댓글이 없습니다. 첫 댓글을 남겨보세요!"
+              />
             )}
           </View>
         </>
