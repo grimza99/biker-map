@@ -62,6 +62,7 @@
 - realtime 연결 실패 시 자동 재시도를 수행하고, 재시도 한도 초과 후에는 인라인 에러와 수동 `다시 연결` UX를 노출한다.
 - 위치가 고정되어도 presence가 만료되지 않도록 heartbeat 재업로드가 반영되었다.
 - access token refresh 이후에도 realtime auth가 최신 토큰을 따라가도록 동기화 로직이 반영되었다.
+- realtime 연결/재시도 lifecycle은 shared hook으로 분리되었고, biker feature는 channel config와 event 해석만 담당한다.
 - 모바일 `.env.example`와 README에 realtime용 Supabase public env 예시가 반영되었다.
 
 ## 4. DB 최신 위치 상태 기준
