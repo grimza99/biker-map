@@ -11,4 +11,7 @@ export const PATHS = {
     terms: "/policy/terms",
   },
   auth: "/auth" as const,
+  coummunity: {
+    entry: "/posts" as const,
+  },
 };
