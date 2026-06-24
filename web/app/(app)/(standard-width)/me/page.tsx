@@ -67,67 +67,69 @@ export default function MePage() {
   return (
     <PageWrapper
       className="p-6"
-      innerClassName="gap-5 flex min-h-[calc(100vh-200px)]"
+      innerClassName="gap-15 flex min-h-[calc(100vh-200px)]"
     >
-      <DefaultCardContainer className="flex justify-center items-start">
-        <div className="flex flex-col gap-5">
-          <Button
-            asChild
-            variant="ghost"
-            selected={tab === "info"}
-            onClick={() => setTab("info")}
-          >
-            내 정보
-          </Button>
-          <Button
-            asChild
-            variant="ghost"
-            selected={tab === "my-posts"}
-            onClick={() => setTab("my-posts")}
-          >
-            내가 쓴 글
-          </Button>
-          <Button
-            asChild
-            variant="ghost"
-            selected={tab === "my-routes"}
-            onClick={() => setTab("my-routes")}
-          >
-            내 경로
-          </Button>
-          <Button
-            asChild
-            variant="ghost"
-            selected={tab === "favorites"}
-            onClick={() => setTab("favorites")}
-          >
-            내가 좋아요 한 글
-          </Button>
-          <Button
-            variant="ghost"
-            className="text-danger hover:border-danger/40 hover:bg-danger/10 hover:text-danger"
-            onClick={() => {
-              const confirmed = window.confirm(
-                "정말 회원 탈퇴를 진행하시겠습니까? 탈퇴 후 30일 유예가 지나면 계정과 연관 데이터가 삭제됩니다."
-              );
+      <div className="flex flex-col gap-5">
+        <Button
+          asChild
+          variant="tertiary"
+          selected={tab === "info"}
+          onClick={() => setTab("info")}
+          className="rounded-lg"
+        >
+          내 정보
+        </Button>
+        <Button
+          asChild
+          variant="tertiary"
+          selected={tab === "my-posts"}
+          onClick={() => setTab("my-posts")}
+          className="rounded-lg"
+        >
+          내가 쓴 글
+        </Button>
+        <Button
+          asChild
+          variant="tertiary"
+          selected={tab === "my-routes"}
+          onClick={() => setTab("my-routes")}
+          className="rounded-lg"
+        >
+          내 경로
+        </Button>
+        <Button
+          asChild
+          variant="tertiary"
+          selected={tab === "favorites"}
+          onClick={() => setTab("favorites")}
+          className="rounded-lg"
+        >
+          내가 좋아요 한 글
+        </Button>
+        <Button
+          variant="tertiary"
+          className="text-danger hover:border-danger/40 hover:bg-danger/10 hover:text-danger rounded-lg"
+          onClick={() => {
+            const confirmed = window.confirm(
+              "정말 회원 탈퇴를 진행하시겠습니까? 탈퇴 후 30일 유예가 지나면 계정과 연관 데이터가 삭제됩니다."
+            );
 
-              if (!confirmed) {
-                return;
-              }
+            if (!confirmed) {
+              return;
+            }
 
-              deleteAccountMutation.mutate(undefined, {
-                onSuccess: () => {
-                  sessionState.setSession(null, null);
-                  router.push("/");
-                },
-              });
-            }}
-            loading={deleteAccountMutation.isPending}
-          >
-            회원 탈퇴
-          </Button>
-        </div>
-      </DefaultCardContainer>
+            deleteAccountMutation.mutate(undefined, {
+              onSuccess: () => {
+                sessionState.setSession(null, null);
+                router.push("/");
+              },
+            });
+          }}
+          loading={deleteAccountMutation.isPending}
+        >
+          회원 탈퇴
+        </Button>
+      </div>
       <div className="flex-1">{getSection(tab)}</div>
     </PageWrapper>
   );
