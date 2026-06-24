@@ -11,6 +11,7 @@ export type SupabaseBroadcastBinding = {
 
 export type SupabaseBroadcastChannelConfig = {
   channelName: string;
+  privateChannel?: boolean;
 };
 
 type UseSupabaseBroadcastRealtimeOptions = {
@@ -153,7 +154,11 @@ export function useSupabaseBroadcastRealtime({
         supabase = createSupabaseRealtimeClient();
         supabase.realtime.setAuth(latestAccessToken);
 
-        channel = supabase.channel(config.channelName);
+        channel = supabase.channel(config.channelName, {
+          config: {
+            private: config.privateChannel ?? false,
+          },
+        });
 
         for (const binding of latestOptionsRef.current.bindings) {
           channel = channel.on(

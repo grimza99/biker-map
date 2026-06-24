@@ -205,6 +205,7 @@ export function buildChatRealtimeConfig(roomId: string) {
     feature: DEFAULT_CHAT_REALTIME_FEATURE,
     roomId,
     channel: buildChatRealtimeChannel(roomId),
+    privateChannel: true,
     url: undefined,
     connectionToken: undefined,
     connectionPayload: undefined,

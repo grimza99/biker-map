@@ -121,6 +121,36 @@ with check (
   )
 );
 
+create policy chat_realtime_messages_select_room_participant
+on realtime.messages
+as permissive
+for select
+to authenticated
+using (
+  realtime.messages.extension = 'broadcast'
+  and exists (
+    select 1
+    from public.chat_room_participants cp
+    where cp.user_id = (select auth.uid())
+      and ('chat:room:' || cp.room_id::text) = (select realtime.topic())
+  )
+);
+
+create policy chat_realtime_messages_insert_room_participant
+on realtime.messages
+as permissive
+for insert
+to authenticated
+with check (
+  realtime.messages.extension = 'broadcast'
+  and exists (
+    select 1
+    from public.chat_room_participants cp
+    where cp.user_id = (select auth.uid())
+      and ('chat:room:' || cp.room_id::text) = (select realtime.topic())
+  )
+);
+
 grant all on table public.chat_rooms to anon;
 grant all on table public.chat_rooms to authenticated;
 grant all on table public.chat_rooms to service_role;
