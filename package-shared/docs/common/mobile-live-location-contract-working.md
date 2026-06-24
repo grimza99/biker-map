@@ -63,6 +63,8 @@
 - 위치가 고정되어도 presence가 만료되지 않도록 heartbeat 재업로드가 반영되었다.
 - access token refresh 이후에도 realtime auth가 최신 토큰을 따라가도록 동기화 로직이 반영되었다.
 - realtime 연결/재시도 lifecycle은 shared hook으로 분리되었고, biker feature는 channel config와 event 해석만 담당한다.
+- biker feature 내부에서도 realtime channel config 로더와 `presence-sync` / `presence-leave` 바인딩 생성 로직이 `lib` 계층으로 분리되었다.
+- feature별 realtime config path를 `channelName` 설정으로 바꾸는 shared helper가 추가되어, chat도 같은 패턴으로 config loader를 만들 수 있다.
 - 모바일 `.env.example`와 README에 realtime용 Supabase public env 예시가 반영되었다.
 
 ## 4. DB 최신 위치 상태 기준
@@ -265,4 +267,5 @@
 4. scale 이슈가 생기면 별도 scheduler 또는 `bikers-location` 채널 분할 전략을 함께 검토한다.
 5. stale row 실제 삭제 시점과 운영 방식(cron, manual job, 다른 write path 연계)을 확정한다.
 6. cleanup 실패 로그와 운영 대응 기준을 정한다.
-7. 채팅용 websocket을 `bikers-location`, `notifications`와 분리된 feature로 설계한다.
+7. chat feature에서 shared realtime hook을 재사용할 adapter 구조를 설계한다.
+8. 채팅용 websocket을 `bikers-location`, `notifications`와 분리된 feature로 설계한다.
