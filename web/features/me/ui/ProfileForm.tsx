@@ -51,7 +51,7 @@ export function ProfileForm() {
 
   return (
     <form
-      className="grid w-full max-w-105 gap-4"
+      className="grid w-full gap-4"
       onSubmit={(event) => {
         event.preventDefault();
         if (isPending || !isDirty || !name.trim()) {
@@ -67,20 +67,34 @@ export function ProfileForm() {
         });
       }}
     >
-      <Input
-        label="이름"
-        value={name}
-        onChange={(event) => setName(event.target.value.trim())}
-        placeholder="라이더 이름"
-        maxLength={40}
-      />
-      <div className="flex flex-row gap-2">
+      <div className="w-full flex flex-row gap-2">
+        <Input
+          label="이름"
+          value={name}
+          onChange={(event) => setName(event.target.value.trim())}
+          placeholder="라이더 이름"
+          maxLength={40}
+          className="flex-1"
+        />
+        <SelectInput
+          label="숙련도"
+          value={proficiency ?? ""}
+          onValueChange={(option) =>
+            setProficiency(option ? (option as Tproficiency) : null)
+          }
+          placeholder="해당 없음"
+          options={proficiencySelectOptions}
+          className="flex-1"
+        />
+      </div>
+      <div className="w-full flex flex-row gap-2">
         <Input
           label="브랜드"
           value={brand || ""}
           onChange={(event) => setBrand(event.target.value.trim())}
           placeholder="브랜드명"
           maxLength={40}
+          className="flex-1"
         />
         <Input
           label="모델명"
@@ -88,17 +102,10 @@ export function ProfileForm() {
           onChange={(event) => setModel(event.target.value.trim())}
           placeholder="모델명"
           maxLength={40}
+          className="flex-1"
         />
       </div>
-      <SelectInput
-        label="숙련도"
-        value={proficiency ?? ""}
-        onValueChange={(option) =>
-          setProficiency(option ? (option as Tproficiency) : null)
-        }
-        placeholder="해당 없음"
-        options={proficiencySelectOptions}
-      />
+
       <ImageInput
         label="프로필 이미지"
         value={avatarUrl}

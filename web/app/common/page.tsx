@@ -3,7 +3,6 @@
 import { Bell, MoreHorizontal, Search, Settings } from "lucide-react";
 
 import { DropdownMenuItemList } from "@/shared/ui/dropdown-menu/DropdownMenu";
-import { MainNav } from "@/widgets";
 import {
   Button,
   ComingSoonCard,
@@ -35,6 +34,7 @@ import {
   Textarea,
   Toast,
 } from "@shared/ui";
+import { MainNav } from "@/widgets/app-shell/ui/MainNav";
 
 export default function CommonPage() {
   return (
