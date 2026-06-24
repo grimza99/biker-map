@@ -3,16 +3,16 @@ import type { Dispatch, RefObject, SetStateAction } from "react";
 import {
   API_PATHS,
   DEFAULT_BIKERS_NEARBY_RADIUS_METERS,
-  DEFAULT_BIKER_REALTIME_MODE,
   type TBikerPresenceLeaveEvent,
   type TBikerPresenceItem,
   type TBikerPresenceSyncEvent,
-  type TBikerRealtimeConfigResponseData,
   type TLocationCoordinate,
 } from "@package-shared/index";
 
-import type { SupabaseBroadcastBinding } from "@/shared";
-import { apiFetch } from "@/shared";
+import {
+  fetchSupabaseBroadcastChannelConfig,
+  type SupabaseBroadcastBinding,
+} from "@/shared";
 
 type CreateLiveBikerRealtimeBindingsOptions = {
   currentLocationRef: RefObject<TLocationCoordinate | null>;
@@ -80,20 +80,11 @@ export function createLiveBikerRealtimeBindings({
 }
 
 export async function fetchBikerRealtimeChannelConfig() {
-  const response = await apiFetch.get<TBikerRealtimeConfigResponseData>(
-    API_PATHS.bikers.realtimeConfig
-  );
-
-  if (
-    response.data.mode !== DEFAULT_BIKER_REALTIME_MODE ||
-    !response.data.channel
-  ) {
-    throw new Error("지원하지 않는 실시간 위치 설정입니다.");
-  }
-
-  return {
-    channelName: response.data.channel,
-  };
+  return fetchSupabaseBroadcastChannelConfig({
+    expectedFeature: "bikers-location",
+    path: API_PATHS.bikers.realtimeConfig,
+    unsupportedMessage: "지원하지 않는 실시간 위치 설정입니다.",
+  });
 }
 
 function upsertNearbyBiker(
