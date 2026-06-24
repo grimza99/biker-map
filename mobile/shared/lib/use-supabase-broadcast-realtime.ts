@@ -3,23 +3,23 @@ import { useEffect, useRef, useState } from "react";
 import { getApiAuthState } from "../api";
 import { createSupabaseRealtimeClient } from "./supabase-realtime";
 
-type BroadcastBinding = {
+export type SupabaseBroadcastBinding = {
   event: string;
   onMessage: (payload: unknown) => void;
 };
 
-type LoadChannelConfigResult = {
+export type SupabaseBroadcastChannelConfig = {
   channelName: string;
 };
 
 type UseSupabaseBroadcastRealtimeOptions = {
   accessToken: string | null;
   authMissingMessage?: string;
-  bindings: BroadcastBinding[];
+  bindings: SupabaseBroadcastBinding[];
   connectionKey?: string | number | null;
   disconnectedMessage?: string;
   enabled: boolean;
-  loadChannelConfig: () => Promise<LoadChannelConfigResult>;
+  loadChannelConfig: () => Promise<SupabaseBroadcastChannelConfig>;
 };
 
 type UseSupabaseBroadcastRealtimeResult = {
