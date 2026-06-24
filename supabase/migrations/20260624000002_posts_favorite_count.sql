@@ -28,6 +28,7 @@ where id not in (
 create or replace function private.sync_post_favorite_count()
 returns trigger
 language plpgsql
+security definer
 set search_path = ''
 as $function$
 begin
