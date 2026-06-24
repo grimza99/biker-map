@@ -39,5 +39,6 @@ export async function fetchSupabaseBroadcastChannelConfig<
 
   return {
     channelName: config.channel,
+    privateChannel: config.privateChannel ?? false,
   };
 }
