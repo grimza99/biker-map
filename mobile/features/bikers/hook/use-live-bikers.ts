@@ -6,17 +6,17 @@ import {
   BIKER_LOCATION_UPLOAD_INTERVAL_SECONDS,
   DEFAULT_BIKERS_NEARBY_LIMIT,
   DEFAULT_BIKERS_NEARBY_RADIUS_METERS,
-  DEFAULT_BIKER_REALTIME_MODE,
-  type TBikerPresenceLeaveEvent,
   type TBikerPresenceItem,
-  type TBikerPresenceSyncEvent,
-  type TBikerRealtimeConfigResponseData,
   type TBikersNearbyResponseData,
   type TLocationCoordinate,
   type TUpdateMyBikerLocationResponseData,
   type TUpdateMyBikerSharingResponseData,
 } from "@package-shared/index";
 
+import {
+  createLiveBikerRealtimeBindings,
+  fetchBikerRealtimeChannelConfig,
+} from "@/features/bikers/lib/live-biker-realtime";
 import { useSession } from "@/features/session/model";
 import { apiFetch, useSupabaseBroadcastRealtime } from "@/shared";
 
@@ -95,77 +95,15 @@ export function useLiveBikers({
   } = useSupabaseBroadcastRealtime({
     accessToken,
     authMissingMessage: "실시간 위치 구독을 시작할 인증 정보가 없습니다.",
-    bindings: [
-      {
-        event: "biker:presence-sync",
-        onMessage: (payload) => {
-          const event = payload as TBikerPresenceSyncEvent;
-          const liveLocation = currentLocationRef.current;
-
-          if (!event?.presence || event.presence.userId === currentUserId) {
-            return;
-          }
-
-          if (!liveLocation) {
-            return;
-          }
-
-          const distanceMeters = calculateDistanceMeters(
-            liveLocation.lat,
-            liveLocation.lng,
-            event.presence.location.lat,
-            event.presence.location.lng
-          );
-
-          if (distanceMeters > DEFAULT_BIKERS_NEARBY_RADIUS_METERS) {
-            setNearbyBikers((current) =>
-              current.filter((item) => item.userId !== event.presence.userId)
-            );
-            return;
-          }
-
-          setNearbyBikers((current) =>
-            upsertNearbyBiker(current, {
-              ...event.presence,
-              isMe: false,
-            })
-          );
-        },
-      },
-      {
-        event: "biker:presence-leave",
-        onMessage: (payload) => {
-          const event = payload as TBikerPresenceLeaveEvent;
-
-          if (!event?.userId || event.userId === currentUserId) {
-            return;
-          }
-
-          setNearbyBikers((current) =>
-            current.filter((item) => item.userId !== event.userId)
-          );
-        },
-      },
-    ],
+    bindings: createLiveBikerRealtimeBindings({
+      currentLocationRef,
+      currentUserId,
+      setNearbyBikers,
+    }),
     connectionKey: realtimeConnectionKey,
     disconnectedMessage: "실시간 위치 연결이 끊어졌습니다.",
     enabled: realtimeEnabled,
-    loadChannelConfig: async () => {
-      const response = await apiFetch.get<TBikerRealtimeConfigResponseData>(
-        API_PATHS.bikers.realtimeConfig
-      );
-
-      if (
-        response.data.mode !== DEFAULT_BIKER_REALTIME_MODE ||
-        !response.data.channel
-      ) {
-        throw new Error("지원하지 않는 실시간 위치 설정입니다.");
-      }
-
-      return {
-        channelName: response.data.channel,
-      };
-    },
+    loadChannelConfig: fetchBikerRealtimeChannelConfig,
   });
 
   useEffect(() => {
@@ -469,58 +407,4 @@ export function useLiveBikers({
     retryRealtime,
     toggleSharing,
   };
-}
-
-function upsertNearbyBiker(
-  current: TBikerPresenceItem[],
-  next: TBikerPresenceItem
-) {
-  const targetIndex = current.findIndex((item) => item.userId === next.userId);
-
-  if (targetIndex < 0) {
-    return [...current, next];
-  }
-
-  const copied = [...current];
-  copied[targetIndex] = next;
-  return copied;
-}
-
-function calculateDistanceMeters(
-  fromLat: number,
-  fromLng: number,
-  toLat: number,
-  toLng: number
-) {
-  const earthRadiusMeters = 6371000;
-  const lat1 = degreesToRadians(fromLat);
-  const lat2 = degreesToRadians(toLat);
-  const deltaLat = degreesToRadians(toLat - fromLat);
-  const deltaLng = degreesToRadians(normalizeLongitudeDelta(toLng - fromLng));
-
-  const haversine =
-    Math.sin(deltaLat / 2) ** 2 +
-    Math.cos(lat1) * Math.cos(lat2) * Math.sin(deltaLng / 2) ** 2;
-
-  return (
-    2 *
-    earthRadiusMeters *
-    Math.atan2(Math.sqrt(haversine), Math.sqrt(1 - haversine))
-  );
-}
-
-function normalizeLongitudeDelta(deltaLng: number) {
-  if (deltaLng > 180) {
-    return deltaLng - 360;
-  }
-
-  if (deltaLng < -180) {
-    return deltaLng + 360;
-  }
-
-  return deltaLng;
-}
-
-function degreesToRadians(value: number) {
-  return (value * Math.PI) / 180;
 }
