@@ -1,3 +1,4 @@
+import type { MeResponseData } from "./me";
 import type { AppSession } from "./session";
 
 export type LoginBody = {
@@ -45,4 +46,4 @@ export type IVerificationCodeCheckBody = {
   phone: string;
   code: string;
 };
-export type AuthVerifyResponseData = AppSession;
+export type AuthVerifyResponseData = MeResponseData;

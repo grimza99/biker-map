@@ -1,4 +1,5 @@
 "use client";
+import { ApiClientError } from "@package-shared/index";
 import { API_PATHS, queryKeys, TOAST_MESSAGE } from "@package-shared/constants";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 
@@ -17,6 +18,8 @@ import {
 export function useSendSMSVerificationCodeMutation(
   payload: ISendVerificationCodeBody
 ) {
+  const { showToast } = useToast();
+
   return useMutation({
     mutationFn: () =>
       apiFetch<ISendVerificationCodeResponseData>(
@@ -26,6 +29,21 @@ export function useSendSMSVerificationCodeMutation(
           body: JSON.stringify(payload),
         }
       ),
+    onSuccess: () => {
+      showToast({
+        tone: "success",
+        title: TOAST_MESSAGE.AUTH.VERIFY.SEND.S,
+      });
+    },
+    onError: (error) => {
+      showToast({
+        tone: "danger",
+        title:
+          error instanceof ApiClientError
+            ? error.message
+            : TOAST_MESSAGE.AUTH.VERIFY.SEND.E,
+      });
+    },
   });
 }
 
@@ -42,13 +60,10 @@ export function useVerifyMuation(payload: IVerificationCodeCheckBody) {
         body: JSON.stringify(payload),
       }),
     onSuccess: async (response) => {
-      const nextSession = response.data;
+      const nextSession = response.data.session;
       sessionState.setSession(nextSession, sessionState.accessToken);
       queryClient.setQueryData<ApiResponse<MeResponseData>>(queryKeys.session, {
-        data: {
-          authenticated: Boolean(nextSession),
-          session: nextSession,
-        },
+        data: response.data,
       });
       await queryClient.invalidateQueries({ queryKey: queryKeys.session });
       showToast({
@@ -56,10 +71,13 @@ export function useVerifyMuation(payload: IVerificationCodeCheckBody) {
         title: TOAST_MESSAGE.AUTH.VERIFY.S,
       });
     },
-    onError: () => {
+    onError: (error) => {
       showToast({
         tone: "danger",
-        title: TOAST_MESSAGE.AUTH.VERIFY.E,
+        title:
+          error instanceof ApiClientError
+            ? error.message
+            : TOAST_MESSAGE.AUTH.VERIFY.E,
       });
     },
   });
