@@ -5,12 +5,11 @@ import { useRouter } from "next/navigation";
 import type { ReactNode } from "react";
 
 import { Profile } from "@/shared";
-import { MainNav } from "@/widgets/navs";
-import { logoutAction } from "@features/auth/actions";
 import { useSession } from "@features/session";
 import { cn } from "@shared/lib";
 import { NotificationsRealtimeBridge } from "@widgets/notification-bell";
 import { Footer } from "./Footer";
+import { MainNav } from "./MainNav";
 
 export function AppShell({ children }: { children: ReactNode }) {
   const router = useRouter();
