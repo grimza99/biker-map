@@ -30,7 +30,7 @@ export async function POST(request: Request) {
     return badRequest("인증코드가 일치하는지 확인하세요");
   }
 
-  let { phone } = payload;
+  const { phone } = payload;
 
   const supabase = createSupabaseApiClient(request);
 
