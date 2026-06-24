@@ -15,6 +15,7 @@ export type WsConnectionResponseData = {
   connectionToken?: string;
   connectionPayload?: Record<string, unknown>;
   expiresAt?: string;
+  privateChannel?: boolean;
 };
 
 export type TNotificationRealtimeConfigResponseData =
