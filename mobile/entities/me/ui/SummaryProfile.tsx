@@ -2,32 +2,41 @@ import { View } from "react-native";
 
 import { AppText } from "@/components/common";
 import { cn } from "@/shared";
-import { useMyFavorites, useMyPosts } from "../model";
+import {
+  useMyFavorites,
+  useMyPosts,
+  useReceivedFavoriteCount,
+} from "../model";
 import { Profile } from "@/shared/ui";
+import { SummaryProfileSkeleton } from "./SummaryProfileSkeleton";
 
 export function SummaryProfile() {
-  const { data: favoritePosts } = useMyFavorites(
-    { page: 0, pageSize: 0 },
-    "post"
-  );
-  const { data: favoriteRoutes } = useMyFavorites(
-    { page: 0, pageSize: 0 },
-    "route"
-  );
-  const { data: myPosts } = useMyPosts({ page: 1, pageSize: 1 });
+  const { data: favoritePosts, isLoading: favoritePostLoading } =
+    useMyFavorites({ page: 0, pageSize: 0 }, "post");
+  const { data: favoriteRoutes, isLoading: favoriteRouteLoading } =
+    useMyFavorites({ page: 0, pageSize: 0 }, "route");
+  const { data: myPosts, isLoading: myPostLoading } = useMyPosts({
+    page: 1,
+    pageSize: 1,
+  });
+  const { data: receivedFavorites } = useReceivedFavoriteCount();
+
 
   const totalFavoriteCount =
     (favoritePosts?.meta?.total || 0) + (favoriteRoutes?.meta?.total || 0);
   const myPostsCount = myPosts?.meta?.total;
+  const receivedFavoriteCount =
+    receivedFavorites?.data.totalFavoriteCount ?? receivedFavorites?.meta?.total;
 
+  const isLoading =
+    favoritePostLoading || favoriteRouteLoading || myPostLoading;
   return (
     <View className="flex-col gap-5">
       <Profile />
       <View className="border-2 border-border flex-row rounded-[18px] py-3 px-3 justify-around bg-panel-solid ">
         <SummaryItem label="작성글" value={myPostsCount} />
         <SummaryItem label="즐겨찾기" value={totalFavoriteCount} />
-        <SummaryItem label="받은 좋아요" value={null} />
-        {/* todo: 받은 좋아요 조회하는 기능 구현 */}
+        <SummaryItem label="받은 좋아요" value={receivedFavoriteCount} />
       </View>
     </View>
   );
