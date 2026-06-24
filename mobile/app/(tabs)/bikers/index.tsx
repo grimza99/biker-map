@@ -3,7 +3,7 @@ import { SafeAreaView } from "react-native-safe-area-context";
 
 import { useEffect } from "react";
 
-import { AppText } from "@/components/common";
+import { AppText, Button } from "@/components/common";
 import { useLiveBikers } from "@/features/bikers";
 import { useCurrentLocation } from "@/features/location/hooks";
 import { MapCanvasWebView } from "@/features/map/ui/MapCanvasWebView";
@@ -20,10 +20,14 @@ export default function BikersScreen() {
     isLoading,
   } = useCurrentLocation(isAuthenticated);
   const {
+    canRetryRealtime,
     errorMessage: liveBikersErrorMessage,
     isSharingEnabled,
+    isRealtimeRetrying,
     isSyncing,
     nearbyBikers,
+    realtimeErrorMessage,
+    retryRealtime,
     toggleSharing,
   } = useLiveBikers({
     currentLocation,
@@ -119,6 +123,34 @@ export default function BikersScreen() {
             </View>
           ) : null}
 
+          {isRealtimeRetrying ? (
+            <AppText className="text-xs font-bold text-warning">
+              실시간 연결을 다시 시도하고 있습니다.
+            </AppText>
+          ) : null}
+
+          {realtimeErrorMessage ? (
+            <View className="gap-2">
+              <AppText className="text-xs font-bold text-warning">
+                {realtimeErrorMessage}
+              </AppText>
+
+              {canRetryRealtime ? (
+                <Button
+                  size="sm"
+                  variant="secondary"
+                  onPress={() => {
+                    retryRealtime();
+                  }}
+                  style={styles.retryButton}
+                  textStyle={styles.retryButtonLabel}
+                >
+                  다시 연결
+                </Button>
+              ) : null}
+            </View>
+          ) : null}
+
           <AppText className="text-xs font-bold text-text">
             주변 바이커 {nearbyBikers.length}명
           </AppText>
@@ -190,5 +222,11 @@ const styles = StyleSheet.create({
     right: 0,
     left: 0,
     zIndex: 10,
+  },
+  retryButton: {
+    alignSelf: "flex-start",
+  },
+  retryButtonLabel: {
+    fontSize: 12,
   },
 });

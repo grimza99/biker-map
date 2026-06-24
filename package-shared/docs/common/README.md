@@ -19,6 +19,8 @@
 
 - `mobile-auth-contract.md`
   - 모바일 앱이 웹 API proxy를 통해 인증할 때의 요청/응답 규칙
+- `mobile-realtime-handoff.md`
+  - 모바일 실시간 위치 공유의 현재 기준과 chat 작업자 handoff
 - `web-app-change-log-template.md`
   - 웹 변경을 앱 팀에 전달할 때 사용하는 기록 템플릿
 
@@ -32,4 +34,3 @@
 - `web/shared/api/auth.ts`
 - 지도 WebView 경계 또는 bridge event
 - notification 흐름과 우선순위
-

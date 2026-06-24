@@ -1,10 +1,5 @@
-"use client";
-import { ApiClientError } from "@package-shared/index";
-import { API_PATHS, queryKeys, TOAST_MESSAGE } from "@package-shared/constants";
+import { API_PATHS, queryKeys } from "@package-shared/constants";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-
-import { useSession } from "@/features/session";
-import { apiFetch, useToast } from "@/shared";
 import {
   ApiResponse,
   AuthVerifyResponseData,
@@ -13,13 +8,14 @@ import {
   IVerificationCodeCheckBody,
   MeResponseData,
 } from "@package-shared/index";
+import { apiFetch } from "@/shared";
+import { Alert } from "react-native";
+import { useSession } from "@/features/session/model";
 
 /**--------------------------------verification code 문자 보내기 -------------------- */
 export function useSendSMSVerificationCodeMutation(
   payload: ISendVerificationCodeBody
 ) {
-  const { showToast } = useToast();
-
   return useMutation({
     mutationFn: () =>
       apiFetch<ISendVerificationCodeResponseData>(
@@ -29,20 +25,8 @@ export function useSendSMSVerificationCodeMutation(
           body: JSON.stringify(payload),
         }
       ),
-    onSuccess: () => {
-      showToast({
-        tone: "success",
-        title: TOAST_MESSAGE.AUTH.VERIFY.SEND.S,
-      });
-    },
-    onError: (error) => {
-      showToast({
-        tone: "danger",
-        title:
-          error instanceof ApiClientError
-            ? error.message
-            : TOAST_MESSAGE.AUTH.VERIFY.SEND.E,
-      });
+    onError: () => {
+      Alert.alert("인증번호 발송에 실패 했습니다. 잠시후 다시 시도해 주세요");
     },
   });
 }
@@ -50,9 +34,7 @@ export function useSendSMSVerificationCodeMutation(
 /**--------------------------------인증 code 일치 확인 ------------------------------- */
 export function useVerifyMuation(payload: IVerificationCodeCheckBody) {
   const queryClient = useQueryClient();
-  const sessionState = useSession();
-  const { showToast } = useToast();
-
+  const { setSession } = useSession();
   return useMutation({
     mutationFn: () =>
       apiFetch<AuthVerifyResponseData>(API_PATHS.auth.verify, {
@@ -60,25 +42,18 @@ export function useVerifyMuation(payload: IVerificationCodeCheckBody) {
         body: JSON.stringify(payload),
       }),
     onSuccess: async (response) => {
-      const nextSession = response.data.session;
-      sessionState.setSession(nextSession, sessionState.accessToken);
+      const nextSession = response.data;
+      setSession(nextSession);
       queryClient.setQueryData<ApiResponse<MeResponseData>>(queryKeys.session, {
-        data: response.data,
+        data: {
+          authenticated: Boolean(nextSession),
+          session: nextSession,
+        },
       });
       await queryClient.invalidateQueries({ queryKey: queryKeys.session });
-      showToast({
-        tone: "success",
-        title: TOAST_MESSAGE.AUTH.VERIFY.S,
-      });
     },
-    onError: (error) => {
-      showToast({
-        tone: "danger",
-        title:
-          error instanceof ApiClientError
-            ? error.message
-            : TOAST_MESSAGE.AUTH.VERIFY.E,
-      });
+    onError: () => {
+      Alert.alert("본인 인증에 실패 했습니다. 잠시후 다시 시도해 주세요");
     },
   });
 }

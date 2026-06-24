@@ -1,7 +1,6 @@
 import { Image, View } from "react-native";
 
 import { AppText } from "@/components/common";
-import { useSession } from "@/features/session/model";
 import { Feather } from "@expo/vector-icons";
 import { bikerMapTheme } from "@package-shared/constants";
 
