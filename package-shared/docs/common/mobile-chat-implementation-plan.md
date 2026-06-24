@@ -17,7 +17,7 @@
 ## 이번 착수 범위
 
 - 1차 목표는 `package-shared` chat 엔티티 타입과 공통 contract를 확정하는 것이다.
-- 이번 턴에서는 화면 구현이나 BFF route 추가보다 먼저, 웹/모바일이 함께 쓸 타입과 path, query key를 고정한다.
+- 현재는 화면 구현이나 BFF route 추가보다 먼저, 웹/모바일이 함께 쓸 타입과 path, query key를 고정한 상태다.
 - realtime 공용화는 기존 `live-bikers`가 이미 쓰는 `createSupabaseRealtimeClient()`와 subscribe 패턴을 재사용하는 방향으로 본다.
 - 다만 아직 별도 공용 chat realtime adapter는 만들지 않고, 2차 구현에서 hook 레벨로 분리한다.
 
@@ -31,9 +31,9 @@
 - 현재 코드베이스 맥락상 이 타입은 "chat realtime 이벤트가 필요할 것"이라는 공유 모델 선반영에 가깝고, 실제 transport 결정은 아직 열려 있던 상태로 보는 편이 맞다.
 - 현재 레포의 명시적 방향은 "채팅은 Supabase Realtime만으로 확정하지 않고 별도 WebSocket 서버 도입 가능성을 검토"하는 쪽이다.
 
-## 1차 진행 현황
+## 현재 진행 현황
 
-### 이번 턴에서 반영
+### 완료된 항목
 
 - `package-shared/src/types/chat.ts` 추가
 - `package-shared/src/types/index.ts` export 추가
@@ -41,7 +41,7 @@
 - `package-shared/src/constants/query-keys.ts`에 chat room/messages/realtime-config key 추가
 - `package-shared/src/types/ws.ts`에서 `chat:message` event가 `TChatMessage` payload를 직접 참조하도록 정리
 
-### 이번 턴에서 확정한 shared 계약
+### 확정된 shared 계약
 
 - `TChatParticipantProfile`
 - `TChatParticipant`
@@ -59,6 +59,13 @@
 - realtime client 생성은 새로 만들지 않고 기존 `mobile/shared/lib/supabase-realtime.ts`의 `createSupabaseRealtimeClient()`를 재사용한다.
 - 모바일 subscribe 흐름은 `mobile/features/bikers/hook/use-live-bikers.ts`의 auth 주입, channel subscribe, cleanup 패턴을 참고해 chat hook으로 옮긴다.
 - retry 정책은 화면별 ad-hoc 구현 대신 기존 Query 기본 정책과 `live-bikers`의 reconnect 처리 방식을 우선 재사용한다.
+
+### 아직 남은 2차 구현
+
+- BFF chat room/messages/realtime-config route 추가
+- DB chat room/participant/message 최소 스키마 확정
+- 모바일 `useChatRoom`, `useChatMessages`, `useChatRealtime` 또는 `useChatConnection` 분리
+- `mobile/app/(tabs)/bikers/chats/[chatId].tsx`를 placeholder에서 실제 데이터 기반 화면으로 전환
 
 ## 전제
 
@@ -81,7 +88,7 @@
 
 ### shared 계약 기준
 
-이번 턴에서 반영 완료:
+현재 반영 완료:
 
 - `API_PATHS.bikers.chatRoom(chatId)`
 - `API_PATHS.bikers.chatMessages(chatId)`
