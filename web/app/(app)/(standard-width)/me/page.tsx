@@ -1,7 +1,9 @@
 "use client";
 
-import { useRouter } from "next/navigation";
+import { redirect, useRouter } from "next/navigation";
 import { useState } from "react";
+
+import { PATHS } from "@package-shared/constants";
 
 import {
   MyFavoritesSection,
@@ -15,7 +17,6 @@ import { useSession } from "@features/session/model/use-session";
 import {
   Button,
   DefaultCardContainer,
-  EmptyState,
   ErrorState,
   LoadingState,
   PageWrapper,
@@ -36,11 +37,7 @@ export default function MePage() {
   }
 
   if (sessionState.status !== "authenticated") {
-    return (
-      <PageWrapper className="p-6" innerClassName="gap-5">
-        <EmptyState title="로그인이 필요합니다" />
-      </PageWrapper>
-    );
+    return redirect(PATHS.auth);
   }
 
   if (meQuery.isError || !me?.session) {
