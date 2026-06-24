@@ -57,7 +57,7 @@ function LandingButtonRow() {
           <Compass className="h-4 w-4" />
         </Button>
       </Link>
-      <Link href={PATHS.coummunity.entry}>
+      <Link href={PATHS.community.entry}>
         <Button variant="secondary">커뮤니티 가기</Button>
       </Link>
     </div>
