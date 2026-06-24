@@ -14,13 +14,7 @@ import {
 } from "@/entities/me";
 import { useDeleteAccount } from "@features/me/model/use-delete-account";
 import { useSession } from "@features/session/model/use-session";
-import {
-  Button,
-  DefaultCardContainer,
-  ErrorState,
-  LoadingState,
-  PageWrapper,
-} from "@shared/ui";
+import { Button, ErrorState, LoadingState, PageWrapper } from "@shared/ui";
 
 export default function MePage() {
   const router = useRouter();
