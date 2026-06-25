@@ -6,7 +6,7 @@ import type { ReactNode } from "react";
 
 import { APP_NAME, PATHS } from "@package-shared/constants";
 
-import { Button, Profile, cn } from "@/shared";
+import { Button, Profile } from "@/shared";
 import { useSession } from "@features/session";
 import {
   NotificationBell,
