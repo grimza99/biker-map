@@ -1,3 +1,5 @@
+import type { NextRequest } from "next/server";
+
 import type { PlaceGeocodeResponseData } from "@package-shared/index";
 import {
   badRequest,
@@ -9,7 +11,6 @@ import {
   ok,
 } from "@shared/api";
 import { requireApiSession } from "@shared/api/auth";
-import type { NextRequest } from "next/server";
 
 const NAVER_GEOCODE_URL =
   "https://maps.apigw.ntruss.com/map-geocode/v2/geocode";

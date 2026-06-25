@@ -1,4 +1,4 @@
-import type { UpdatePlaceBody } from "@package-shared/types/place";
+import { placeSchema, UpdatePlaceBody } from "@package-shared/index";
 import {
   badRequest,
   createSupabaseApiClient,
@@ -10,7 +10,6 @@ import {
   parseRequestBody,
 } from "@shared/api";
 import { requireApiSession } from "@shared/api/auth";
-import { z } from "zod";
 
 /**-----------------------------get place detail-------------------------------- */
 
@@ -41,31 +40,19 @@ export async function GET(
 
 /**-------------------------------------update place---------------------------------------- */
 
-const updatePlaceSchema = z
-  .object({
-    name: z.string().min(1).optional(),
-    category: z.enum(["gas", "repair", "cafe", "shop", "rest"]).optional(),
-    address: z.string().min(1).optional(),
-    phone: z.string().optional(),
-    description: z.string().optional(),
-    lat: z.number().optional(),
-    lng: z.number().optional(),
-    images: z.array(z.string()).optional(),
-    naverPlaceUrl: z.string().url().optional(),
-  })
-  .refine(
-    (value) =>
-      value.name !== undefined ||
-      value.category !== undefined ||
-      value.address !== undefined ||
-      value.phone !== undefined ||
-      value.description !== undefined ||
-      value.lat !== undefined ||
-      value.lng !== undefined ||
-      value.images !== undefined ||
-      value.naverPlaceUrl !== undefined,
-    { message: "수정할 항목이 필요합니다." }
-  );
+const updatePlaceSchema = placeSchema.refine(
+  (value) =>
+    value.name !== undefined ||
+    value.category !== undefined ||
+    value.address !== undefined ||
+    value.phone !== undefined ||
+    value.description !== undefined ||
+    value.lat !== undefined ||
+    value.lng !== undefined ||
+    value.images !== undefined ||
+    value.naverPlaceUrl !== undefined,
+  { message: "수정할 항목이 필요합니다." }
+);
 
 export async function PATCH(
   request: Request,
