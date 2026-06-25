@@ -1,4 +1,4 @@
-import { placeSchema, UpdatePlaceBody } from "@package-shared/index";
+import { UpdatePlaceBody, updatePlaceSchema } from "@package-shared/index";
 import {
   badRequest,
   createSupabaseApiClient,
@@ -40,7 +40,7 @@ export async function GET(
 
 /**-------------------------------------update place---------------------------------------- */
 
-const updatePlaceSchema = placeSchema.refine(
+const updatePlaceFormSchema = updatePlaceSchema.refine(
   (value) =>
     value.name !== undefined ||
     value.category !== undefined ||
@@ -66,7 +66,7 @@ export async function PATCH(
 
   let payload: UpdatePlaceBody;
   try {
-    payload = await parseRequestBody(request, updatePlaceSchema);
+    payload = await parseRequestBody(request, updatePlaceFormSchema);
   } catch {
     return badRequest("장소 수정 payload가 올바르지 않습니다.");
   }

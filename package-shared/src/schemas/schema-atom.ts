@@ -1,6 +1,20 @@
 import z from "zod";
 import { PlaceCategory } from "../types";
 
+const phoneSchema = z
+  .string()
+  .trim()
+  .regex(/^\d{10,11}$/, "휴대폰 번호 10~11자리를 입력해주세요.");
+
+const optionalPhoneSchema = z
+  .string()
+  .trim()
+  .refine(
+    (value) => value.length === 0 || /^\d{10,11}$/.test(value),
+    "휴대폰 번호 10~11자리를 입력해주세요."
+  )
+  .transform((value) => value || undefined);
+
 export const SCHEMA_ATOM = {
   name: z
     .string()
@@ -9,10 +23,7 @@ export const SCHEMA_ATOM = {
     .max(40, "이름은 40자 이하로 입력해주세요."),
   email: z.string().trim().email("이메일 형식이 올바르지 않습니다."),
   password: z.string().min(8, "비밀번호는 8자 이상이어야 합니다."),
-  phone: z
-    .string()
-    .trim()
-    .regex(/^\d{10,11}$/, "휴대폰 번호 10~11자리를 입력해주세요."),
+  phone: phoneSchema,
   code: z
     .string()
     .trim()
@@ -32,6 +43,7 @@ export const SCHEMA_ATOM = {
       .string()
       .trim()
       .transform((value) => value || undefined),
+    phone: optionalPhoneSchema,
   },
   coordinate: z
     .string()
