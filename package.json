@@ -14,7 +14,8 @@
     "supabase:stop": "supabase stop",
     "supabase:status": "supabase status",
     "supabase:reset": "bash scripts/supabase-local-reset.sh",
-    "test:e2e:local-supabase": "bash scripts/web-e2e-local-supabase.sh"
+    "test:e2e:local-supabase": "bash scripts/web-e2e-local-supabase.sh",
+    "chat:debug:peer:local": "bash scripts/chat-debug-peer-local.sh"
   },
   "workspaces": [
     "package-shared",
