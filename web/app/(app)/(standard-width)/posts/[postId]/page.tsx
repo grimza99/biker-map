@@ -2,7 +2,7 @@
 import { formatDateByType } from "@/shared";
 import { CommunityEngagementBar } from "@/widgets";
 import { useParams, useRouter } from "next/navigation";
-import { useEffect, useState } from "react";
+import { useEffect, useEffectEvent, useRef, useState } from "react";
 
 import Comment from "@/entities/community/ui/Comment";
 import { useCommunityPostComments } from "@/features/community/model/use-comments";
@@ -34,9 +34,6 @@ import {
 import { MessageSquare } from "lucide-react";
 import Image from "next/image";
 
-const recentPostViewMap = new Map<string, number>();
-const POST_VIEW_DEDUPE_WINDOW_MS = 5_000;
-
 export default function PostDetailPage() {
   const params = useParams<{ postId: string }>();
   const router = useRouter();
@@ -56,27 +53,26 @@ export default function PostDetailPage() {
   const updatePostMutation = useUpdateCommunityPost(postId);
   const deletePostMutation = useDeleteCommunityPost(postId);
   const incrementPostViewMutation = useIncrementCommunityPostView(postId);
+  const trackedPostIdRef = useRef<string | null>(null);
 
-  useEffect(() => {
-    if (!postId) {
-      return;
-    }
-
-    const trackedAt = recentPostViewMap.get(postId);
-    const now = Date.now();
-
-    if (trackedAt && now - trackedAt < POST_VIEW_DEDUPE_WINDOW_MS) {
-      return;
-    }
-
-    recentPostViewMap.set(postId, now);
-
+  const triggerPostView = useEffectEvent((targetPostId: string) => {
     incrementPostViewMutation.mutate(undefined, {
       onError: () => {
-        recentPostViewMap.delete(postId);
+        if (trackedPostIdRef.current === targetPostId) {
+          trackedPostIdRef.current = null;
+        }
       },
     });
-  }, [incrementPostViewMutation, postId]);
+  });
+
+  useEffect(() => {
+    if (!postId || trackedPostIdRef.current === postId) {
+      return;
+    }
+
+    trackedPostIdRef.current = postId;
+    triggerPostView(postId);
+  }, [postId]);
 
   if (isLoading) {
     return <LoadingState label="게시글을 불러오는 중" />;
