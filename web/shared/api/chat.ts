@@ -37,6 +37,7 @@ type ChatMessageRow = {
   body: string;
   client_message_id: string;
   created_at: string;
+  message_order: number;
 };
 
 type ChatProfileRow = {
@@ -58,6 +59,7 @@ type ChatMessagePreviewRow = {
   author_id: string;
   body: string;
   created_at: string;
+  message_order: number;
 };
 
 export type LoadedChatRoom = {
@@ -137,10 +139,11 @@ export async function loadChatMessagesPage(
 
   const { data: rows, error } = await supabase
     .from("chat_messages")
-    .select("id, room_id, author_id, body, client_message_id, created_at")
+    .select(
+      "id, room_id, author_id, body, client_message_id, created_at, message_order"
+    )
     .eq("room_id", roomId)
-    .order("created_at", { ascending: false })
-    .order("id", { ascending: false })
+    .order("message_order", { ascending: false })
     .range(from, to)
     .returns<ChatMessageRow[]>();
 
@@ -177,7 +180,9 @@ export async function findExistingChatMessageByClientMessageId(
 ) {
   const { data, error } = await supabase
     .from("chat_messages")
-    .select("id, room_id, author_id, body, client_message_id, created_at")
+    .select(
+      "id, room_id, author_id, body, client_message_id, created_at, message_order"
+    )
     .eq("room_id", roomId)
     .eq("author_id", authorId)
     .eq("client_message_id", clientMessageId)
@@ -196,7 +201,9 @@ export async function loadChatMessageById(
 ) {
   const { data, error } = await supabase
     .from("chat_messages")
-    .select("id, room_id, author_id, body, client_message_id, created_at")
+    .select(
+      "id, room_id, author_id, body, client_message_id, created_at, message_order"
+    )
     .eq("id", messageId)
     .maybeSingle<ChatMessageRow>();
 
@@ -400,10 +407,9 @@ async function loadLatestChatMessageRowOrNull(
 ): Promise<ChatMessagePreviewRow | null> {
   const { data, error } = await supabase
     .from("chat_messages")
-    .select("id, room_id, author_id, body, created_at")
+    .select("id, room_id, author_id, body, created_at, message_order")
     .eq("room_id", roomId)
-    .order("created_at", { ascending: false })
-    .order("id", { ascending: false })
+    .order("message_order", { ascending: false })
     .limit(1)
     .maybeSingle<ChatMessagePreviewRow>();
 
@@ -425,7 +431,7 @@ async function loadReadTargetMessageRowOrNull(
 
   const { data, error } = await supabase
     .from("chat_messages")
-    .select("id, room_id, author_id, body, created_at")
+    .select("id, room_id, author_id, body, created_at, message_order")
     .eq("room_id", roomId)
     .eq("id", messageId)
     .maybeSingle<ChatMessagePreviewRow>();
@@ -454,7 +460,7 @@ async function loadViewerUnreadChatMessageCount(
     .eq("room_id", roomId)
     .neq("author_id", viewerUserId);
 
-  if (!viewerLastReadAt) {
+  if (!viewerLastReadMessageId) {
     const { count, error } = await baseQuery;
 
     if (error) {
@@ -464,38 +470,48 @@ async function loadViewerUnreadChatMessageCount(
     return count ?? 0;
   }
 
-  const { count: newerCount, error: newerError } = await supabase
+  const { data: lastReadMessage, error: lastReadMessageError } = await supabase
+    .from("chat_messages")
+    .select("id, message_order")
+    .eq("room_id", roomId)
+    .eq("id", viewerLastReadMessageId)
+    .maybeSingle<{ id: string; message_order: number }>();
+
+  if (lastReadMessageError) {
+    throw new Error(lastReadMessageError.message);
+  }
+
+  if (!lastReadMessage) {
+    if (!viewerLastReadAt) {
+      return 0;
+    }
+
+    const { count, error } = await supabase
+      .from("chat_messages")
+      .select("id", { count: "exact", head: true })
+      .eq("room_id", roomId)
+      .neq("author_id", viewerUserId)
+      .gt("created_at", viewerLastReadAt);
+
+    if (error) {
+      throw new Error(error.message);
+    }
+
+    return count ?? 0;
+  }
+
+  const { count, error } = await supabase
     .from("chat_messages")
     .select("id", { count: "exact", head: true })
     .eq("room_id", roomId)
     .neq("author_id", viewerUserId)
-    .gt("created_at", viewerLastReadAt);
+    .gt("message_order", lastReadMessage.message_order);
 
-  if (newerError) {
-    throw new Error(newerError.message);
+  if (error) {
+    throw new Error(error.message);
   }
 
-  if (!viewerLastReadMessageId) {
-    return newerCount ?? 0;
-  }
-
-  const { data: tiedRows, error: tiedRowsError } = await supabase
-    .from("chat_messages")
-    .select("id")
-    .eq("room_id", roomId)
-    .neq("author_id", viewerUserId)
-    .eq("created_at", viewerLastReadAt)
-    .returns<Array<{ id: string }>>();
-
-  if (tiedRowsError) {
-    throw new Error(tiedRowsError.message);
-  }
-
-  const tiedUnreadCount = (tiedRows ?? []).filter(
-    (row) => row.id > viewerLastReadMessageId
-  ).length;
-
-  return (newerCount ?? 0) + tiedUnreadCount;
+  return count ?? 0;
 }
 
 
