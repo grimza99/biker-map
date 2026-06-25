@@ -1,13 +1,13 @@
 import { AppText } from "@/components/common";
 import { cn, ProfileIdentity } from "@/shared";
-import { IBiker } from "@package-shared/types";
+import { TChatParticipantProfile } from "@package-shared/index";
 import { View } from "react-native";
 
 interface IMessageProps {
   id: string;
   message: string;
   isOwn: boolean;
-  author: IBiker;
+  author: TChatParticipantProfile;
 }
 export function Message({ message, isOwn, author }: IMessageProps) {
   return (
@@ -18,7 +18,10 @@ export function Message({ message, isOwn, author }: IMessageProps) {
           isOwn ? "items-end" : "items-start"
         )}
       >
-        <ProfileIdentity name={author.nickname} avatarUrl={null} />
+        <ProfileIdentity
+          name={author.nickname}
+          avatarUrl={author.avatarUrl ?? null}
+        />
         <View
           className={cn(
             "border border-none w-fit max-w-50 rounded-2xl py-1.5 px-3 min-w-30",
