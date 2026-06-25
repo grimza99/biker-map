@@ -1,17 +1,17 @@
 ---
 name: biker-map-frontend-development
-description: Use when working on Biker Map web frontend UI, FSD structure, TanStack Query, Zod validation, Supabase client boundaries, toast, and optimistic updates.
+description: Use when working on Biker Map web frontend UI, FSD structure, TanStack Query, react-hook-form, Zod validation, Supabase client boundaries, toast, and optimistic updates.
 metadata:
   short-description: Web frontend guidance
 ---
 
 # Frontend Development Skill
 
-<strong>버전 : </strong> v2
+<strong>버전 : </strong> v2.1
 
 <strong>생성 날짜 : </strong> 2026-05-21
 
-<strong>최신 업데이트 날짜 : </strong> 2026-06-01
+<strong>최신 업데이트 날짜 : </strong> 2026-06-24
 
 이 skill은 Biker Map의 프론트엔드 구현 컨벤션을 따를 때 사용합니다.
 
@@ -21,6 +21,7 @@ metadata:
 
 - `web` client component, page, widget, feature 구현
 - TanStack Query query/mutation hook 작성
+- `react-hook-form` + `zod` 기반 form 검증 셋업
 - form, env, API payload Zod 검증
 - Supabase browser/realtime/API client 경계 확인
 - toast, optimistic update, cache invalidation 설계
@@ -63,6 +64,10 @@ metadata:
 
 - TypeScript 타입만으로 외부 입력을 신뢰하지 않습니다.
 - API body, form input, env, 불확실한 error payload는 Zod로 런타임 검증합니다.
+- form input은 가능한 한 클라이언트에서 먼저 검증하고, validation 실패 시 mutation, fetch, server action, BFF request를 호출하지 않습니다.
+- BFF route의 validation은 유지합니다. 클라이언트 validation은 서버 validation을 대체하지 않고, 잘못된 요청을 미리 차단하는 첫 번째 방어선입니다.
+- form UI는 `react-hook-form`을 기본값으로 보고, `zodResolver`를 붙여 schema와 에러 메시지를 단일 source로 관리합니다.
+- schema는 feature `model`에 두고, UI는 `useForm`과 field component 조합에 집중하게 분리합니다.
 - ZodError 내부 구조를 사용자 응답에 그대로 노출하지 않습니다.
 
 ### Supabase Boundary

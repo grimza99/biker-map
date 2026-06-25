@@ -1,17 +1,17 @@
 # Zod 사용 가이드
 
-<strong>버전 : </strong> v1
+<strong>버전 : </strong> v1.1
 
 <strong>생성 날짜 : </strong> 2026-05-21
 
-<strong>최신 업데이트 날짜 : </strong> 2026-05-21
+<strong>최신 업데이트 날짜 : </strong> 2026-06-24
 
 이 문서는 Biker Map 웹 앱에서 `frontend-developer` 에이전트가 Zod를 사용할 때의 현재 프로젝트 컨벤션을 정리합니다.
 
 ## 역할
 
 Zod는 런타임 검증에 사용합니다.
-이후 RHF과 함께 입력 폼에서 사용할 예정입니다. 이미 API body 에서 검증을 하고있지만, 입력폼 submit 시에도 검증을 거치는 2단계 검증 구현을 검토중에 있습니다.
+입력 폼은 `react-hook-form`과 함께 사용합니다. 이미 BFF/API body에서 검증을 하고 있더라도, 입력폼 submit 시에도 클라이언트 검증을 먼저 거쳐 validation이 맞지 않으면 요청이 아예 나가지 않게 만드는 것을 기본값으로 봅니다.
 프론트엔드 공통 전제는 `.codex/skills/frontend-development/SKILL.md`를 따릅니다.
 
 - API request body 검증
@@ -78,7 +78,28 @@ export const loginFormSchema = z.object({
 }) satisfies z.ZodType<LoginBody>;
 ```
 
-클라이언트 form에서는 `safeParse`를 사용해 사용자에게 보여줄 validation message를 제어합니다.
+클라이언트 form은 `react-hook-form`과 `zodResolver`를 기본 패턴으로 사용합니다.
+submit 전에 resolver가 schema를 검사하므로, validation이 실패하면 mutation이나 fetch를 호출하지 않습니다.
+
+```ts
+const form = useForm<LoginBody>({
+  resolver: zodResolver(loginFormSchema),
+  defaultValues: {
+    email: "",
+    password: "",
+  },
+});
+```
+
+submit handler는 검증이 끝난 값만 받도록 구성합니다.
+
+```ts
+const onSubmit = form.handleSubmit((values) => {
+  loginMutation.mutate(values);
+});
+```
+
+resolver를 쓰기 어려운 특수 케이스에서만 `safeParse`를 직접 사용합니다.
 
 ```ts
 const validation = loginFormSchema.safeParse(values);
@@ -87,6 +108,9 @@ if (!validation.success) {
   return;
 }
 ```
+
+field 에러는 `form.formState.errors`에서 읽고, API 에러와 섞지 않습니다.
+BFF validation 에러를 그대로 프론트의 1차 입력 에러 UX로 의존하지 않습니다.
 
 ## Env 검증
 
@@ -120,13 +144,15 @@ const parsed = apiErrorSchema.safeParse(payload);
 
 - API route 전용 body schema: 해당 route 파일 내부에 둡니다.
 - 여러 API나 클라이언트가 공유하는 schema: `package-shared` 이동을 검토합니다.
-- feature form schema: `web/features/<feature>/model`에 둡니다.
+- feature form schema: `web/features/<feature>/model`에 두고, 가능하면 BFF payload와 공용 타입을 공유합니다.
 - env schema: `web/shared/config`에 둡니다.
 - 공통 API contract schema: `web/shared/api/contracts.ts`에 둡니다.
 
 ## 주의점
 
 - Zod schema와 `package-shared` 타입이 따로 놀지 않게 합니다.
+- 클라이언트 validation이 있다고 BFF validation을 제거하지 않습니다.
+- submit 직전 `if` 분기와 수동 검증을 중복으로 쌓기보다, `react-hook-form` resolver로 요청 차단을 일관되게 처리합니다.
 - 클라이언트에 server-only env schema나 service role key를 노출하지 않습니다.
 - API route에서 ZodError detail을 그대로 사용자에게 내려주지 않습니다.
 - 숫자, enum, URL, UUID는 문자열로 대충 받지 말고 schema에서 명시합니다.
