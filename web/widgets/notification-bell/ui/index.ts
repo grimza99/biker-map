@@ -1,2 +1,2 @@
-export { NotificationBell } from "./notification-bell";
+export { NotificationBell } from "./NotificationBell";
 export { NotificationsRealtimeBridge } from "./NotificationsRealtimeBridge";
