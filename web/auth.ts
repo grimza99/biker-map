@@ -1,18 +1,13 @@
-import type { AppSession } from "@package-shared/types/session";
 import NextAuth from "next-auth";
 import Credentials from "next-auth/providers/credentials";
-import { z } from "zod";
+
+import { AppSession, loginSchema } from "@package-shared/index";
 
 import {
   getProfileStatus,
   type ProfileStatus,
 } from "@shared/api/supabase-profiles";
 import { createSupabaseAuthClient } from "@shared/lib/supabase";
-
-const credentialsSchema = z.object({
-  email: z.string().email(),
-  password: z.string().min(6),
-});
 
 type SupabaseBridgeUser = {
   id: string;
@@ -55,7 +50,7 @@ export const {
         password: {},
       },
       async authorize(credentials) {
-        const parsed = credentialsSchema.safeParse(credentials);
+        const parsed = loginSchema.safeParse(credentials);
         if (!parsed.success) {
           return null;
         }
