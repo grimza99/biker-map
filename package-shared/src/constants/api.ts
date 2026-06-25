@@ -58,6 +58,8 @@ export const API_PATHS = {
     chatRoom: (chatId: string) => `${BASE_URL}/mobile/bikers/chats/${chatId}`,
     chatMessages: (chatId: string) =>
       `${BASE_URL}/mobile/bikers/chats/${chatId}/messages`,
+    chatRead: (chatId: string) =>
+      `${BASE_URL}/mobile/bikers/chats/${chatId}/read`,
     chatRealtimeConfig: (chatId: string) =>
       `${BASE_URL}/mobile/bikers/chats/${chatId}/realtime-config`,
   },

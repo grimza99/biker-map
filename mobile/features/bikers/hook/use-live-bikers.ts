@@ -334,7 +334,6 @@ export function useLiveBikers({
           sharingSessionId: session.sessionId,
           sharingSessionVersion: session.sessionVersion,
           location,
-          observedAt: new Date().toISOString(),
         }
       );
 

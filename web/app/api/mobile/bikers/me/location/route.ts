@@ -118,14 +118,8 @@ export async function POST(request: NextRequest) {
     return badRequest("위치 공유 payload가 올바르지 않습니다.");
   }
 
-  const observedAt = payload.observedAt
-    ? new Date(payload.observedAt)
-    : new Date();
+  const observedAt = new Date();
   const now = new Date();
-
-  if (Number.isNaN(observedAt.getTime())) {
-    return badRequest("observedAt 형식이 올바르지 않습니다.");
-  }
 
   if (
     now.getTime() - observedAt.getTime() >
@@ -165,7 +159,9 @@ export async function POST(request: NextRequest) {
   }
 
   if (sharingSession.status !== "active" || sharingSession.ended_at) {
-    return badRequest("종료된 위치 공유 세션으로는 위치를 업로드할 수 없습니다.");
+    return badRequest(
+      "종료된 위치 공유 세션으로는 위치를 업로드할 수 없습니다."
+    );
   }
 
   let profile: BikerProfileRow | null;

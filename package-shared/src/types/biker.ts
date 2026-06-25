@@ -26,7 +26,6 @@ export type TUpdateMyBikerLocationBody = {
   location: TLocationCoordinate;
   accuracyMeters?: number | null;
   heading?: number | null;
-  observedAt?: string;
   speedKph?: number | null;
 };
 

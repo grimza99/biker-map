@@ -4,11 +4,13 @@ import {
   API_PATHS,
   queryKeys,
   type ApiResponse,
+  type TChatPresenceRealtimeEvent,
   type AppSession,
   type TChatMessage,
   type TChatMessageListResponseData,
   type TChatMessageRealtimeEvent,
   type TChatRoomResponseData,
+  type TChatTypingRealtimeEvent,
 } from "@package-shared/index";
 
 import {
@@ -18,6 +20,9 @@ import {
 
 type CreateChatRealtimeBindingsOptions = {
   chatId: string;
+  currentUserId?: string | null;
+  onPresenceEvent?: (event: TChatPresenceRealtimeEvent) => void;
+  onTypingEvent?: (event: TChatTypingRealtimeEvent) => void;
   queryClient: QueryClient;
 };
 
@@ -34,6 +39,9 @@ const CHAT_MESSAGES_QUERY_PREFIX = (
 
 export function createChatRealtimeBindings({
   chatId,
+  currentUserId,
+  onPresenceEvent,
+  onTypingEvent,
   queryClient,
 }: CreateChatRealtimeBindingsOptions): SupabaseBroadcastBinding[] {
   return [
@@ -51,6 +59,30 @@ export function createChatRealtimeBindings({
           message: event.message,
           queryClient,
         });
+      },
+    },
+    {
+      event: "chat:typing",
+      onMessage: (payload: unknown) => {
+        const event = payload as TChatTypingRealtimeEvent;
+
+        if (!event?.userId || event.roomId !== chatId || event.userId === currentUserId) {
+          return;
+        }
+
+        onTypingEvent?.(event);
+      },
+    },
+    {
+      event: "chat:presence",
+      onMessage: (payload: unknown) => {
+        const event = payload as TChatPresenceRealtimeEvent;
+
+        if (!event?.userId || event.roomId !== chatId || event.userId === currentUserId) {
+          return;
+        }
+
+        onPresenceEvent?.(event);
       },
     },
   ];

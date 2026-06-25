@@ -37,6 +37,7 @@ type ChatMessageRow = {
   body: string;
   client_message_id: string;
   created_at: string;
+  message_order: number;
 };
 
 type ChatProfileRow = {
@@ -52,6 +53,15 @@ type EnsureDirectChatRoomRpcRow = {
   created: boolean;
 };
 
+type ChatMessagePreviewRow = {
+  id: string;
+  room_id: string;
+  author_id: string;
+  body: string;
+  created_at: string;
+  message_order: number;
+};
+
 export type LoadedChatRoom = {
   room: TChatRoom;
   participantUserIds: string[];
@@ -59,7 +69,8 @@ export type LoadedChatRoom = {
 
 export async function loadChatRoomOrNull(
   supabase: ChatDataClient,
-  roomId: string
+  roomId: string,
+  viewerUserId?: string | null
 ): Promise<LoadedChatRoom | null> {
   const { data: roomRow, error: roomError } = await supabase
     .from("chat_rooms")
@@ -89,9 +100,30 @@ export async function loadChatRoomOrNull(
   const participantUserIds = (participantRows ?? []).map((item) => item.user_id);
   const profileMap = await loadChatProfileMap(supabase, participantUserIds);
   const lastMessage = await loadLatestChatMessagePreview(supabase, roomId);
+  const viewerParticipant =
+    viewerUserId
+      ? (participantRows ?? []).find((item) => item.user_id === viewerUserId) ?? null
+      : null;
+  const viewerUnreadCount =
+    viewerUserId && viewerParticipant
+      ? await loadViewerUnreadChatMessageCount(
+          supabase,
+          roomId,
+          viewerUserId,
+          viewerParticipant.last_read_at,
+          viewerParticipant.last_read_message_id
+        )
+      : 0;
 
   return {
-    room: mapChatRoom(roomRow, participantRows ?? [], profileMap, lastMessage),
+    room: mapChatRoom(
+      roomRow,
+      participantRows ?? [],
+      profileMap,
+      lastMessage,
+      viewerParticipant,
+      viewerUnreadCount
+    ),
     participantUserIds,
   };
 }
@@ -107,10 +139,11 @@ export async function loadChatMessagesPage(
 
   const { data: rows, error } = await supabase
     .from("chat_messages")
-    .select("id, room_id, author_id, body, client_message_id, created_at")
+    .select(
+      "id, room_id, author_id, body, client_message_id, created_at, message_order"
+    )
     .eq("room_id", roomId)
-    .order("created_at", { ascending: false })
-    .order("id", { ascending: false })
+    .order("message_order", { ascending: false })
     .range(from, to)
     .returns<ChatMessageRow[]>();
 
@@ -147,7 +180,9 @@ export async function findExistingChatMessageByClientMessageId(
 ) {
   const { data, error } = await supabase
     .from("chat_messages")
-    .select("id, room_id, author_id, body, client_message_id, created_at")
+    .select(
+      "id, room_id, author_id, body, client_message_id, created_at, message_order"
+    )
     .eq("room_id", roomId)
     .eq("author_id", authorId)
     .eq("client_message_id", clientMessageId)
@@ -166,7 +201,9 @@ export async function loadChatMessageById(
 ) {
   const { data, error } = await supabase
     .from("chat_messages")
-    .select("id, room_id, author_id, body, client_message_id, created_at")
+    .select(
+      "id, room_id, author_id, body, client_message_id, created_at, message_order"
+    )
     .eq("id", messageId)
     .maybeSingle<ChatMessageRow>();
 
@@ -226,7 +263,11 @@ export async function ensureDirectChatRoom(
     throw new Error("채팅방 식별자를 생성하지 못했습니다.");
   }
 
-  const loaded = await loadChatRoomOrNull(supabase, typedEnsured.room_id);
+  const loaded = await loadChatRoomOrNull(
+    supabase,
+    typedEnsured.room_id,
+    currentUserId
+  );
   if (!loaded) {
     throw new Error("생성된 채팅방을 다시 조회하지 못했습니다.");
   }
@@ -235,6 +276,54 @@ export async function ensureDirectChatRoom(
     room: loaded.room,
     created: typedEnsured.created,
   };
+}
+
+export async function updateChatRoomReadState(
+  supabase: SupabaseApiClient,
+  roomId: string,
+  viewerUserId: string,
+  lastReadMessageId?: string | null
+) {
+  const { data: participantRow, error: participantError } = await supabase
+    .from("chat_room_participants")
+    .select("room_id, user_id")
+    .eq("room_id", roomId)
+    .eq("user_id", viewerUserId)
+    .maybeSingle<{ room_id: string; user_id: string }>();
+
+  if (participantError) {
+    throw new Error(participantError.message);
+  }
+
+  if (!participantRow) {
+    return null;
+  }
+
+  const targetMessage = await loadReadTargetMessageRowOrNull(
+    supabase,
+    roomId,
+    lastReadMessageId
+  );
+
+  const { error: updateError } = await supabase
+    .from("chat_room_participants")
+    .update({
+      last_read_message_id: targetMessage?.id ?? null,
+      last_read_at: targetMessage?.created_at ?? null,
+    })
+    .eq("room_id", roomId)
+    .eq("user_id", viewerUserId);
+
+  if (updateError) {
+    throw new Error(updateError.message);
+  }
+
+  const loaded = await loadChatRoomOrNull(supabase, roomId, viewerUserId);
+  if (!loaded) {
+    return null;
+  }
+
+  return loaded.room;
 }
 
 export function buildChatRealtimeConfig(roomId: string) {
@@ -255,7 +344,9 @@ function mapChatRoom(
   row: ChatRoomRow,
   participantRows: ChatRoomParticipantRow[],
   profileMap: Map<string, TChatParticipantProfile>,
-  lastMessage: TChatMessagePreview | null
+  lastMessage: TChatMessagePreview | null,
+  viewerParticipant: ChatRoomParticipantRow | null,
+  viewerUnreadCount: number
 ): TChatRoom {
   const participants: TChatParticipant[] = participantRows.map((item) => ({
     ...(profileMap.get(item.user_id) ?? buildFallbackProfile(item.user_id)),
@@ -269,6 +360,9 @@ function mapChatRoom(
     kind: row.kind,
     participants,
     lastMessage,
+    viewerLastReadMessageId: viewerParticipant?.last_read_message_id ?? null,
+    viewerLastReadAt: viewerParticipant?.last_read_at ?? null,
+    viewerUnreadCount,
     createdAt: row.created_at,
     updatedAt: row.updated_at,
   };
@@ -293,25 +387,7 @@ async function loadLatestChatMessagePreview(
   supabase: ChatDataClient,
   roomId: string
 ): Promise<TChatMessagePreview | null> {
-  const { data, error } = await supabase
-    .from("chat_messages")
-    .select("id, room_id, author_id, body, created_at")
-    .eq("room_id", roomId)
-    .order("created_at", { ascending: false })
-    .order("id", { ascending: false })
-    .limit(1)
-    .maybeSingle<{
-      id: string;
-      room_id: string;
-      author_id: string;
-      body: string;
-      created_at: string;
-    }>();
-
-  if (error) {
-    throw new Error(error.message);
-  }
-
+  const data = await loadLatestChatMessageRowOrNull(supabase, roomId);
   if (!data) {
     return null;
   }
@@ -324,6 +400,120 @@ async function loadLatestChatMessagePreview(
     createdAt: data.created_at,
   };
 }
+
+async function loadLatestChatMessageRowOrNull(
+  supabase: ChatDataClient,
+  roomId: string
+): Promise<ChatMessagePreviewRow | null> {
+  const { data, error } = await supabase
+    .from("chat_messages")
+    .select("id, room_id, author_id, body, created_at, message_order")
+    .eq("room_id", roomId)
+    .order("message_order", { ascending: false })
+    .limit(1)
+    .maybeSingle<ChatMessagePreviewRow>();
+
+  if (error) {
+    throw new Error(error.message);
+  }
+
+  return data ?? null;
+}
+
+async function loadReadTargetMessageRowOrNull(
+  supabase: ChatDataClient,
+  roomId: string,
+  messageId?: string | null
+) {
+  if (!messageId) {
+    return loadLatestChatMessageRowOrNull(supabase, roomId);
+  }
+
+  const { data, error } = await supabase
+    .from("chat_messages")
+    .select("id, room_id, author_id, body, created_at, message_order")
+    .eq("room_id", roomId)
+    .eq("id", messageId)
+    .maybeSingle<ChatMessagePreviewRow>();
+
+  if (error) {
+    throw new Error(error.message);
+  }
+
+  if (data) {
+    return data;
+  }
+
+  throw new Error("읽음 처리 대상 메시지를 찾을 수 없습니다.");
+}
+
+async function loadViewerUnreadChatMessageCount(
+  supabase: ChatDataClient,
+  roomId: string,
+  viewerUserId: string,
+  viewerLastReadAt?: string | null,
+  viewerLastReadMessageId?: string | null
+) {
+  const baseQuery = supabase
+    .from("chat_messages")
+    .select("id", { count: "exact", head: true })
+    .eq("room_id", roomId)
+    .neq("author_id", viewerUserId);
+
+  if (!viewerLastReadMessageId) {
+    const { count, error } = await baseQuery;
+
+    if (error) {
+      throw new Error(error.message);
+    }
+
+    return count ?? 0;
+  }
+
+  const { data: lastReadMessage, error: lastReadMessageError } = await supabase
+    .from("chat_messages")
+    .select("id, message_order")
+    .eq("room_id", roomId)
+    .eq("id", viewerLastReadMessageId)
+    .maybeSingle<{ id: string; message_order: number }>();
+
+  if (lastReadMessageError) {
+    throw new Error(lastReadMessageError.message);
+  }
+
+  if (!lastReadMessage) {
+    if (!viewerLastReadAt) {
+      return 0;
+    }
+
+    const { count, error } = await supabase
+      .from("chat_messages")
+      .select("id", { count: "exact", head: true })
+      .eq("room_id", roomId)
+      .neq("author_id", viewerUserId)
+      .gt("created_at", viewerLastReadAt);
+
+    if (error) {
+      throw new Error(error.message);
+    }
+
+    return count ?? 0;
+  }
+
+  const { count, error } = await supabase
+    .from("chat_messages")
+    .select("id", { count: "exact", head: true })
+    .eq("room_id", roomId)
+    .neq("author_id", viewerUserId)
+    .gt("message_order", lastReadMessage.message_order);
+
+  if (error) {
+    throw new Error(error.message);
+  }
+
+  return count ?? 0;
+}
+
 
 async function loadChatProfileMap(
   supabase: ChatDataClient,

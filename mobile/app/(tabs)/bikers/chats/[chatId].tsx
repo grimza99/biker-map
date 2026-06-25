@@ -3,6 +3,7 @@ import { useLocalSearchParams } from "expo-router";
 import {
   Message,
   useChatMessages,
+  useMarkChatReadMutation,
   useChatRealtime,
   useChatRoom,
   useSendChatMessageMutation,
@@ -10,7 +11,7 @@ import {
 import { AppText, Button, Input } from "@/components/common";
 import { useSession } from "@/features/session/model";
 import { type TChatMessage } from "@package-shared/index";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import {
   Alert,
   KeyboardAvoidingView,
@@ -29,8 +30,11 @@ export default function BikerChatScreen() {
 
   const roomQuery = useChatRoom(chatId ?? "");
   const messagesQuery = useChatMessages(chatId ?? "");
+  const markChatReadMutation = useMarkChatReadMutation(chatId ?? "");
   const sendMessageMutation = useSendChatMessageMutation(chatId ?? "");
   const realtime = useChatRealtime(chatId ?? "", Boolean(chatId));
+  const { isPending: isMarkingChatRead, mutateAsync: markChatRead } =
+    markChatReadMutation;
 
   const room = roomQuery.data?.data.room ?? null;
   const currentUserId = user?.userId ?? null;
@@ -54,9 +58,59 @@ export default function BikerChatScreen() {
 
   const screenTitle =
     counterpart?.nickname ?? room?.participants[0]?.nickname ?? "채팅방";
+  const isCounterpartOnline = counterpart
+    ? realtime.onlineUserIds.includes(counterpart.userId)
+    : false;
+  const isCounterpartTyping = counterpart
+    ? realtime.typingUserIds.includes(counterpart.userId)
+    : false;
+  const latestIncomingMessage = useMemo(
+    () =>
+      [...messages]
+        .reverse()
+        .find((item) => item.authorId !== currentUserId) ?? null,
+    [currentUserId, messages]
+  );
+  const latestReadableMessageId = useMemo(() => {
+    if (!currentUserId) {
+      return latestIncomingMessage?.id ?? null;
+    }
+
+    if (room?.lastMessage && room.lastMessage.authorId !== currentUserId) {
+      return room.lastMessage.id;
+    }
+
+    return latestIncomingMessage?.id ?? null;
+  }, [currentUserId, latestIncomingMessage?.id, room?.lastMessage]);
+
+  useEffect(() => {
+    if (
+      !chatId ||
+      !room ||
+      !latestReadableMessageId ||
+      isMarkingChatRead
+    ) {
+      return;
+    }
+
+    if (room.viewerUnreadCount === 0) {
+      return;
+    }
+
+    void markChatRead(latestReadableMessageId).catch(() => {
+      // 읽음 처리 실패는 화면을 깨지 않도록 무시하고, unread 상태로 남겨 재시도 기회를 둔다.
+    });
+  }, [
+    chatId,
+    isMarkingChatRead,
+    latestReadableMessageId,
+    markChatRead,
+    room,
+  ]);
 
   function handleChageMessage(text: string) {
     setMessage(text);
+    realtime.notifyTyping(Boolean(text.trim()));
   }
 
   async function handleSendMessage() {
@@ -67,6 +121,7 @@ export default function BikerChatScreen() {
 
     try {
       await sendMessageMutation.sendMessage(trimmed);
+      realtime.notifyTyping(false);
       setMessage("");
     } catch {
       return Alert.alert("메시지 전송에 실패 했습니다");
@@ -93,6 +148,20 @@ export default function BikerChatScreen() {
         {roomQuery.isLoading ? (
           <AppText className="mt-3 text-[14px] leading-5" tone="muted">
             채팅방 정보를 불러오는 중입니다.
+          </AppText>
+        ) : null}
+        {counterpart ? (
+          <AppText className="mt-2 text-[13px] leading-5" tone="muted">
+            {isCounterpartTyping
+              ? `${counterpart.nickname}님이 입력 중입니다`
+              : isCounterpartOnline
+                ? `${counterpart.nickname}님이 채팅방에 있습니다`
+                : `${counterpart.nickname}님이 오프라인입니다`}
+          </AppText>
+        ) : null}
+        {room?.viewerUnreadCount ? (
+          <AppText className="mt-1 text-[12px] leading-4" tone="muted">
+            읽지 않은 메시지 {room.viewerUnreadCount}개
           </AppText>
         ) : null}
         {realtime.errorMessage ? (
