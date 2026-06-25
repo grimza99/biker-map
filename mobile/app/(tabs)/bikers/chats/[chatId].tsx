@@ -71,26 +71,39 @@ export default function BikerChatScreen() {
         .find((item) => item.authorId !== currentUserId) ?? null,
     [currentUserId, messages]
   );
+  const latestReadableMessageId = useMemo(() => {
+    if (!currentUserId) {
+      return latestIncomingMessage?.id ?? null;
+    }
+
+    if (room?.lastMessage && room.lastMessage.authorId !== currentUserId) {
+      return room.lastMessage.id;
+    }
+
+    return latestIncomingMessage?.id ?? null;
+  }, [currentUserId, latestIncomingMessage?.id, room?.lastMessage]);
 
   useEffect(() => {
     if (
       !chatId ||
       !room ||
-      !latestIncomingMessage ||
+      !latestReadableMessageId ||
       isMarkingChatRead
     ) {
       return;
     }
 
-    if (room.viewerLastReadMessageId === latestIncomingMessage.id) {
+    if (room.viewerUnreadCount === 0) {
       return;
     }
 
-    void markChatRead(latestIncomingMessage.id);
+    void markChatRead(latestReadableMessageId).catch(() => {
+      // 읽음 처리 실패는 화면을 깨지 않도록 무시하고, unread 상태로 남겨 재시도 기회를 둔다.
+    });
   }, [
     chatId,
     isMarkingChatRead,
-    latestIncomingMessage,
+    latestReadableMessageId,
     markChatRead,
     room,
   ]);
