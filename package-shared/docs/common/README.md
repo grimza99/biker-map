@@ -23,6 +23,8 @@
   - 모바일 실시간 위치 공유의 현재 기준과 chat 작업자 handoff
 - `web-app-change-log-template.md`
   - 웹 변경을 앱 팀에 전달할 때 사용하는 기록 템플릿
+- `web-app-change-logs/**`
+  - 웹 변경을 앱 팀에 전달할 때 사용하는 로그 디렉토리
 
 ## 갱신 트리거
 
