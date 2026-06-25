@@ -11,6 +11,7 @@ import { cn } from "@shared/lib";
 export type ButtonVariant =
   | "primary"
   | "secondary"
+  | "tertiary"
   | "ghost"
   | "danger"
   | "underline";
@@ -38,6 +39,11 @@ const variantClassNames: Record<
     default:
       "border-border bg-panel-solid text-text hover:border-accent hover:bg-panel-soft",
     selected: "border-accent bg-panel-soft text-text",
+  },
+  tertiary: {
+    default:
+      "bg-transparent text-text hover:border-accent hover:bg-accent border-transparent",
+    selected: "border-transparent bg-accent/10 text-accent",
   },
   ghost: {
     default:
@@ -96,13 +102,18 @@ export function Button({
   );
 
   if (asChild && isValidElement<ButtonChildProps>(children)) {
-    return cloneElement(children, {
+    const childProps: ButtonChildProps = {
       className: cn(resolvedClassName, children.props.className),
-      onClick: (event: ReactMouseEvent<HTMLElement>) => {
+    };
+
+    if (children.props.onClick || onClick) {
+      childProps.onClick = (event: ReactMouseEvent<HTMLElement>) => {
         children.props.onClick?.(event);
         onClick?.(event as never);
-      },
-    } satisfies ButtonChildProps);
+      };
+    }
+
+    return cloneElement(children, childProps);
   }
 
   return (

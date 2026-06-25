@@ -1,29 +1,31 @@
+"use client";
 import { Compass, MapPinned, MessageSquareMore, Route } from "lucide-react";
 import Link from "next/link";
 import Image from "next/image";
+
 import { PATHS } from "@package-shared/constants";
 
-import { DefaultCardContainer } from "@shared/ui";
+import { Button, DefaultCardContainer, Divider } from "@shared/ui";
 
 const featureItems = [
   {
     title: "바이커 친화 장소 탐색",
     description:
-      "주차 가능 여부, 정비 포인트, 라이더가 실제로 모이는 장소를 일반 지도보다 빠르게 확인합니다.",
+      "바이크 용품 샵, 바이커들의 핫한 장소 등 지금까지 일반 지도 서비스에서는 보기 어려웠던 바이커 전용 정보를 확인하세요.",
     icon: MapPinned,
     accentClassName: "bg-accent/12 text-accent",
   },
   {
     title: "큐레이션 드라이브 경로",
     description:
-      "운영자가 정리한 라이딩 코스를 보고, 실제 외부 지도 앱으로 자연스럽게 이어서 출발할 수 있습니다.",
+      "바이커 맵에서 직접 큐레이션해 드리는 라이딩 경로를 확인하고 이동하세요.",
     icon: Route,
     accentClassName: "bg-active/14 text-active",
   },
   {
     title: "커뮤니티 기반 정보",
     description:
-      "현장 후기, 주행 팁, 도로 분위기 같은 정보가 장소와 경로 선택에 바로 연결됩니다.",
+      "실제 바이커들의 후기와 정보를 통해 안전하고 즐거운 투어를 계획하세요.",
     icon: MessageSquareMore,
     accentClassName: "bg-panel-soft text-text",
   },
@@ -33,14 +35,12 @@ const workflowItems = [
   {
     step: "1",
     title: "장소 탐색",
-    description:
-      "투어 목적지와 경로 중간 지점을 바이커 기준으로 먼저 찾습니다.",
+    description: "바이커 친화 지도로 투어 목적지나 경로 상의 바이커 성지 탐색",
   },
   {
     step: "2",
     title: "경로 확인",
-    description:
-      "큐레이션 경로와 주변 성지를 함께 보며 이동 흐름을 정리합니다.",
+    description: "큐레이션 경로를 지도에서 성지와 인접한 최적 경로 확인",
   },
   {
     step: "3",
@@ -52,17 +52,16 @@ const workflowItems = [
 function LandingButtonRow() {
   return (
     <div className="flex flex-wrap gap-3">
-      <Link href="/map" className="shadow-[0_10px_28px_rgba(229,87,47,0.28)]">
-        <span className="inline-flex h-12 items-center justify-center gap-2 rounded-full border border-accent bg-accent px-5 text-base font-medium tracking-[-0.01em] text-text transition duration-150 ease-out hover:border-accent-light hover:bg-accent-light active:translate-y-px">
+      <Button className="shadow-[0_10px_28px_rgba(229,87,47,0.28)]" asChild>
+        <Link href={PATHS.map.entry}>
           지도 보기
           <Compass className="h-4 w-4" />
-        </span>
-      </Link>
-      <Link href="/posts">
-        <span className="inline-flex h-12 items-center justify-center rounded-full border border-border bg-panel-solid px-5 text-base font-medium tracking-[-0.01em] text-text transition duration-150 ease-out hover:border-accent hover:bg-panel-soft active:translate-y-px">
-          커뮤니티 보기
-        </span>
-      </Link>
+        </Link>
+      </Button>
+
+      <Button variant="secondary" asChild>
+        <Link href={PATHS.community.entry}>커뮤니티 가기 </Link>
+      </Button>
     </div>
   );
 }
@@ -97,6 +96,7 @@ function HeroMockup() {
               alt="landing-page-top-img"
               fill
               className="object-cover z-100"
+              loading="eager"
             />
           </div>
 
@@ -135,108 +135,114 @@ function HeroMockup() {
 
 export default function HomePage() {
   return (
-    <div className="flex flex-col items-center gap-24 pb-14 pt-6 md:gap-28 md:pt-10">
-      <section className="grid gap-12 lg:grid-cols-[minmax(0,1fr)_minmax(420px,560px)] lg:items-center">
-        <div className="grid gap-6">
-          <div className="grid w-full gap-4">
-            <h1 className="text-[clamp(2.8rem,6vw,4.1rem)] font-bold leading-[0.98] tracking-[-0.05em] text-text">
-              바이커를 위한 장소와 경로를 한 곳에서
-            </h1>
-            <p className="text-base leading-8 text-muted">
-              바이커만을 위한 장소 정보부터 운영자가 직접 선정한 드라이브
-              경로까지, 실제 주행에 필요한 정보를 한 화면에서 빠르게 찾고 바로
-              이동할 수 있습니다.
-            </p>
-          </div>
-
-          <LandingButtonRow />
-        </div>
-
-        <HeroMockup />
-      </section>
-
-      <section className="grid gap-10">
-        <div className="grid gap-2 text-center">
-          <h2 className="text-[clamp(1.9rem,4vw,2.35rem)] font-bold tracking-[-0.04em] text-text">
-            바이커를 위한 필수 기능
-          </h2>
-        </div>
-
-        <div className="grid gap-6 md:grid-cols-3">
-          {featureItems.map(
-            ({ title, description, icon: Icon, accentClassName }) => (
-              <DefaultCardContainer
-                key={title}
-                className="gap-5 rounded-3xl border-border bg-panel/88 p-8"
-              >
-                <div
-                  className={`flex h-12 w-12 items-center justify-center rounded-xl ${accentClassName}`}
-                >
-                  <Icon className="h-5 w-5" />
-                </div>
-                <div className="grid gap-3">
-                  <h3 className="text-[1.1rem] font-semibold tracking-[-0.02em] text-text">
-                    {title}
-                  </h3>
-                  <p className="text-sm leading-7 text-muted">{description}</p>
-                </div>
-              </DefaultCardContainer>
-            )
-          )}
-        </div>
-      </section>
-
-      <section className="mx-auto grid w-full max-w-[900px] gap-14 border-t border-border/60 pt-16">
-        <div className="grid gap-2 text-center">
-          <h2 className="text-[clamp(1.8rem,3.5vw,2.15rem)] font-bold tracking-[-0.04em] text-text">
-            심플한 사용 과정
-          </h2>
-        </div>
-
-        <div className="grid gap-8 md:grid-cols-[1fr_auto_1fr_auto_1fr] md:items-start">
-          {workflowItems.map((item, index) => (
-            <div key={item.step} className="contents">
-              <div className="grid justify-items-center gap-4 text-center">
-                <div className="flex h-14 w-14 items-center justify-center rounded-full border border-border bg-panel-solid text-base font-semibold text-text">
-                  {item.step}
-                </div>
-                <div className="grid gap-1">
-                  <h3 className="text-base font-semibold text-text">
-                    {item.title}
-                  </h3>
-                  <p className="max-w-48 text-sm leading-6 text-muted">
-                    {item.description}
-                  </p>
-                </div>
-              </div>
-              {index < workflowItems.length - 1 ? (
-                <div className="hidden self-start pt-7 md:block">
-                  <div className="h-px w-12 border-t border-dashed border-border" />
-                </div>
-              ) : null}
-            </div>
-          ))}
-        </div>
-      </section>
-
-      <section className="grid gap-8">
-        <DefaultCardContainer className="relative overflow-hidden rounded-[28px] border-border bg-panel/88 px-8 py-14 md:px-16">
-          <div className="absolute inset-0 bg-[linear-gradient(90deg,rgba(249,115,22,0.05),rgba(20,184,166,0.04))]" />
-          <div className="relative grid justify-items-center gap-5 text-center">
-            <div className="grid gap-3">
-              <h2 className="text-[clamp(2rem,4vw,2.6rem)] font-bold leading-tight tracking-[-0.05em] text-text">
-                즐거운 라이딩 생활,
+    <div className="flex flex-col items-center">
+      <div className="flex flex-col items-center gap-24 pb-14 pt-6 md:gap-28 md:pt-10 max-w-6xl">
+        <section className="grid gap-12 lg:grid-cols-[minmax(0,1fr)_minmax(420px,560px)] lg:items-center">
+          <div className="grid gap-6">
+            <div className="grid w-full gap-4">
+              <h1 className="text-[clamp(2.8rem,6vw,4.1rem)] font-bold leading-[0.98] tracking-[-0.05em] text-text">
+                바이커를 위한 장소와 경로를 한 곳에서
+              </h1>
+              <p className="text-base leading-8 text-muted">
+                바이커만을 위한 장소 정보부터
                 <br />
-                바이커맵과 시작하세요.
-              </h2>
-              <p className="text-sm leading-7 text-muted">
-                지금 지도를 열고 새로운 목적지와 경로를 확인해보세요.
+                바이커 맵에서 직접 선정한 검증된 드라이브 경로까지.
+                <br />
+                바이커맵에서 즐거운 바이커 생활을 즐겨보세요.
               </p>
             </div>
+
             <LandingButtonRow />
           </div>
-        </DefaultCardContainer>
-      </section>
+
+          <HeroMockup />
+        </section>
+
+        <section className="grid gap-10">
+          <div className="grid gap-2 text-center">
+            <h2 className="text-[clamp(1.9rem,4vw,2.35rem)] font-bold tracking-[-0.04em] text-text">
+              바이커를 위한 필수 기능
+            </h2>
+          </div>
+
+          <div className="grid gap-6 md:grid-cols-3">
+            {featureItems.map(
+              ({ title, description, icon: Icon, accentClassName }) => (
+                <DefaultCardContainer
+                  key={title}
+                  className="gap-5 rounded-3xl border-border bg-panel/88 p-8"
+                >
+                  <div
+                    className={`flex h-12 w-12 items-center justify-center rounded-xl ${accentClassName}`}
+                  >
+                    <Icon className="h-5 w-5" />
+                  </div>
+                  <div className="grid gap-3">
+                    <h3 className="text-[1.1rem] font-semibold tracking-[-0.02em] text-text">
+                      {title}
+                    </h3>
+                    <p className="text-sm leading-7 text-muted">
+                      {description}
+                    </p>
+                  </div>
+                </DefaultCardContainer>
+              )
+            )}
+          </div>
+        </section>
+        <Divider />
+        <section className="mx-auto grid w-full max-w-225 gap-14">
+          <div className="grid gap-2 text-center">
+            <h2 className="text-[clamp(1.8rem,3.5vw,2.15rem)] font-bold tracking-[-0.04em] text-text">
+              심플한 사용 과정
+            </h2>
+          </div>
+
+          <div className="grid gap-8 md:grid-cols-[1fr_auto_1fr_auto_1fr] md:items-start">
+            {workflowItems.map((item, index) => (
+              <div key={item.step} className="contents">
+                <div className="grid justify-items-center gap-4 text-center">
+                  <div className="flex h-14 w-14 items-center justify-center rounded-full border border-border bg-panel-solid text-base font-semibold text-text">
+                    {item.step}
+                  </div>
+                  <div className="grid gap-1">
+                    <h3 className="text-base font-semibold text-text">
+                      {item.title}
+                    </h3>
+                    <p className="max-w-48 text-sm leading-6 text-muted">
+                      {item.description}
+                    </p>
+                  </div>
+                </div>
+                {index < workflowItems.length - 1 ? (
+                  <div className="hidden self-start pt-7 md:block">
+                    <div className="h-px w-12 border-t border-dashed border-border" />
+                  </div>
+                ) : null}
+              </div>
+            ))}
+          </div>
+        </section>
+        <Divider />
+        <section className="mx-auto grid w-full max-w-225 gap-14">
+          <DefaultCardContainer className="relative overflow-hidden rounded-[28px] border-border bg-panel/88 px-8 py-14 md:px-16">
+            <div className="absolute inset-0 bg-[linear-gradient(90deg,rgba(249,115,22,0.05),rgba(20,184,166,0.04))]" />
+            <div className="relative grid justify-items-center gap-5 text-center">
+              <div className="grid gap-3">
+                <h2 className="text-[clamp(2rem,4vw,2.6rem)] font-bold leading-tight tracking-[-0.05em] text-text">
+                  즐거운 라이딩 생활,
+                  <br />
+                  바이커맵과 시작하세요.
+                </h2>
+                <p className="text-sm leading-7 text-muted">
+                  지금 지도를 열고 새로운 목적지를 찾아보세요
+                </p>
+              </div>
+              <LandingButtonRow />
+            </div>
+          </DefaultCardContainer>
+        </section>
+      </div>
     </div>
   );
 }

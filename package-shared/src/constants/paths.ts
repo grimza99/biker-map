@@ -11,4 +11,12 @@ export const PATHS = {
     terms: "/policy/terms",
   },
   auth: "/auth" as const,
+  community: {
+    entry: "/posts" as const,
+  },
+  route: {
+    list: "/routes",
+  },
+  me: "/me" as const,
+  admin: "/admin" as const,
 };
