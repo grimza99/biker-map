@@ -7,7 +7,7 @@ import { AntDesign } from "@expo/vector-icons";
 import { bikerMapTheme } from "@package-shared/constants/theme";
 
 import { cn, resolvePressableStyle } from "@/shared";
-import { AppText } from "./AppText";
+import { AppText } from "../../shared/ui/AppText";
 
 export type DropdownOptionTone = "default" | "danger";
 

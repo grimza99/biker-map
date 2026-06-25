@@ -17,7 +17,7 @@ import {
   fieldSizeStyleMap,
   type FieldBaseProps,
 } from "../../components/common/FieldShell";
-import { AppText } from "../../components/common/AppText";
+import { AppText } from "./AppText";
 
 export type SelectInputOption = DropdownOption;
 

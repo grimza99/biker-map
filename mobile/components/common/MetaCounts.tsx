@@ -2,7 +2,7 @@ import { Feather } from "@expo/vector-icons";
 import { bikerMapTheme } from "@package-shared/constants";
 import { View } from "react-native";
 
-import { AppText } from "./AppText";
+import { AppText } from "../../shared/ui/AppText";
 
 export function MetaCounts({
   commentCount,

@@ -12,7 +12,7 @@ import {
 import { bikerMapTheme } from "@package-shared/constants/theme";
 
 import { cn } from "@/shared";
-import { AppText } from "./AppText";
+import { AppText } from "../../shared/ui/AppText";
 import { Button } from "./Button";
 import { FieldShell, type FieldBaseProps, type FieldSize } from "./FieldShell";
 
