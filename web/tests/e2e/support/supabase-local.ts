@@ -105,12 +105,31 @@ export async function listDirectChatRoomIdsForUsers(
   }
 
   const expectedUserIds = [...userIds].sort();
+  const { data: allParticipants, error: allParticipantsError } = await supabase
+    .from("chat_room_participants")
+    .select("room_id, user_id")
+    .in("room_id", Array.from(directRoomIds));
+
+  if (allParticipantsError) {
+    throw new Error(
+      `direct room 전체 participant 조회 실패: ${allParticipantsError.message}`
+    );
+  }
+
+  const roomParticipantCountMap = new Map<string, number>();
+  for (const participant of allParticipants ?? []) {
+    roomParticipantCountMap.set(
+      participant.room_id,
+      (roomParticipantCountMap.get(participant.room_id) ?? 0) + 1
+    );
+  }
 
   return Array.from(membershipMap.entries())
-    .filter(([, participantIds]) => {
+    .filter(([roomId, participantIds]) => {
       const sortedParticipantIds = [...participantIds].sort();
 
       return (
+        roomParticipantCountMap.get(roomId) === expectedUserIds.length &&
         sortedParticipantIds.length === expectedUserIds.length &&
         sortedParticipantIds.every(
           (participantId, index) => participantId === expectedUserIds[index]
@@ -119,6 +138,20 @@ export async function listDirectChatRoomIdsForUsers(
     })
     .map(([roomId]) => roomId)
     .sort();
+}
+
+export async function deleteChatRooms(roomIds: string[]) {
+  const dedupedRoomIds = Array.from(new Set(roomIds.filter(Boolean)));
+  if (!dedupedRoomIds.length) {
+    return;
+  }
+
+  const supabase = createLocalSupabaseAdminClient();
+  const { error } = await supabase.from("chat_rooms").delete().in("id", dedupedRoomIds);
+
+  if (error) {
+    throw new Error(`테스트 chat room 삭제 실패: ${error.message}`);
+  }
 }
 
 export function findAuthSessionCookieName(

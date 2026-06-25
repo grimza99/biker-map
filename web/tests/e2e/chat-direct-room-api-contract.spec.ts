@@ -9,6 +9,7 @@ import {
 
 import {
   createAuthFixtureAccount,
+  deleteChatRooms,
   deleteAuthUser,
   hasLocalSupabaseEnv,
   listDirectChatRoomIdsForUsers,
@@ -27,6 +28,7 @@ test.describe("모바일 direct room API 계약", () => {
     const riderB = createAuthFixtureAccount();
     let riderAUserId: string | null = null;
     let riderBUserId: string | null = null;
+    const createdRoomIds = new Set<string>();
 
     try {
       const [signupAResponse, signupBResponse] = await Promise.all([
@@ -83,9 +85,34 @@ test.describe("모바일 direct room API 계약", () => {
       const createFromBBody =
         (await createFromBResponse.json()) as ApiResponse<TEnsureDirectChatRoomResponseData>;
 
+      createdRoomIds.add(createFromABody.data.room.id);
+      createdRoomIds.add(createFromBBody.data.room.id);
+
+      expect(createFromAResponse.status()).toBe(
+        createFromABody.data.created ? 201 : 200
+      );
+      expect(createFromBResponse.status()).toBe(
+        createFromBBody.data.created ? 201 : 200
+      );
+
       expect(createFromABody.data.room.kind).toBe("direct");
       expect(createFromBBody.data.room.kind).toBe("direct");
       expect(createFromABody.data.room.id).toBe(createFromBBody.data.room.id);
+      expect(createFromABody.data.room.participants).toHaveLength(2);
+      expect(createFromBBody.data.room.participants).toHaveLength(2);
+      expect(createFromABody.data.room.lastMessage).toBeNull();
+      expect(createFromBBody.data.room.lastMessage).toBeNull();
+      expect(createFromABody.data.room.createdAt).toEqual(expect.any(String));
+      expect(createFromABody.data.room.updatedAt).toEqual(expect.any(String));
+      expect(createFromBBody.data.room.createdAt).toEqual(expect.any(String));
+      expect(createFromBBody.data.room.updatedAt).toEqual(expect.any(String));
+
+      const participantUserIds = createFromABody.data.room.participants
+        .map((participant) => participant.userId)
+        .sort();
+      expect(participantUserIds).toEqual(
+        [riderAUserId, riderBUserId].sort()
+      );
 
       const createdFlags = [
         createFromABody.data.created,
@@ -100,6 +127,7 @@ test.describe("모바일 direct room API 계약", () => {
 
       expect(directRoomIds).toEqual([createFromABody.data.room.id]);
     } finally {
+      await deleteChatRooms(Array.from(createdRoomIds));
       await Promise.all([deleteAuthUser(riderAUserId), deleteAuthUser(riderBUserId)]);
     }
   });
