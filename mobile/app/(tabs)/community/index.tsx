@@ -10,9 +10,9 @@ import {
   bikerMapTheme,
 } from "@package-shared/index";
 
-import { AppText, Button, Input, Pagination } from "@/components/common";
+import { Button, Input, Pagination } from "@/components/common";
 import { AppScreen } from "@/components/shell";
-import { MOBILE_PATHS, ScreenState } from "@/shared";
+import { AppText, MOBILE_PATHS, ScreenState } from "@/shared";
 import { usePostList, PostCard } from "@/entities/community";
 import { ListSkeleton } from "@/widgets/ui";
 
