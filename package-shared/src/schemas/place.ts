@@ -1,5 +1,5 @@
-import { CreatePlaceBody, UpdatePlaceBody } from "src/types";
 import { z } from "zod";
+import { CreatePlaceBody, UpdatePlaceBody } from "../types";
 import { SCHEMA_ATOM } from "./schema-atom";
 
 export const placeSchema = z.object({

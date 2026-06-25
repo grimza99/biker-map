@@ -1,5 +1,5 @@
-import { PlaceCategory } from "src/types";
 import z from "zod";
+import { PlaceCategory } from "../types";
 
 export const SCHEMA_ATOM = {
   name: z
