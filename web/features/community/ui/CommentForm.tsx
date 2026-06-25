@@ -1,6 +1,11 @@
+import { zodResolver } from "@hookform/resolvers/zod";
 import { Button, Input } from "@/shared";
 import { ApiClientError } from "@package-shared/index";
-import { SubmitEvent, useState } from "react";
+import { useForm } from "react-hook-form";
+import {
+  commentFormSchema,
+  type CommentFormValues,
+} from "../model/community-form-schemas";
 import { useCreatePostComment } from "../model/use-comments";
 import { useCreateCommentReply } from "../model/use-reply";
 
@@ -9,8 +14,9 @@ interface CommentFormProps {
   disabled?: boolean;
   placeholder?: string;
   submitType?: "comment" | "reply";
-  commentId?: string; // reply인 경우에 필요
+  commentId?: string;
 }
+
 export default function CommentForm({
   postId,
   disabled,
@@ -18,41 +24,52 @@ export default function CommentForm({
   submitType = "comment",
   commentId,
 }: CommentFormProps) {
-  const [comment, setComment] = useState("");
+  const form = useForm<CommentFormValues>({
+    resolver: zodResolver(commentFormSchema),
+    mode: "onChange",
+    defaultValues: {
+      content: "",
+    },
+  });
   const createCommentMutation = useCreatePostComment(postId);
   const createReplyMutation = useCreateCommentReply(postId, commentId ?? "");
   const submitMutation =
     submitType === "reply" ? createReplyMutation : createCommentMutation;
-  placeholder = placeholder ?? "댓글을 입력하세요";
 
-  const handleSubmit = (event: SubmitEvent<HTMLFormElement>) => {
-    event.preventDefault();
-    if (!comment.trim()) return;
-    if (submitType === "comment") {
-      createCommentMutation.mutate(comment.trim(), {
-        onSuccess: () => setComment(""),
-      });
-    } else {
-      createReplyMutation.mutate(comment.trim(), {
-        onSuccess: () => setComment(""),
-      });
-    }
-  };
+  const handleSubmit = form.handleSubmit((values) => {
+    const mutate =
+      submitType === "comment" ? createCommentMutation : createReplyMutation;
+
+    mutate.mutate(values.content, {
+      onSuccess: () => {
+        form.reset();
+      },
+    });
+  });
 
   return (
-    <form className="flex gap-3 justify-end" onSubmit={handleSubmit}>
+    <form
+      className="flex gap-3 justify-end"
+      onSubmit={(event) => {
+        event.preventDefault();
+        void handleSubmit();
+      }}
+      noValidate
+    >
       <Input
-        placeholder={placeholder}
-        value={comment}
-        onChange={(event) => setComment(event.target.value)}
+        placeholder={placeholder ?? "댓글을 입력하세요"}
         className="flex-1"
+        errorText={form.formState.errors.content?.message}
         disabled={submitMutation.isPending || disabled}
+        {...form.register("content")}
       />
       <Button
         type="submit"
         size="sm"
         loading={submitMutation.isPending}
-        disabled={!comment.trim()}
+        disabled={
+          !form.formState.isValid || submitMutation.isPending || disabled
+        }
       >
         댓글 등록
       </Button>

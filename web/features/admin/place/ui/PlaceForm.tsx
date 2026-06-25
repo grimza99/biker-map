@@ -1,7 +1,8 @@
 "use client";
 
-import type {} from "@package-shared/types/place";
-import { useEffect, useState } from "react";
+import { useEffect } from "react";
+import { Controller, useForm, useWatch } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
 
 import {
   ApiClientError,
@@ -23,6 +24,12 @@ import {
   Textarea,
   useToast,
 } from "@shared/ui";
+import {
+  createPlaceFormDefaultValues,
+  placeFormSchema,
+  type PlaceFormInput,
+  type PlaceFormValues,
+} from "../model/place-form-schemas";
 import { useCreatePlace, useEditPlace } from "../model/use-place";
 import { usePlaceGeocode } from "../model/use-place-geocode";
 
@@ -35,17 +42,27 @@ export function PlaceForm({
   onSuccess?: (data?: CreatePlaceResponseData) => void;
   onCancel?: () => void;
 }) {
-  const [name, setName] = useState("");
-  const [category, setCategory] = useState<PlaceCategory>("gas");
-  const [address, setAddress] = useState("");
-  const [phone, setPhone] = useState("");
-  const [description, setDescription] = useState("");
-  const [lat, setLat] = useState("");
-  const [lng, setLng] = useState("");
-  const [naverPlaceUrl, setNaverPlaceUrl] = useState("");
-  const [images, setImages] = useState<string[]>([]);
-
   const isEditMode = Boolean(initialData);
+  const form = useForm<PlaceFormInput, unknown, PlaceFormValues>({
+    resolver: zodResolver(placeFormSchema),
+    mode: "onChange",
+    defaultValues: createPlaceFormDefaultValues(initialData),
+  });
+  const address =
+    useWatch({
+      control: form.control,
+      name: "address",
+    }) ?? "";
+  const lat =
+    useWatch({
+      control: form.control,
+      name: "lat",
+    }) ?? "";
+  const lng =
+    useWatch({
+      control: form.control,
+      name: "lng",
+    }) ?? "";
   const normalizedAddress = address.trim();
   const initialNormalizedAddress = initialData?.address.trim() ?? "";
   const shouldAutofillCoordinates =
@@ -66,49 +83,12 @@ export function PlaceForm({
 
   const { showToast } = useToast();
 
-  const resetForm = () => {
-    setName("");
-    setCategory("gas");
-    setAddress("");
-    setPhone("");
-    setDescription("");
-    setLat("");
-    setLng("");
-    setNaverPlaceUrl("");
-    setImages([]);
-  };
-
   useEffect(() => {
-    if (!initialData) {
-      resetForm();
-      return;
-    }
+    form.reset(createPlaceFormDefaultValues(initialData));
+  }, [form, initialData]);
 
-    setName(initialData.name);
-    setCategory(initialData.category);
-    setAddress(initialData.address);
-    setPhone(initialData.phone ?? "");
-    setDescription(initialData.description ?? "");
-    setLat(String(initialData.lat));
-    setLng(String(initialData.lng));
-    setNaverPlaceUrl(initialData.naverPlaceUrl);
-    setImages(initialData.images ?? []);
-  }, [initialData]);
-
-  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
-    e.preventDefault();
-
-    const payload = {
-      name: name.trim(),
-      category,
-      address: address.trim(),
-      phone: phone.trim() || undefined,
-      description: description.trim() || undefined,
-      lat: Number(lat),
-      lng: Number(lng),
-      naverPlaceUrl: naverPlaceUrl.trim(),
-      images: images.map((item) => item.trim()).filter(Boolean),
-    };
+  const handleSubmit = form.handleSubmit(async (values) => {
+    const payload = values;
 
     if (isEditMode) {
       await editPlace(payload satisfies UpdatePlaceBody);
@@ -117,9 +97,9 @@ export function PlaceForm({
     }
 
     const createdPlace = await createPlace(payload);
-    resetForm();
+    form.reset(createPlaceFormDefaultValues());
     onSuccess?.(createdPlace.data);
-  };
+  });
 
   const errorMessage =
     isEditMode && editPlaceError
@@ -137,44 +117,66 @@ export function PlaceForm({
       return;
     }
 
-    setLat(String(geocoded.lat));
-    setLng(String(geocoded.lng));
-  }, [geocodeQuery.data]);
+    form.setValue("lat", String(geocoded.lat), {
+      shouldDirty: true,
+      shouldValidate: true,
+    });
+    form.setValue("lng", String(geocoded.lng), {
+      shouldDirty: true,
+      shouldValidate: true,
+    });
+  }, [form, geocodeQuery.data]);
 
   useEffect(() => {
-    if (geocodeErrorMessage)
+    if (geocodeErrorMessage) {
       showToast({
         title: TOAST_MESSAGE.ADMIN.GEOCODING.E,
         description: geocodeErrorMessage,
         tone: "danger",
       });
-    if (errorMessage)
+    }
+    if (errorMessage) {
       showToast({
         title: TOAST_MESSAGE.ADMIN.E,
         description: errorMessage,
         tone: "danger",
       });
-  }, [geocodeErrorMessage, errorMessage]);
+    }
+  }, [errorMessage, geocodeErrorMessage, showToast]);
 
   return (
-    <form className="grid gap-4" onSubmit={handleSubmit}>
+    <form
+      className="grid gap-4"
+      onSubmit={(event) => {
+        event.preventDefault();
+        void handleSubmit();
+      }}
+      noValidate
+    >
       <Input
         label="장소명"
-        value={name}
-        onChange={(event) => setName(event.target.value)}
         placeholder="예: 북악 스카이웨이 주유소"
         required
+        errorText={form.formState.errors.name?.message}
+        {...form.register("name")}
       />
-      <SelectInput
-        label="카테고리"
-        value={category}
-        onValueChange={(nextValue) => setCategory(nextValue as PlaceCategory)}
-        options={placeCrudCategoryOptions}
+      <Controller
+        control={form.control}
+        name="category"
+        render={({ field, fieldState }) => (
+          <SelectInput
+            label="카테고리"
+            value={field.value}
+            onValueChange={(nextValue) =>
+              field.onChange(nextValue as PlaceCategory)
+            }
+            options={placeCrudCategoryOptions}
+            errorText={fieldState.error?.message}
+          />
+        )}
       />
       <Input
         label="주소"
-        value={address}
-        onChange={(event) => setAddress(event.target.value)}
         placeholder="도로명 주소"
         helperText={
           geocodeQuery.isFetching
@@ -188,50 +190,59 @@ export function PlaceForm({
             : "주소 입력 후 잠시 기다리면 위도/경도가 자동 입력됩니다."
         }
         required
+        errorText={form.formState.errors.address?.message}
+        {...form.register("address")}
       />
       <Input
         label="전화번호"
-        value={phone}
-        onChange={(event) => setPhone(event.target.value)}
         placeholder="선택 입력"
+        errorText={form.formState.errors.phone?.message}
+        {...form.register("phone")}
       />
       <Textarea
         label="설명"
-        value={description}
-        onChange={(event) => setDescription(event.target.value)}
         placeholder="장소 소개, 추천 포인트"
+        errorText={form.formState.errors.description?.message}
+        {...form.register("description")}
       />
       <div className="grid gap-4 md:grid-cols-2">
         <Input
           label="위도"
-          value={lat}
-          onChange={(event) => setLat(event.target.value)}
           placeholder="37.5665"
           required
+          errorText={form.formState.errors.lat?.message}
+          {...form.register("lat")}
         />
         <Input
           label="경도"
-          value={lng}
-          onChange={(event) => setLng(event.target.value)}
           placeholder="126.9780"
           required
+          errorText={form.formState.errors.lng?.message}
+          {...form.register("lng")}
         />
       </div>
       <Input
         label="네이버 플레이스 URL"
-        value={naverPlaceUrl}
-        onChange={(event) => setNaverPlaceUrl(event.target.value)}
         placeholder="https://..."
         required
+        errorText={form.formState.errors.naverPlaceUrl?.message}
+        {...form.register("naverPlaceUrl")}
       />
-      <ImageInput
-        label="이미지 업로드"
-        value={images}
-        onValueChange={(urls) => setImages(urls ?? [])}
-        onUpload={async (file) => {
-          const uploaded = await uploadImage(file);
-          return uploaded.url;
-        }}
+      <Controller
+        control={form.control}
+        name="images"
+        render={({ field, fieldState }) => (
+          <ImageInput
+            label="이미지 업로드"
+            value={field.value}
+            onValueChange={(urls) => field.onChange(urls ?? [])}
+            onUpload={async (file) => {
+              const uploaded = await uploadImage(file);
+              return uploaded.url;
+            }}
+            errorText={fieldState.error?.message}
+          />
+        )}
       />
 
       <div className="flex items-center justify-end gap-2">
@@ -240,7 +251,11 @@ export function PlaceForm({
             취소
           </Button>
         )}
-        <Button type="submit" loading={isPending || isEditPending}>
+        <Button
+          type="submit"
+          loading={isPending || isEditPending || form.formState.isSubmitting}
+          disabled={!form.formState.isValid || isPending || isEditPending}
+        >
           {isEditMode ? "장소 수정" : "장소 등록"}
         </Button>
       </div>

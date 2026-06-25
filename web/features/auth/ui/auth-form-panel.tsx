@@ -1,8 +1,9 @@
 "use client";
 
+import { zodResolver } from "@hookform/resolvers/zod";
 import type { LoginBody, SignUpBody } from "@package-shared/types/auth";
-import { useActionState, useMemo, useState } from "react";
-import { useFormStatus } from "react-dom";
+import { startTransition, useActionState, useState } from "react";
+import { useForm } from "react-hook-form";
 
 import {
   Button,
@@ -34,42 +35,52 @@ const authActionInitialState: AuthActionState = {
 
 export function AuthFormPanel({ defaultTab = "login" }: AuthFormPanelProps) {
   const [tab, setTab] = useState<AuthTabValue>(defaultTab);
-  const [loginState, loginFormAction] = useActionState(
+  const [loginState, loginFormAction, isLoginPending] = useActionState(
     loginAction,
     authActionInitialState
   );
-  const [signUpState, signUpFormAction] = useActionState(
+  const [signUpState, signUpFormAction, isSignUpPending] = useActionState(
     signUpAction,
     authActionInitialState
   );
-  const [loginValues, setLoginValues] = useState<LoginBody>({
-    email: "",
-    password: "",
+  const loginForm = useForm<LoginBody>({
+    resolver: zodResolver(loginFormSchema),
+    mode: "onChange",
+    defaultValues: {
+      email: "",
+      password: "",
+    },
   });
-  const [signUpValues, setSignUpValues] = useState<SignUpBody>({
-    email: "",
-    password: "",
-    name: "",
+  const signUpForm = useForm<SignUpBody>({
+    resolver: zodResolver(signUpFormSchema),
+    mode: "onChange",
+    defaultValues: {
+      email: "",
+      password: "",
+      name: "",
+    },
   });
 
-  const loginValidation = loginFormSchema.safeParse(loginValues);
-  const signUpValidation = signUpFormSchema.safeParse(signUpValues);
+  const submitLogin = loginForm.handleSubmit((values) => {
+    const formData = new FormData();
+    formData.set("email", values.email);
+    formData.set("password", values.password);
 
-  const loginError = useMemo(() => {
-    if (loginValidation.success) {
-      return null;
-    }
+    startTransition(() => {
+      void loginFormAction(formData);
+    });
+  });
 
-    return loginValidation.error.issues[0]?.message ?? null;
-  }, [loginValidation]);
+  const submitSignUp = signUpForm.handleSubmit((values) => {
+    const formData = new FormData();
+    formData.set("name", values.name);
+    formData.set("email", values.email);
+    formData.set("password", values.password);
 
-  const signUpError = useMemo(() => {
-    if (signUpValidation.success) {
-      return null;
-    }
-
-    return signUpValidation.error.issues[0]?.message ?? null;
-  }, [signUpValidation]);
+    startTransition(() => {
+      void signUpFormAction(formData);
+    });
+  });
 
   return (
     <Tabs
@@ -91,46 +102,32 @@ export function AuthFormPanel({ defaultTab = "login" }: AuthFormPanelProps) {
             바이커맵 로그인
           </h2>
 
-          <form className="grid gap-4" action={loginFormAction}>
+          <form className="grid gap-4" onSubmit={submitLogin} noValidate>
             <Input
               label="이메일"
               type="email"
-              name="email"
               placeholder="rider@example.com"
-              value={loginValues.email}
-              onChange={(event) =>
-                setLoginValues((current) => ({
-                  ...current,
-                  email: event.target.value,
-                }))
-              }
+              errorText={loginForm.formState.errors.email?.message}
+              {...loginForm.register("email")}
             />
             <Input
               label="비밀번호"
               type="password"
-              name="password"
-              placeholder="6자 이상 입력"
-              value={loginValues.password}
-              onChange={(event) =>
-                setLoginValues((current) => ({
-                  ...current,
-                  password: event.target.value,
-                }))
-              }
+              placeholder="8자 이상 입력"
+              errorText={loginForm.formState.errors.password?.message}
+              {...loginForm.register("password")}
             />
 
-            {loginError ? (
-              <p className="m-0 rounded-[16px] border border-danger/30 bg-danger/8 px-4 py-3 text-sm text-danger">
-                {loginError}
-              </p>
-            ) : null}
             {loginState.message ? (
               <p className="m-0 rounded-[16px] border border-danger/30 bg-danger/8 px-4 py-3 text-sm text-danger">
                 {loginState.message}
               </p>
             ) : null}
 
-            <AuthSubmitButton disabled={!loginValidation.success}>
+            <AuthSubmitButton
+              loading={isLoginPending}
+              disabled={!loginForm.formState.isValid || isLoginPending}
+            >
               로그인
             </AuthSubmitButton>
           </form>
@@ -142,58 +139,38 @@ export function AuthFormPanel({ defaultTab = "login" }: AuthFormPanelProps) {
           <h2 className="text-center m-0 text-2xl font-semibold tracking-[var(--tracking-heading-md)] text-text">
             바이커맵 계정 만들기
           </h2>
-          <form className="grid gap-4" action={signUpFormAction}>
+          <form className="grid gap-4" onSubmit={submitSignUp} noValidate>
             <Input
               label="이름"
-              name="name"
               placeholder="라이더 이름"
-              value={signUpValues.name}
-              onChange={(event) =>
-                setSignUpValues((current) => ({
-                  ...current,
-                  name: event.target.value,
-                }))
-              }
+              errorText={signUpForm.formState.errors.name?.message}
+              {...signUpForm.register("name")}
             />
             <Input
               label="이메일"
               type="email"
-              name="email"
               placeholder="rider@example.com"
-              value={signUpValues.email}
-              onChange={(event) =>
-                setSignUpValues((current) => ({
-                  ...current,
-                  email: event.target.value,
-                }))
-              }
+              errorText={signUpForm.formState.errors.email?.message}
+              {...signUpForm.register("email")}
             />
             <Input
               label="비밀번호"
               type="password"
-              name="password"
-              placeholder="6자 이상 입력"
-              value={signUpValues.password}
-              onChange={(event) =>
-                setSignUpValues((current) => ({
-                  ...current,
-                  password: event.target.value,
-                }))
-              }
+              placeholder="8자 이상 입력"
+              errorText={signUpForm.formState.errors.password?.message}
+              {...signUpForm.register("password")}
             />
 
-            {signUpError ? (
-              <p className="m-0 rounded-[16px] border border-danger/30 bg-danger/8 px-4 py-3 text-sm text-danger">
-                {signUpError}
-              </p>
-            ) : null}
             {signUpState.message ? (
               <p className="m-0 rounded-[16px] border border-danger/30 bg-danger/8 px-4 py-3 text-sm text-danger">
                 {signUpState.message}
               </p>
             ) : null}
 
-            <AuthSubmitButton disabled={!signUpValidation.success}>
+            <AuthSubmitButton
+              loading={isSignUpPending}
+              disabled={!signUpForm.formState.isValid || isSignUpPending}
+            >
               회원가입
             </AuthSubmitButton>
           </form>
@@ -206,14 +183,14 @@ export function AuthFormPanel({ defaultTab = "login" }: AuthFormPanelProps) {
 function AuthSubmitButton({
   children,
   disabled,
+  loading,
 }: {
   children: string;
   disabled: boolean;
+  loading: boolean;
 }) {
-  const { pending } = useFormStatus();
-
   return (
-    <Button type="submit" loading={pending} disabled={disabled}>
+    <Button type="submit" loading={loading} disabled={disabled}>
       {children}
     </Button>
   );
