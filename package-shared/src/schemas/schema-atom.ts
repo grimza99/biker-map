@@ -1,3 +1,4 @@
+import { PlaceCategory } from "src/types";
 import z from "zod";
 
 export const SCHEMA_ATOM = {
@@ -16,4 +17,31 @@ export const SCHEMA_ATOM = {
     .string()
     .trim()
     .regex(/^\d{6}$/, "인증번호 6자리를 입력해주세요."), //본인인증 코드
+  place: {
+    category: z.enum([
+      "gas",
+      "repair",
+      "cafe",
+      "shop",
+      "rest",
+    ]) satisfies z.ZodType<PlaceCategory>,
+    placeName: z.string().trim().min(1, "장소명을 입력해주세요."),
+  },
+  optional: {
+    trimmedString: z
+      .string()
+      .trim()
+      .transform((value) => value || undefined),
+  },
+  coordinate: z
+    .string()
+    .trim()
+    .min(1, "좌표를 입력해주세요.")
+    .refine((value) => Number.isFinite(Number(value)), {
+      message: "숫자 좌표를 입력해주세요.",
+    })
+    .transform((value) => Number(value)),
+  image: z.string().trim().url("이미지 URL 형식이 올바르지 않습니다."),
+  address: z.string().trim().min(1, "주소를 입력해주세요."),
+  url: z.string().trim().url("URL 형식이 올바르지 않습니다."),
 };
