@@ -3,7 +3,7 @@
 ## 문서 목적
 
 - 대상 화면: `mobile/app/(tabs)/bikers/chats/[chatId].tsx`
-- 목적: 모바일 채팅 화면 구현 착수 전제, 선택 아키텍처, 1차 구현 범위, 진행 상태를 함께 관리한다.
+- 목적: 모바일 채팅 구현의 선택 아키텍처, 현재 반영 상태, 다음 단계 기준을 함께 관리한다.
 - 범위: 1:1 라이더 채팅의 메시지 송수신, 최근 메시지 조회, typing/presence, 권한 검증
 - 비범위: 파일 업로드, 이미지/동영상 전송, 읽음 수 동기화, 푸시 알림 상세 설계, 그룹 채팅
 
@@ -14,18 +14,12 @@
 - 모바일 화면은 transport를 직접 알지 않고, 이후 외부 API 전환이 가능하도록 hook/adapter 뒤에 숨긴다.
 - 장기 운영 아키텍처 후보는 여전히 `Vercel + Next.js + 외부 API`를 유지한다.
 
-## 이번 착수 범위
-
-- 1차 목표는 `package-shared` chat 엔티티 타입과 공통 contract를 확정하는 것이다.
-- 현재는 화면 구현이나 BFF route 추가보다 먼저, 웹/모바일이 함께 쓸 타입과 path, query key를 고정한 상태다.
-- realtime 공용화는 기존 `live-bikers`가 이미 쓰는 `createSupabaseRealtimeClient()`와 subscribe 패턴을 재사용하는 방향으로 본다.
-- 다만 아직 별도 공용 chat realtime adapter는 만들지 않고, 2차 구현에서 hook 레벨로 분리한다.
-
 ## 현재 상태
 
-- `mobile/app/(tabs)/bikers/chats/[chatId].tsx`는 placeholder 화면이다.
-- 현재 화면은 `chatId` route param만 받고, 테스트 메시지 2건과 입력창만 렌더링한다.
-- 실제 데이터 fetch, 권한 검증, 메시지 전송, 실시간 연결은 아직 없다.
+- 채팅은 `Supabase Broadcast` 기반 MVP 흐름으로 1차 연결이 끝난 상태다.
+- 메시지 저장/조회 source of truth는 `web BFF + DB`다.
+- 모바일은 BFF API로 snapshot을 받고, Supabase Realtime Broadcast는 delta 수신에만 사용한다.
+- direct room 진입은 mock `chatId`가 아니라 서버가 보장한 실제 `chat_rooms.id` UUID로 이동한다.
 - `package-shared/src/types/ws.ts`에는 `chat` feature와 `chat:message`, `chat:typing`, `chat:presence` event 타입이 이미 잡혀 있다.
 - 다만 이 타입 존재만으로 "레포가 이미 외부 WebSocket 서버 방향으로 확정되어 있었다"라고 단정하긴 어렵다.
 - 현재 코드베이스 맥락상 이 타입은 "chat realtime 이벤트가 필요할 것"이라는 공유 모델 선반영에 가깝고, 실제 transport 결정은 아직 열려 있던 상태로 보는 편이 맞다.
@@ -35,11 +29,34 @@
 
 ### 완료된 항목
 
-- `package-shared/src/types/chat.ts` 추가
-- `package-shared/src/types/index.ts` export 추가
-- `package-shared/src/constants/api.ts`에 chat room/messages/realtime-config path 추가
-- `package-shared/src/constants/query-keys.ts`에 chat room/messages/realtime-config key 추가
-- `package-shared/src/types/ws.ts`에서 `chat:message` event가 `TChatMessage` payload를 직접 참조하도록 정리
+- shared 계약
+  - `package-shared/src/types/chat.ts` 추가
+  - `package-shared/src/constants/api.ts`에 chat room/messages/realtime-config/direct room path 추가
+  - `package-shared/src/constants/query-keys.ts`에 chat room/messages/realtime-config key 추가
+  - `package-shared/src/types/ws.ts`에서 `chat:message` event가 `TChatMessage` payload를 직접 참조하도록 정리
+- DB / 정책
+  - `chat_rooms`
+  - `chat_room_participants`
+  - `chat_messages`
+  - `realtime.messages` private channel 정책
+  - `chat_room_participants` RLS 무한 재귀 방지용 `private.is_chat_room_participant(...)` 보정 마이그레이션 추가
+- web BFF
+  - `GET /api/mobile/bikers/chats/:chatId`
+  - `GET /api/mobile/bikers/chats/:chatId/messages`
+  - `POST /api/mobile/bikers/chats/:chatId/messages`
+  - `GET /api/mobile/bikers/chats/:chatId/realtime-config`
+  - `POST /api/mobile/bikers/chats/direct`
+  - `chatId` UUID 검증 추가
+- mobile
+  - `useChatRoom`
+  - `useChatMessages`
+  - `useChatRealtime`
+  - `useSendChatMessageMutation`
+  - `useEnsureDirectChatRoomMutation`
+  - `mobile/app/(tabs)/bikers/chats/[chatId].tsx`를 실제 데이터 기반 화면으로 전환
+  - 주변 바이커 카드에서 direct room 생성/조회 후 실제 room id로 채팅 진입
+- broadcast 전송 방식
+  - 서버 broadcast는 `send()` fallback 경고를 피하기 위해 `httpSend()`로 전환
 
 ### 확정된 shared 계약
 
@@ -53,6 +70,8 @@
 - `TChatMessageListResponseData`
 - `TCreateChatMessageBody`
 - `TCreateChatMessageResponseData`
+- `TEnsureDirectChatRoomBody`
+- `TEnsureDirectChatRoomResponseData`
 - `TChatRealtimeConfigResponseData`
 
 ### 재사용 기준
@@ -61,12 +80,14 @@
 - 모바일 subscribe 흐름은 `mobile/features/bikers/hook/use-live-bikers.ts`의 auth 주입, channel subscribe, cleanup 패턴을 참고해 chat hook으로 옮긴다.
 - retry 정책은 화면별 ad-hoc 구현 대신 기존 Query 기본 정책과 `live-bikers`의 reconnect 처리 방식을 우선 재사용한다.
 
-### 아직 남은 2차 구현
+### 현재 남은 단계
 
-- BFF chat room/messages/realtime-config route 추가
-- DB chat room/participant/message 최소 스키마 확정
-- 모바일 `useChatRoom`, `useChatMessages`, `useChatRealtime` 또는 `useChatConnection` 분리
-- `mobile/app/(tabs)/bikers/chats/[chatId].tsx`를 placeholder에서 실제 데이터 기반 화면으로 전환
+- typing / presence 이벤트 실제 발행 및 표시
+- unread / last read 갱신 정책
+- pagination UI와 상단 prepend UX
+- reconnect 이후 snapshot 재보정 범위 최적화
+- 차단 / 신고 / room 생성 제한 정책
+- push notification 연동
 
 ## 전제
 
@@ -92,6 +113,7 @@
 
 현재 반영 완료:
 
+- `API_PATHS.bikers.ensureDirectChatRoom`
 - `API_PATHS.bikers.chatRoom(chatId)`
 - `API_PATHS.bikers.chatMessages(chatId)`
 - `API_PATHS.bikers.chatRealtimeConfig(chatId)`
@@ -102,6 +124,7 @@
 - `TChatMessage`
 - `TChatMessageListResponseData`
 - `TCreateChatMessageBody`
+- `TEnsureDirectChatRoomResponseData`
 - `TChatRealtimeConfigResponseData`
 
 ## 비교 대상
@@ -340,6 +363,11 @@ Supabase 공식 문서 기준으로 확인한 값:
 - DB 최소 스키마와 권한 규칙을 먼저 정리한다.
 - `chatId`가 어떤 기준으로 생성되는지, 1:1 room 고정 규칙이 있는지 명시한다.
 
+현재 상태:
+
+- 완료
+- direct room은 `(현재 유저, 대상 유저)` 조합 기준으로 서버가 조회/생성 후 UUID room id를 반환한다.
+
 ### 2단계: HTTP snapshot 우선
 
 - `GET room`
@@ -348,6 +376,11 @@ Supabase 공식 문서 기준으로 확인한 값:
 
 이 3개를 먼저 BFF로 완성한다.
 
+현재 상태:
+
+- 완료
+- 모든 route에 participant 검증이 들어가며, 잘못된 `chatId`는 400으로 차단한다.
+
 ### 3단계: MVP realtime 연결 추가
 
 - 우선 Supabase Broadcast를 붙인다.
@@ -355,12 +388,24 @@ Supabase 공식 문서 기준으로 확인한 값:
 - 모바일은 adapter 인터페이스를 통해 subscribe 한다.
 - 화면 컴포넌트는 Supabase 전용 구현을 직접 알지 않는다.
 
+현재 상태:
+
+- 완료
+- private broadcast channel을 사용한다.
+- 서버 broadcast는 `httpSend()`를 사용한다.
+
 ### 4단계: 외부 API 전환 대비 포인트
 
 - event payload는 `package-shared` 타입을 그대로 유지한다.
 - room/channel 식별자는 transport 내부 규칙으로 숨긴다.
 - `sendMessage` 성공 후 cache patch 규칙을 transport와 분리한다.
 - reconnect 후 snapshot 재조회 규칙을 transport 공통 정책으로 유지한다.
+
+현재 상태:
+
+- 부분 완료
+- 화면은 hook만 사용하고 transport 세부 구현을 직접 다루지 않는다.
+- 다만 현재 hook 이름은 `useChatRealtime`로 남아 있어, 이후 `useChatConnection` 계열 추상화로 더 정리할 여지는 있다.
 
 ### 5단계: 필요 시 외부 API 전환
 - 외부 realtime provider를 붙인다.
@@ -375,16 +420,25 @@ Supabase 공식 문서 기준으로 확인한 값:
 - pagination
 - typing indicator
 
+현재 상태:
+
+- reconnect 배너: 반영 완료
+- dedupe / `clientMessageId`: 반영 완료
+- optimistic send: 아직
+- pagination UI: 아직
+- typing indicator: 아직
+
 ## 모바일 화면 구현 메모
 
 - `mobile/app/(tabs)/bikers/chats/[chatId].tsx`는 화면 조합만 담당하고, API/실시간 로직은 hook으로 분리한다.
 - 권장 분리:
   - `useChatRoom(chatId)`
   - `useChatMessages(chatId)`
-  - `useChatConnection(chatId)`
+  - `useChatRealtime(chatId)`
   - `useSendChatMessage(chatId)`
+- direct room 진입은 `useEnsureDirectChatRoomMutation()`으로 분리한다.
 - 입력창은 safe area와 키보드 회피를 유지하되, send pending 상태와 reconnect 상태를 표시해야 한다.
-- 초기에는 `ScrollView`보다 `FlatList` 역순 렌더링을 검토하는 편이 메시지 수 증가에 유리하다.
+- 현재는 `ScrollView` 기반이며, 메시지 수가 늘어나기 시작하면 `FlatList` 역순 렌더링으로 전환하는 편이 낫다.
 
 ## 앱 QA 시나리오
 
@@ -394,12 +448,15 @@ Supabase 공식 문서 기준으로 확인한 값:
 - 앱 background 후 foreground 복귀 시 누락 메시지가 보정되는지
 - access token 만료 후 refresh 뒤에도 채팅 재연결이 복구되는지
 - 상대방이 퇴장하거나 room 권한이 제거되었을 때 연결이 정리되는지
+- direct room 생성 race가 나도 중복 room이 과도하게 생기지 않는지
 
 ## 남은 리스크
 
 - Supabase Broadcast를 MVP로 선택하면 free plan 한도 안에서 충분한지 실제 사용량 관측이 필요하다.
 - 외부 realtime provider를 무엇으로 고를지 아직 미정이다.
-- 1:1 채팅 room 생성 규칙과 차단/신고 정책이 아직 정의되지 않았다.
+- direct room 생성에 대한 unique 보장 전략이 아직 DB 제약으로 확정되지 않았다.
+- 현재 direct room 조회/생성은 서비스 레이어 기준으로 동작하지만, 동시 생성 race를 완전히 닫으려면 추가 제약 또는 RPC 검토가 필요하다.
+- 1:1 채팅 차단/신고 정책이 아직 정의되지 않았다.
 - unread count와 push notification 연동 시 BFF 이벤트 설계가 추가로 필요하다.
 - `package-shared/src/types/ws.ts`와 `package-shared/src/types/chat.ts`에는 room/message DTO와 realtime event 타입이 반영되어 있다.
 
