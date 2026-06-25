@@ -6,32 +6,27 @@ import {
   Chip,
   DefaultCardContainer,
 } from "@/components/common";
-import { Href, useRouter } from "expo-router";
-import type { BikerPreview } from "@/entities/bikers";
-import { MOBILE_PATHS } from "@/shared";
+import type { TBikerPresenceItem } from "@package-shared/index";
+
+export type TBikerCardItem = Pick<
+  TBikerPresenceItem,
+  "userId" | "nickname" | "bikeBrand" | "bikeModel"
+> & {
+  distance: string;
+  proficiency: string;
+};
 
 interface BikerCardProps {
-  biker: BikerPreview;
+  biker: TBikerCardItem;
+  isChatStarting?: boolean;
+  onPressChat: (biker: TBikerCardItem) => void;
 }
 
-function buildMockChatId(biker: BikerPreview) {
-  return [biker.nickname, biker.bikeBrand, biker.bikeModel]
-    .map((value) => value.trim().toLowerCase().replace(/\s+/g, "-"))
-    .filter(Boolean)
-    .join("__");
-}
-
-export function BikerCard({ biker }: BikerCardProps) {
-  const router = useRouter();
-  const chatId = buildMockChatId(biker);
-
-  const handleClickBiker = () => {
-    router.push({
-      pathname: MOBILE_PATHS.bikers.chat,
-      params: { chatId: chatId },
-    } as unknown as Href);
-  };
-
+export function BikerCard({
+  biker,
+  isChatStarting = false,
+  onPressChat,
+}: BikerCardProps) {
   return (
     <DefaultCardContainer containerStyle="flex flex-row gap-2">
       <View accessibilityRole="button" className="gap-2 flex-1">
@@ -68,7 +63,10 @@ export function BikerCard({ biker }: BikerCardProps) {
 
       <Button
         accessibilityLabel={`${biker.nickname}카드 클릭`}
-        onPress={handleClickBiker}
+        loading={isChatStarting}
+        onPress={() => {
+          onPressChat(biker);
+        }}
         style={{ height: 30 }}
       >
         <AppText className="text-[13px] font-bold text-text">
