@@ -32,7 +32,11 @@ export async function GET(
   const supabase = createSupabaseApiClient(request);
 
   try {
-    const loaded = await loadChatRoomOrNull(supabase, parsedChatId.data);
+    const loaded = await loadChatRoomOrNull(
+      supabase,
+      parsedChatId.data,
+      session.userId
+    );
     if (!loaded || !loaded.participantUserIds.includes(session.userId)) {
       return notFound("채팅방을 찾을 수 없습니다.");
     }
