@@ -60,6 +60,67 @@ export async function markAuthUserProfileDeleted(userId: string) {
   }
 }
 
+export async function listDirectChatRoomIdsForUsers(
+  userIds: [string, string]
+) {
+  const supabase = createLocalSupabaseAdminClient();
+  const { data: memberships, error: membershipError } = await supabase
+    .from("chat_room_participants")
+    .select("room_id, user_id")
+    .in("user_id", userIds);
+
+  if (membershipError) {
+    throw new Error(`direct room membership 조회 실패: ${membershipError.message}`);
+  }
+
+  const candidateRoomIds = Array.from(
+    new Set((memberships ?? []).map((membership) => membership.room_id))
+  );
+
+  if (!candidateRoomIds.length) {
+    return [];
+  }
+
+  const { data: roomRows, error: roomError } = await supabase
+    .from("chat_rooms")
+    .select("id, kind")
+    .in("id", candidateRoomIds)
+    .eq("kind", "direct");
+
+  if (roomError) {
+    throw new Error(`direct room 조회 실패: ${roomError.message}`);
+  }
+
+  const directRoomIds = new Set((roomRows ?? []).map((room) => room.id));
+  const membershipMap = new Map<string, string[]>();
+
+  for (const membership of memberships ?? []) {
+    if (!directRoomIds.has(membership.room_id)) {
+      continue;
+    }
+
+    const current = membershipMap.get(membership.room_id) ?? [];
+    current.push(membership.user_id);
+    membershipMap.set(membership.room_id, current);
+  }
+
+  const expectedUserIds = [...userIds].sort();
+
+  return Array.from(membershipMap.entries())
+    .filter(([, participantIds]) => {
+      const sortedParticipantIds = [...participantIds].sort();
+
+      return (
+        sortedParticipantIds.length === expectedUserIds.length &&
+        sortedParticipantIds.every(
+          (participantId, index) => participantId === expectedUserIds[index]
+        )
+      );
+    })
+    .map(([roomId]) => roomId)
+    .sort();
+}
+
 export function findAuthSessionCookieName(
   cookies: Array<{ name: string; value?: string }>
 ) {
