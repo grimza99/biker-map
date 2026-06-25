@@ -9,14 +9,15 @@ import {
   BottomSheetContent,
   BottomSheetTrigger,
 } from "@/components/common";
-import { IBiker } from "@package-shared/types";
-import { BikerCard } from "./BikerCard";
+import { BikerCard, type TBikerCardItem } from "./BikerCard";
 
 interface IBikersBottomSheetProps {
   defaultOpen?: boolean;
   onOpenChange?: (open: boolean) => void;
   open?: boolean;
-  bikers: IBiker[];
+  bikers: TBikerCardItem[];
+  onPressChat: (biker: TBikerCardItem) => void;
+  pendingChatUserId?: string | null;
 }
 
 export function BikersBottomSheet({
@@ -24,6 +25,8 @@ export function BikersBottomSheet({
   onOpenChange,
   open,
   bikers,
+  onPressChat,
+  pendingChatUserId,
 }: IBikersBottomSheetProps) {
   return (
     <BottomSheet
@@ -54,7 +57,12 @@ export function BikersBottomSheet({
           {bikers.length > 0 ? (
             <>
               {bikers.map((biker, idx) => (
-                <BikerCard biker={biker} key={`${biker.nickname} - ${idx}`} />
+                <BikerCard
+                  biker={biker}
+                  isChatStarting={pendingChatUserId === biker.userId}
+                  key={`${biker.userId}-${idx}`}
+                  onPressChat={onPressChat}
+                />
               ))}
             </>
           ) : (

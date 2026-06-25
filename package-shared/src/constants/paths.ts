@@ -14,4 +14,9 @@ export const PATHS = {
   community: {
     entry: "/posts" as const,
   },
+  route: {
+    list: "/routes",
+  },
+  me: "/me" as const,
+  admin: "/admin" as const,
 };

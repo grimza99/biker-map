@@ -1,22 +1,22 @@
 "use client";
-
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 
+import { PATHS } from "@package-shared/constants";
+
 import { useSession } from "@features/session";
 import { Button } from "@shared/ui";
-import { NotificationBell } from "@widgets/notification-bell";
 
 const navItems = [
-  { href: "/map", label: "지도" },
-  { href: "/posts", label: "커뮤니티" },
-  { href: "/routes", label: "라이딩 경로" },
-  { href: "/me", label: "내 정보" },
+  { href: PATHS.map.entry, label: "지도" },
+  { href: PATHS.community.entry, label: "커뮤니티" },
+  { href: PATHS.route.list, label: "라이딩 경로" },
+  { href: PATHS.me, label: "내 정보" },
 ];
 
 export function MainNav() {
   const pathname = usePathname();
-  const { session, status } = useSession();
+  const { session } = useSession();
   const isAdmin = session?.role === "admin";
 
   return (
@@ -33,6 +33,7 @@ export function MainNav() {
               size="lg"
               selected={active}
               className="text-accent"
+              asChild
             >
               <Link href={item.href} aria-current={active ? "page" : undefined}>
                 {item.label}
@@ -44,24 +45,25 @@ export function MainNav() {
           <Button
             variant="underline"
             size="lg"
-            selected={pathname === "/admin" || pathname.startsWith("/admin/")}
-            className="text-accent"
+            selected={
+              pathname === PATHS.admin || pathname.startsWith(PATHS.admin)
+            }
+            asChild
           >
             <Link
-              href="/admin"
+              href={PATHS.admin}
               aria-current={
-                pathname === "/admin" || pathname.startsWith("/admin/")
+                pathname === PATHS.admin || pathname.startsWith(PATHS.admin)
                   ? "page"
                   : undefined
               }
+              className="text-accent"
             >
               관리자
             </Link>
           </Button>
         ) : null}
       </nav>
-
-      {status === "authenticated" ? <NotificationBell /> : null}
     </div>
   );
 }

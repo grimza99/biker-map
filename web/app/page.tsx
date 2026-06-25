@@ -1,3 +1,4 @@
+"use client";
 import { Compass, MapPinned, MessageSquareMore, Route } from "lucide-react";
 import Link from "next/link";
 import Image from "next/image";
@@ -95,6 +96,7 @@ function HeroMockup() {
               alt="landing-page-top-img"
               fill
               className="object-cover z-100"
+              loading="eager"
             />
           </div>
 
