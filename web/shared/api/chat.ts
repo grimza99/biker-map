@@ -108,7 +108,8 @@ export async function loadChatRoomOrNull(
           supabase,
           roomId,
           viewerUserId,
-          viewerParticipant.last_read_at
+          viewerParticipant.last_read_at,
+          viewerParticipant.last_read_message_id
         )
       : 0;
 
@@ -444,25 +445,57 @@ async function loadViewerUnreadChatMessageCount(
   supabase: ChatDataClient,
   roomId: string,
   viewerUserId: string,
-  viewerLastReadAt?: string | null
+  viewerLastReadAt?: string | null,
+  viewerLastReadMessageId?: string | null
 ) {
-  const query = supabase
+  const baseQuery = supabase
     .from("chat_messages")
     .select("id", { count: "exact", head: true })
     .eq("room_id", roomId)
     .neq("author_id", viewerUserId);
 
-  if (viewerLastReadAt) {
-    query.gt("created_at", viewerLastReadAt);
+  if (!viewerLastReadAt) {
+    const { count, error } = await baseQuery;
+
+    if (error) {
+      throw new Error(error.message);
+    }
+
+    return count ?? 0;
   }
 
-  const { count, error } = await query;
+  const { count: newerCount, error: newerError } = await supabase
+    .from("chat_messages")
+    .select("id", { count: "exact", head: true })
+    .eq("room_id", roomId)
+    .neq("author_id", viewerUserId)
+    .gt("created_at", viewerLastReadAt);
 
-  if (error) {
-    throw new Error(error.message);
+  if (newerError) {
+    throw new Error(newerError.message);
   }
 
-  return count ?? 0;
+  if (!viewerLastReadMessageId) {
+    return newerCount ?? 0;
+  }
+
+  const { data: tiedRows, error: tiedRowsError } = await supabase
+    .from("chat_messages")
+    .select("id")
+    .eq("room_id", roomId)
+    .neq("author_id", viewerUserId)
+    .eq("created_at", viewerLastReadAt)
+    .returns<Array<{ id: string }>>();
+
+  if (tiedRowsError) {
+    throw new Error(tiedRowsError.message);
+  }
+
+  const tiedUnreadCount = (tiedRows ?? []).filter(
+    (row) => row.id > viewerLastReadMessageId
+  ).length;
+
+  return (newerCount ?? 0) + tiedUnreadCount;
 }
 
 
