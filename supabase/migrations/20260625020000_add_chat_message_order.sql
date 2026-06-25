@@ -18,10 +18,26 @@ from ordered_messages
 where chat_message.id = ordered_messages.id
   and chat_message.message_order is null;
 
-select setval(
-  'public.chat_message_order_seq',
-  coalesce((select max(message_order) from public.chat_messages), 0)
-);
+do $$
+declare
+  current_max_message_order bigint;
+begin
+  select max(message_order)
+  into current_max_message_order
+  from public.chat_messages;
+
+  if current_max_message_order is null then
+    perform setval('public.chat_message_order_seq', 1, false);
+    return;
+  end if;
+
+  perform setval(
+    'public.chat_message_order_seq',
+    current_max_message_order,
+    true
+  );
+end;
+$$;
 
 alter table public.chat_messages
 alter column message_order set not null;
