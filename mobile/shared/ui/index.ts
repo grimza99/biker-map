@@ -6,3 +6,4 @@ export * from "./SelectInput";
 export { ScreenState } from "./ScreenState";
 export * from "./SkeletonBlock";
 export { Indicator } from "./Indicator";
+export { AppText } from "./AppText";
