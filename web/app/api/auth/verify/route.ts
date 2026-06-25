@@ -1,4 +1,9 @@
 import {
+  IVerificationCodeCheckBody,
+  verifyCodeSchema,
+} from "@package-shared/index";
+
+import {
   badRequest,
   internalServerError,
   mapMe,
@@ -8,15 +13,9 @@ import {
 } from "@/shared";
 import { getSupabaseAuthSession } from "@/shared/api/auth";
 import { getProfileStatus } from "@/shared/api/supabase-profiles";
-import { createSupabaseServiceClient } from "@/shared/lib/supabase";
 import { isVerificationCodeMatched } from "@/shared/lib/sms";
-import { IVerificationCodeCheckBody } from "@package-shared/index";
-import z from "zod";
+import { createSupabaseServiceClient } from "@/shared/lib/supabase";
 
-const checkCodeSchema = z.object({
-  phone: z.string().regex(/^01\d{8,9}$/),
-  code: z.string().regex(/^\d{6}$/),
-});
 /**----------------------------- verification code check ------------------------ */
 export async function POST(request: Request) {
   const session = await getSupabaseAuthSession(request);
@@ -25,7 +24,7 @@ export async function POST(request: Request) {
   }
   let payload: IVerificationCodeCheckBody;
   try {
-    payload = await parseRequestBody(request, checkCodeSchema);
+    payload = await parseRequestBody(request, verifyCodeSchema);
   } catch {
     return badRequest("인증코드가 일치하는지 확인하세요");
   }
