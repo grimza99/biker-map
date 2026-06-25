@@ -6,7 +6,7 @@ import { bikerMapTheme } from "@package-shared/constants/theme";
 
 import { cn, resolvePressableStyle } from "@/shared";
 
-import { AppText } from "../../components/common/AppText";
+import { AppText } from "./AppText";
 
 export type ToggleProps = Omit<SwitchProps, "thumbColor" | "trackColor"> & {
   containerClassName?: string;

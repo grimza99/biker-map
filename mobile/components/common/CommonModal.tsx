@@ -12,7 +12,7 @@ import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 import { bikerMapTheme } from "@package-shared/constants/theme";
 import { cn } from "@/shared";
-import { AppText } from "./AppText";
+import { AppText } from "../../shared/ui/AppText";
 
 export type CommonModalVariant = "sheet" | "dialog";
 

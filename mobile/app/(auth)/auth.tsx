@@ -6,10 +6,11 @@ import { LoginBody, SignUpBody } from "@package-shared/index";
 
 import { AppScreen } from "../../components/shell";
 import { useSession } from "../../features/session/model";
-import { AppText, Button } from "@/components/common";
+import { Button } from "@/components/common";
 import SignUpForm from "@/features/auth/SignUpForm";
 import LogInForm from "@/features/auth/LogInForm";
 import { MOBILE_PATHS } from "@/shared/constants/paths";
+import { AppText } from "@/shared";
 
 type AuthTab = "logIn" | "signUp";
 

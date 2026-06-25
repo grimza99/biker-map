@@ -2,8 +2,7 @@ import { type PropsWithChildren, type ReactNode } from "react";
 import { ScrollView, StyleProp, StyleSheet, ViewStyle } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
-import { cn } from "@/shared";
-import { AppText } from "../common";
+import { AppText, cn } from "@/shared";
 import { bikerMapTheme } from "@package-shared/constants";
 
 type AppScreenProps = PropsWithChildren<{

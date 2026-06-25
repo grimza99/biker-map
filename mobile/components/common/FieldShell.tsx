@@ -2,7 +2,7 @@ import { type PropsWithChildren } from "react";
 import { View } from "react-native";
 
 import { cn } from "@/shared";
-import { AppText } from "./AppText";
+import { AppText } from "../../shared/ui/AppText";
 
 export type FieldSize = "sm" | "md" | "lg";
 

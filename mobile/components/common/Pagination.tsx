@@ -2,7 +2,7 @@ import { Fragment } from "react";
 import { View } from "react-native";
 
 import { Button } from "./Button";
-import { AppText } from "./AppText";
+import { AppText } from "../../shared";
 
 type PaginationProps = {
   currentPage: number;
@@ -82,7 +82,10 @@ function getPaginationItems(
   const pages = new Set<number>([1, totalPages, currentPage]);
   let step = 1;
 
-  while (pages.size < maxVisiblePages && (currentPage - step > 1 || currentPage + step < totalPages)) {
+  while (
+    pages.size < maxVisiblePages &&
+    (currentPage - step > 1 || currentPage + step < totalPages)
+  ) {
     if (currentPage - step > 1) {
       pages.add(currentPage - step);
     }
