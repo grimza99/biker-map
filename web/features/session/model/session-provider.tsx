@@ -66,10 +66,13 @@ function SessionBridge({
     nextAuthStatus === "loading"
       ? initialSession.accessToken
       : nextAuthSession?.accessToken ?? null;
+  const hasSession = Boolean(session && accessToken);
   const status: SessionState["status"] =
     nextAuthStatus === "loading"
-      ? "loading"
-      : session && accessToken
+      ? hasSession
+        ? "authenticated"
+        : "loading"
+      : hasSession
       ? "authenticated"
       : "anonymous";
 
