@@ -33,6 +33,7 @@ export function MainNav() {
               size="lg"
               selected={active}
               className="text-accent"
+              asChild
             >
               <Link href={item.href} aria-current={active ? "page" : undefined}>
                 {item.label}
@@ -47,7 +48,6 @@ export function MainNav() {
             selected={
               pathname === PATHS.admin || pathname.startsWith(PATHS.admin)
             }
-            className="text-accent"
           >
             <Link
               href={PATHS.admin}
@@ -56,6 +56,7 @@ export function MainNav() {
                   ? "page"
                   : undefined
               }
+              className="text-accent"
             >
               관리자
             </Link>
