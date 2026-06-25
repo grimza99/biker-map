@@ -33,6 +33,7 @@ const createChatMessageSchema = z.object({
   body: z.string().trim().min(1).max(2000),
   clientMessageId: z.string().trim().min(1).max(120),
 }) satisfies z.ZodType<TCreateChatMessageBody>;
+const chatIdSchema = z.string().uuid();
 
 type InsertedChatMessageRow = {
   id: string;
@@ -43,6 +44,11 @@ export async function GET(
   { params }: { params: Promise<{ chatId: string }> }
 ) {
   const { chatId } = await params;
+  const parsedChatId = chatIdSchema.safeParse(chatId);
+  if (!parsedChatId.success) {
+    return badRequest("채팅방 식별자가 올바르지 않습니다.");
+  }
+
   const session = await requireApiSession(request);
   if (session instanceof Response) {
     return session;
@@ -59,18 +65,23 @@ export async function GET(
   const supabase = createSupabaseApiClient(request);
 
   try {
-    const loaded = await loadChatRoomOrNull(supabase, chatId);
+    const loaded = await loadChatRoomOrNull(supabase, parsedChatId.data);
     if (!loaded || !loaded.participantUserIds.includes(session.userId)) {
       return notFound("채팅방을 찾을 수 없습니다.");
     }
 
-    const page = await loadChatMessagesPage(supabase, chatId, offset, limit);
+    const page = await loadChatMessagesPage(
+      supabase,
+      parsedChatId.data,
+      offset,
+      limit
+    );
     const nextOffset = offset + page.items.length;
     const nextCursor = nextOffset < page.total ? buildCursor(nextOffset) : null;
 
     return ok(
       {
-        roomId: chatId,
+        roomId: parsedChatId.data,
         items: page.items,
       } satisfies TChatMessageListResponseData,
       undefined,
@@ -93,6 +104,11 @@ export async function POST(
   { params }: { params: Promise<{ chatId: string }> }
 ) {
   const { chatId } = await params;
+  const parsedChatId = chatIdSchema.safeParse(chatId);
+  if (!parsedChatId.success) {
+    return badRequest("채팅방 식별자가 올바르지 않습니다.");
+  }
+
   const session = await requireApiSession(request);
   if (session instanceof Response) {
     return session;
@@ -108,7 +124,7 @@ export async function POST(
   const supabase = createSupabaseApiClient(request);
 
   try {
-    const loaded = await loadChatRoomOrNull(supabase, chatId);
+    const loaded = await loadChatRoomOrNull(supabase, parsedChatId.data);
     if (!loaded || !loaded.participantUserIds.includes(session.userId)) {
       return notFound("채팅방을 찾을 수 없습니다.");
     }
@@ -116,7 +132,7 @@ export async function POST(
     const trimmedBody = payload.body.trim();
     const message = await createOrReuseChatMessage(
       supabase,
-      chatId,
+      parsedChatId.data,
       session.userId,
       trimmedBody,
       payload.clientMessageId
