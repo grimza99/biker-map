@@ -2,6 +2,7 @@
 import { uploadImage } from "@/features/image";
 import { useSession } from "@/features/session";
 import { Button, ImageInput, Input, SelectInput } from "@/shared";
+import { proficiencySelectOptions } from "@package-shared/model";
 import { Tproficiency } from "@package-shared/types";
 import { useEffect, useMemo, useState } from "react";
 import { useUpdateProfile } from "../model";
