@@ -58,3 +58,12 @@ export type TCreateChatMessageBody = {
 export type TCreateChatMessageResponseData = {
   message: TChatMessage;
 };
+
+export type TEnsureDirectChatRoomBody = {
+  targetUserId: string;
+};
+
+export type TEnsureDirectChatRoomResponseData = {
+  room: TChatRoom;
+  created: boolean;
+};

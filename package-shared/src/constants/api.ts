@@ -53,6 +53,7 @@ export const API_PATHS = {
     mySharing: `${BASE_URL}/mobile/bikers/me/sharing`,
     nearby: `${BASE_URL}/mobile/bikers/nearby`,
     realtimeConfig: `${BASE_URL}/mobile/bikers/realtime-config`,
+    ensureDirectChatRoom: `${BASE_URL}/mobile/bikers/chats/direct`,
     chatRoom: (chatId: string) => `${BASE_URL}/mobile/bikers/chats/${chatId}`,
     chatMessages: (chatId: string) =>
       `${BASE_URL}/mobile/bikers/chats/${chatId}/messages`,
