@@ -13,6 +13,8 @@ import {
 import { createSupabaseServiceClient } from "@shared/lib/supabase";
 import type { SupabaseApiClient } from "./supabase";
 
+type ChatDataClient = SupabaseApiClient | ReturnType<typeof createSupabaseServiceClient>;
+
 type ChatRoomRow = {
   id: string;
   kind: "direct";
@@ -51,7 +53,7 @@ export type LoadedChatRoom = {
 };
 
 export async function loadChatRoomOrNull(
-  supabase: SupabaseApiClient,
+  supabase: ChatDataClient,
   roomId: string
 ): Promise<LoadedChatRoom | null> {
   const { data: roomRow, error: roomError } = await supabase
@@ -90,7 +92,7 @@ export async function loadChatRoomOrNull(
 }
 
 export async function loadChatMessagesPage(
-  supabase: SupabaseApiClient,
+  supabase: ChatDataClient,
   roomId: string,
   offset: number,
   limit: number
@@ -133,7 +135,7 @@ export async function loadChatMessagesPage(
 }
 
 export async function findExistingChatMessageByClientMessageId(
-  supabase: SupabaseApiClient,
+  supabase: ChatDataClient,
   roomId: string,
   authorId: string,
   clientMessageId: string
@@ -154,7 +156,7 @@ export async function findExistingChatMessageByClientMessageId(
 }
 
 export async function loadChatMessageById(
-  supabase: SupabaseApiClient,
+  supabase: ChatDataClient,
   messageId: string
 ) {
   const { data, error } = await supabase
@@ -177,7 +179,11 @@ export async function loadChatMessageById(
 
 export async function broadcastChatMessage(message: TChatMessage) {
   const supabase = createSupabaseServiceClient();
-  const channel = supabase.channel(buildChatRealtimeChannel(message.roomId));
+  const channel = supabase.channel(buildChatRealtimeChannel(message.roomId), {
+    config: {
+      private: true,
+    },
+  });
   const event: TChatMessageRealtimeEvent = {
     type: "chat:message",
     roomId: message.roomId,
@@ -185,18 +191,75 @@ export async function broadcastChatMessage(message: TChatMessage) {
   };
 
   try {
-    const result = await channel.send({
-      type: "broadcast",
-      event: event.type,
-      payload: event,
-    });
-
-    if (result !== "ok") {
-      throw new Error(`broadcast send failed: ${result}`);
-    }
+    await channel.httpSend(event.type, event);
   } finally {
     await supabase.removeChannel(channel);
   }
+}
+
+export async function ensureDirectChatRoom(
+  currentUserId: string,
+  targetUserId: string
+) {
+  if (currentUserId === targetUserId) {
+    throw new Error("자기 자신과의 채팅방은 만들 수 없습니다.");
+  }
+
+  const supabase = createSupabaseServiceClient();
+  await assertChatProfileExists(supabase, currentUserId);
+  await assertChatProfileExists(supabase, targetUserId);
+
+  const existingRoomId = await findDirectChatRoomId(supabase, [
+    currentUserId,
+    targetUserId,
+  ]);
+
+  if (existingRoomId) {
+    const loaded = await loadChatRoomOrNull(supabase, existingRoomId);
+    if (!loaded) {
+      throw new Error("기존 채팅방을 다시 조회하지 못했습니다.");
+    }
+
+    return {
+      room: loaded.room,
+      created: false,
+    };
+  }
+
+  const { data: createdRoom, error: createRoomError } = await supabase
+    .from("chat_rooms")
+    .insert({
+      kind: "direct",
+    })
+    .select("id")
+    .single<{ id: string }>();
+
+  if (createRoomError) {
+    throw new Error(createRoomError.message);
+  }
+
+  const participantRows = [currentUserId, targetUserId].map((userId) => ({
+    room_id: createdRoom.id,
+    user_id: userId,
+  }));
+
+  const { error: createParticipantError } = await supabase
+    .from("chat_room_participants")
+    .insert(participantRows);
+
+  if (createParticipantError) {
+    throw new Error(createParticipantError.message);
+  }
+
+  const loaded = await loadChatRoomOrNull(supabase, createdRoom.id);
+  if (!loaded) {
+    throw new Error("생성된 채팅방을 다시 조회하지 못했습니다.");
+  }
+
+  return {
+    room: loaded.room,
+    created: true,
+  };
 }
 
 export function buildChatRealtimeConfig(roomId: string) {
@@ -252,7 +315,7 @@ function mapChatMessage(
 }
 
 async function loadLatestChatMessagePreview(
-  supabase: SupabaseApiClient,
+  supabase: ChatDataClient,
   roomId: string
 ): Promise<TChatMessagePreview | null> {
   const { data, error } = await supabase
@@ -288,7 +351,7 @@ async function loadLatestChatMessagePreview(
 }
 
 async function loadChatProfileMap(
-  supabase: SupabaseApiClient,
+  supabase: ChatDataClient,
   userIds: string[]
 ): Promise<Map<string, TChatParticipantProfile>> {
   const uniqueUserIds = Array.from(new Set(userIds.filter(Boolean)));
@@ -328,4 +391,99 @@ function buildFallbackProfile(userId: string): TChatParticipantProfile {
     bikeBrand: null,
     bikeModel: null,
   };
+}
+
+async function assertChatProfileExists(
+  supabase: ReturnType<typeof createSupabaseServiceClient>,
+  userId: string
+) {
+  const { data, error } = await supabase
+    .from("profiles")
+    .select("id")
+    .eq("id", userId)
+    .maybeSingle<{ id: string }>();
+
+  if (error) {
+    throw new Error(error.message);
+  }
+
+  if (!data) {
+    throw new Error("채팅 상대 프로필을 찾을 수 없습니다.");
+  }
+}
+
+async function findDirectChatRoomId(
+  supabase: ReturnType<typeof createSupabaseServiceClient>,
+  participantUserIds: [string, string]
+) {
+  const { data: participantMemberships, error: participantMembershipError } =
+    await supabase
+      .from("chat_room_participants")
+      .select("room_id, user_id")
+      .in("user_id", participantUserIds);
+
+  if (participantMembershipError) {
+    throw new Error(participantMembershipError.message);
+  }
+
+  const candidateRoomIds = Array.from(
+    new Set(
+      (participantMemberships ?? [])
+        .map((membership) => membership.room_id)
+        .filter(Boolean)
+    )
+  );
+
+  if (!candidateRoomIds.length) {
+    return null;
+  }
+
+  const { data: roomRows, error: roomError } = await supabase
+    .from("chat_rooms")
+    .select("id, kind, updated_at")
+    .in("id", candidateRoomIds)
+    .eq("kind", "direct")
+    .order("updated_at", { ascending: false })
+    .returns<Array<{ id: string; kind: "direct"; updated_at: string }>>();
+
+  if (roomError) {
+    throw new Error(roomError.message);
+  }
+
+  const directRoomIds = (roomRows ?? []).map((room) => room.id);
+  if (!directRoomIds.length) {
+    return null;
+  }
+
+  const { data: roomParticipants, error: roomParticipantsError } =
+    await supabase
+      .from("chat_room_participants")
+      .select("room_id, user_id")
+      .in("room_id", directRoomIds)
+      .returns<Array<{ room_id: string; user_id: string }>>();
+
+  if (roomParticipantsError) {
+    throw new Error(roomParticipantsError.message);
+  }
+
+  const expectedIds = [...participantUserIds].sort();
+  const participantMap = new Map<string, string[]>();
+
+  for (const row of roomParticipants ?? []) {
+    const current = participantMap.get(row.room_id) ?? [];
+    current.push(row.user_id);
+    participantMap.set(row.room_id, current);
+  }
+
+  for (const room of roomRows ?? []) {
+    const actualIds = [...(participantMap.get(room.id) ?? [])].sort();
+    if (
+      actualIds.length === expectedIds.length &&
+      actualIds.every((userId, index) => userId === expectedIds[index])
+    ) {
+      return room.id;
+    }
+  }
+
+  return null;
 }
