@@ -1,10 +1,10 @@
 # Zod 사용 가이드
 
-<strong>버전 : </strong> v1.1
+<strong>버전 : </strong> v1.2
 
 <strong>생성 날짜 : </strong> 2026-05-21
 
-<strong>최신 업데이트 날짜 : </strong> 2026-06-24
+<strong>최신 업데이트 날짜 : </strong> 2026-06-25
 
 이 문서는 Biker Map 웹 앱에서 `frontend-developer` 에이전트가 Zod를 사용할 때의 현재 프로젝트 컨벤션을 정리합니다.
 
@@ -98,6 +98,19 @@ const onSubmit = form.handleSubmit((values) => {
   loginMutation.mutate(values);
 });
 ```
+
+Server Action과 함께 쓰는 경우에도 원칙은 같습니다.
+클라이언트에서는 RHF가 field validation을 전부 담당하고, action 내부 parse는 최종 방어선으로만 둡니다.
+action state는 validation 에러 채널이 아니라 `serverError` 전용 채널로 취급합니다.
+
+```ts
+export type AuthActionState = {
+  serverError: string | null;
+};
+```
+
+action 내부 `safeParse` 실패는 RHF field error를 대체하는 사용자 UX 채널로 다시 노출하지 않습니다.
+정상 흐름에서 사용자가 보게 되는 입력 에러는 `form.formState.errors`만 사용하고, action state는 인증 실패, 중복 이메일, 자동 로그인 실패 같은 서버 결과만 표현합니다.
 
 resolver를 쓰기 어려운 특수 케이스에서만 `safeParse`를 직접 사용합니다.
 
