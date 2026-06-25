@@ -48,6 +48,7 @@ export function MainNav() {
             selected={
               pathname === PATHS.admin || pathname.startsWith(PATHS.admin)
             }
+            asChild
           >
             <Link
               href={PATHS.admin}
