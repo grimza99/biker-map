@@ -20,10 +20,10 @@ import {
   StyleSheet,
   View,
 } from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
 import { Feather } from "@expo/vector-icons";
 import { AppText, BouncingDots, cn } from "@/shared";
 import dayjs from "@/shared/lib/day-js";
-import { AppScreen } from "@/components/shell";
 
 export default function BikerChatScreen() {
   const { chatId } = useLocalSearchParams<{ chatId: string }>();
@@ -162,34 +162,7 @@ export default function BikerChatScreen() {
   const headerStatusLabel = isCounterpartOnline ? "실시간 연결됨" : "오프라인";
 
   return (
-    <AppScreen
-      overlay={
-        <View className="absolute bottom-0 right-0 left-0 bg-panel-solid p-2 flex-row items-start gap-2">
-          <Input
-            value={message}
-            onChangeText={handleChageMessage}
-            className="flex-1"
-            fieldClassName="bg-bg"
-            inputClassName="text-md leading-5.5"
-            placeholder="메시지 입력"
-            editable={!sendMessageMutation.isPending}
-            multiline
-          />
-          <Button
-            disabled={!message.trim()}
-            loading={sendMessageMutation.isPending}
-            onPress={() => {
-              void handleSendMessage();
-            }}
-            style={styles.sendButton}
-          >
-            {!sendMessageMutation.isPending && (
-              <Feather name="send" size={18} color="white" />
-            )}
-          </Button>
-        </View>
-      }
-    >
+    <SafeAreaView className="flex-1 bg-bg" edges={["top"]}>
       <KeyboardAvoidingView
         behavior={Platform.OS === "ios" ? "padding" : undefined}
         className="flex-1"
@@ -261,7 +234,7 @@ export default function BikerChatScreen() {
           ) : null}
           <ScrollView
             className="flex-1"
-            contentContainerClassName="gap-4 px-4 py-2 mb-30"
+            contentContainerClassName="gap-4 px-4 py-2 pb-32"
             showsVerticalScrollIndicator={false}
           >
             {!messagesQuery.isLoading && messages.length === 0 && (
@@ -292,8 +265,32 @@ export default function BikerChatScreen() {
             )}
           </ScrollView>
         </View>
+        <View className="absolute bottom-0 right-0 left-0 border-t border-border bg-panel-solid p-2 flex-row items-start gap-2">
+          <Input
+            value={message}
+            onChangeText={handleChageMessage}
+            className="flex-1"
+            fieldClassName="bg-bg"
+            inputClassName="text-md leading-5.5"
+            placeholder="메시지 입력"
+            editable={!sendMessageMutation.isPending}
+            multiline
+          />
+          <Button
+            disabled={!message.trim()}
+            loading={sendMessageMutation.isPending}
+            onPress={() => {
+              void handleSendMessage();
+            }}
+            style={styles.sendButton}
+          >
+            {!sendMessageMutation.isPending && (
+              <Feather name="send" size={18} color="white" />
+            )}
+          </Button>
+        </View>
       </KeyboardAvoidingView>
-    </AppScreen>
+    </SafeAreaView>
   );
 }
 
