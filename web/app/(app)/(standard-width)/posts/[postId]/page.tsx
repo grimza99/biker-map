@@ -175,6 +175,7 @@ export default function PostDetailPage() {
             name={post.author.name}
             className="w-auto gap-2 pr-3"
             imgClassName="h-7 w-7"
+            canGoMePage={false}
           />
           <div className="flex items-center gap-4">
             <MetaCounts
