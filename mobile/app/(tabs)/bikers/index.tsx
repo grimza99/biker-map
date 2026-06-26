@@ -4,6 +4,8 @@ import { SafeAreaView } from "react-native-safe-area-context";
 import { useEffect, useState } from "react";
 
 import { AppText, Button } from "@/components/common";
+import { AppScreen } from "@/components/shell";
+import { BikersBottomSheet } from "@/entities/bikers/ui/BikersBottomSheet";
 import { AuthVerifyDialog } from "@/features/auth/ui";
 import {
   useEnsureDirectChatRoomMutation,
@@ -11,11 +13,10 @@ import {
 } from "@/features/bikers";
 import { useCurrentLocation } from "@/features/location/hooks";
 import { MapCanvasWebView } from "@/features/map/ui/MapCanvasWebView";
-import { MOBILE_PATHS, Toggle } from "@/shared";
-import { Href, useRouter } from "expo-router";
-import { BikersBottomSheet } from "@/entities/bikers/ui/BikersBottomSheet";
 import { useSession } from "@/features/session/model";
-import { AppScreen } from "@/components/shell";
+import { MOBILE_PATHS, Toggle } from "@/shared";
+import { proficiencyMap } from "@package-shared/model";
+import { Href, useRouter } from "expo-router";
 
 export default function BikersScreen() {
   const { status, user } = useSession();
@@ -320,7 +321,9 @@ export default function BikersScreen() {
             biker.location.lat,
             biker.location.lng
           ),
-          proficiency: "미정",
+          proficiency: biker.proficiency
+            ? proficiencyMap[biker.proficiency]
+            : "숙련도 정보 없음",
         }))}
         onPressChat={(biker) => {
           void handlePressChat(biker.userId);
