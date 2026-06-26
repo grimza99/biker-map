@@ -10,7 +10,7 @@ import {
 } from "@/features/bikers";
 import { Button, Chip, Input } from "@/components/common";
 import { useSession } from "@/features/session/model";
-import { type TChatMessage } from "@package-shared/index";
+import { bikerMapTheme, type TChatMessage } from "@package-shared/index";
 import { useEffect, useMemo, useState } from "react";
 import {
   Alert,
@@ -162,7 +162,7 @@ export default function BikerChatScreen() {
   const headerStatusLabel = isCounterpartOnline ? "실시간 연결됨" : "오프라인";
 
   return (
-    <SafeAreaView className="flex-1 bg-bg" edges={["top"]}>
+    <SafeAreaView edges={["top"]} style={styles.container}>
       <KeyboardAvoidingView
         behavior={Platform.OS === "ios" ? "padding" : undefined}
         className="flex-1"
@@ -174,35 +174,14 @@ export default function BikerChatScreen() {
                 {counterpart.nickname}
               </AppText>
             )}
-            {isCounterpartTyping ? (
-              <View className="flex-row items-center gap-2 rounded-full border border-active/30 bg-active/10 px-3 py-1.5">
-                <BouncingDots />
-              </View>
-            ) : (
-              <Chip
-                label={headerStatusLabel}
-                className={cn(
-                  isCounterpartOnline
-                    ? "border-active/30 bg-active/10 text-active"
-                    : "border-border bg-bg text-muted"
-                )}
-              />
-            )}
-          </View>
-          <View className="mt-4 flex-row flex-wrap items-center gap-2">
-            {room?.viewerUnreadCount ? (
-              <View className="rounded-full bg-warning/15 px-3 py-1.5">
-                <AppText className="text-[12px] font-bold text-warning">
-                  읽지 않은 메시지 {room.viewerUnreadCount}개
-                </AppText>
-              </View>
-            ) : (
-              <View className="rounded-full bg-active/10 px-3 py-1.5">
-                <AppText className="text-[12px] font-bold text-active">
-                  모두 읽음
-                </AppText>
-              </View>
-            )}
+            <Chip
+              label={headerStatusLabel}
+              className={cn(
+                isCounterpartOnline
+                  ? "border-active/30 bg-active/10 text-active"
+                  : "border-border bg-bg text-muted"
+              )}
+            />
           </View>
         </View>
         {realtime.errorMessage ? (
@@ -234,7 +213,7 @@ export default function BikerChatScreen() {
           ) : null}
           <ScrollView
             className="flex-1"
-            contentContainerClassName="gap-4 px-4 py-2 pb-32"
+            contentContainerClassName="gap-4 py-2 pb-32"
             showsVerticalScrollIndicator={false}
           >
             {!messagesQuery.isLoading && messages.length === 0 && (
@@ -263,31 +242,38 @@ export default function BikerChatScreen() {
                 renderMessageItem(entry.item)
               )
             )}
+            {isCounterpartTyping && (
+              <View className="flex-row items-center gap-2 rounded-full p-2 w-20 border border-border bg-panel-solid">
+                <BouncingDots color="#ffffff" />
+              </View>
+            )}
           </ScrollView>
         </View>
-        <View className="absolute bottom-0 right-0 left-0 border-t border-border bg-panel-solid p-2 flex-row items-start gap-2">
+        <View className="absolute bottom-0 right-0 left-0">
           <Input
             value={message}
             onChangeText={handleChageMessage}
             className="flex-1"
-            fieldClassName="bg-bg"
+            fieldClassName="bg-panel-solid/70"
             inputClassName="text-md leading-5.5"
             placeholder="메시지 입력"
             editable={!sendMessageMutation.isPending}
             multiline
+            rightIcon={
+              <Button
+                disabled={!message.trim()}
+                loading={sendMessageMutation.isPending}
+                onPress={() => {
+                  void handleSendMessage();
+                }}
+                style={styles.sendButton}
+              >
+                {!sendMessageMutation.isPending && (
+                  <Feather name="send" size={18} color="white" />
+                )}
+              </Button>
+            }
           />
-          <Button
-            disabled={!message.trim()}
-            loading={sendMessageMutation.isPending}
-            onPress={() => {
-              void handleSendMessage();
-            }}
-            style={styles.sendButton}
-          >
-            {!sendMessageMutation.isPending && (
-              <Feather name="send" size={18} color="white" />
-            )}
-          </Button>
         </View>
       </KeyboardAvoidingView>
     </SafeAreaView>
@@ -310,6 +296,11 @@ function formatChatDateLabel(createdAt: string) {
 }
 
 const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    backgroundColor: bikerMapTheme.colors.bg,
+    paddingHorizontal: 12,
+  },
   sendButton: {
     minHeight: 40,
     minWidth: 40,

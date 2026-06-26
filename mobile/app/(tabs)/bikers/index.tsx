@@ -15,6 +15,7 @@ import { MOBILE_PATHS, Toggle } from "@/shared";
 import { Href, useRouter } from "expo-router";
 import { BikersBottomSheet } from "@/entities/bikers/ui/BikersBottomSheet";
 import { useSession } from "@/features/session/model";
+import { AppScreen } from "@/components/shell";
 
 export default function BikersScreen() {
   const { status, user } = useSession();
@@ -160,16 +161,14 @@ export default function BikersScreen() {
 
   if (status === "anonymous") {
     return (
-      <SafeAreaView
-        className="flex-1 bg-bg px-4.5 py-6"
-        edges={["top", "bottom"]}
-      >
+      <AppScreen>
         <View className="flex-1 justify-center gap-4 rounded-[28px] border border-border bg-panel px-5 py-6">
-          <AppText className="text-[24px] font-extrabold text-text">
-            라이브 바이커는 로그인 후 이용할 수 있습니다.
+          <AppText className="text-2xl font-extrabold">
+            로그인 후 이용가능한 서비스 입니다
           </AppText>
           <AppText className="text-sm leading-5 text-muted">
-            주변 바이커 위치 공유와 실시간 연결은 로그인된 계정에서만 열립니다.
+            주변 바이커 위치 공유와 실시간 연결은 로그인된 계정에서만
+            가능합니다.
           </AppText>
           <Button
             fullWidth
@@ -180,19 +179,16 @@ export default function BikersScreen() {
             로그인 하러 가기
           </Button>
         </View>
-      </SafeAreaView>
+      </AppScreen>
     );
   }
 
   if (isAuthenticated && !isVerified) {
     return (
-      <SafeAreaView
-        className="flex-1 bg-bg px-4.5 py-6"
-        edges={["top", "bottom"]}
-      >
+      <AppScreen>
         <View className="flex-1 justify-center gap-4 rounded-[28px] border border-border bg-panel px-5 py-6">
           <AppText className="text-[24px] font-extrabold text-text">
-            본인인증이 완료되어야 라이브 바이커를 사용할 수 있습니다.
+            핸드폰 본인인증이 완료되어야 라이브 바이커를 사용할 수 있습니다.
           </AppText>
           <AppText className="text-sm leading-5 text-muted">
             인증 전에는 지도, 위치 권한 요청, 실시간 연결, 주변 바이커 조회와
@@ -216,7 +212,7 @@ export default function BikersScreen() {
             setIsVerifyDialogOpen(false);
           }}
         />
-      </SafeAreaView>
+      </AppScreen>
     );
   }
 
