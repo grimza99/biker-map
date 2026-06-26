@@ -42,11 +42,16 @@ export function useVerifyMuation(payload: IVerificationCodeCheckBody) {
         body: JSON.stringify(payload),
       }),
     onSuccess: async (response) => {
-      const nextSession = response.data;
+      const nextSession = response.data.session;
+
+      if (!response.data.authenticated || !nextSession) {
+        throw new Error("인증된 세션 정보를 확인하지 못했습니다.");
+      }
+
       setSession(nextSession);
       queryClient.setQueryData<ApiResponse<MeResponseData>>(queryKeys.session, {
         data: {
-          authenticated: Boolean(nextSession),
+          authenticated: true,
           session: nextSession,
         },
       });

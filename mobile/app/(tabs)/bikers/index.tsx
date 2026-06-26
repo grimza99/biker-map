@@ -4,6 +4,7 @@ import { SafeAreaView } from "react-native-safe-area-context";
 import { useEffect, useState } from "react";
 
 import { AppText, Button } from "@/components/common";
+import { AuthVerifyDialog } from "@/features/auth/ui";
 import {
   useEnsureDirectChatRoomMutation,
   useLiveBikers,
@@ -11,21 +12,25 @@ import {
 import { useCurrentLocation } from "@/features/location/hooks";
 import { MapCanvasWebView } from "@/features/map/ui/MapCanvasWebView";
 import { MOBILE_PATHS, Toggle } from "@/shared";
-import { Href, Redirect, useRouter } from "expo-router";
+import { Href, useRouter } from "expo-router";
 import { BikersBottomSheet } from "@/entities/bikers/ui/BikersBottomSheet";
 import { useSession } from "@/features/session/model";
+
 export default function BikersScreen() {
-  const { status } = useSession();
+  const { status, user } = useSession();
   const isAuthenticated = status === "authenticated";
+  const isVerified = user?.isVerified === true;
+  const canUseLiveBikers = isAuthenticated && isVerified;
   const router = useRouter();
   const [pendingChatUserId, setPendingChatUserId] = useState<string | null>(
     null
   );
-  const {
-    currentLocation,
-    errorMessage,
-    isLoading,
-  } = useCurrentLocation(isAuthenticated);
+  const [isVerifyDialogOpen, setIsVerifyDialogOpen] = useState(false);
+  const [hasShownLoginAlert, setHasShownLoginAlert] = useState(false);
+  const [hasAutoOpenedVerifyDialog, setHasAutoOpenedVerifyDialog] =
+    useState(false);
+  const { currentLocation, errorMessage, isLoading } =
+    useCurrentLocation(canUseLiveBikers);
   const {
     canRetryRealtime,
     errorMessage: liveBikersErrorMessage,
@@ -38,7 +43,7 @@ export default function BikersScreen() {
     toggleSharing,
   } = useLiveBikers({
     currentLocation,
-    enabled: isAuthenticated,
+    enabled: canUseLiveBikers,
   });
   const ensureDirectChatRoomMutation = useEnsureDirectChatRoomMutation();
   const isLocationServiceDisabled =
@@ -46,7 +51,7 @@ export default function BikersScreen() {
     "기기의 위치 서비스가 꺼져 있어 현재 위치를 가져올 수 없습니다.";
 
   useEffect(() => {
-    if (!isLocationServiceDisabled) {
+    if (!canUseLiveBikers || !isLocationServiceDisabled) {
       return;
     }
 
@@ -66,11 +71,51 @@ export default function BikersScreen() {
         },
       ]
     );
-  }, [isLocationServiceDisabled]);
+  }, [canUseLiveBikers, isLocationServiceDisabled]);
 
-  if (!isAuthenticated) {
-    return <Redirect href={MOBILE_PATHS.auth} />;
-  }
+  useEffect(() => {
+    if (status !== "anonymous") {
+      setHasShownLoginAlert(false);
+      return;
+    }
+
+    if (hasShownLoginAlert) {
+      return;
+    }
+
+    setHasShownLoginAlert(true);
+
+    Alert.alert(
+      "로그인이 필요합니다",
+      "라이브 바이커는 로그인 후 이용할 수 있습니다.",
+      [
+        {
+          text: "취소",
+          style: "cancel",
+        },
+        {
+          text: "로그인",
+          onPress: () => {
+            router.push(MOBILE_PATHS.auth);
+          },
+        },
+      ]
+    );
+  }, [hasShownLoginAlert, router, status]);
+
+  useEffect(() => {
+    if (!isAuthenticated || isVerified) {
+      setHasAutoOpenedVerifyDialog(false);
+      return;
+    }
+
+    if (hasAutoOpenedVerifyDialog) {
+      return;
+    }
+
+    setHasAutoOpenedVerifyDialog(true);
+    setIsVerifyDialogOpen(true);
+  }, [hasAutoOpenedVerifyDialog, isAuthenticated, isVerified]);
 
   async function handlePressChat(targetUserId: string) {
     setPendingChatUserId(targetUserId);
@@ -89,15 +134,90 @@ export default function BikersScreen() {
     } catch (error) {
       Alert.alert(
         "채팅방을 열 수 없습니다",
-        error instanceof Error
-          ? error.message
-          : "잠시 후 다시 시도해 주세요."
+        error instanceof Error ? error.message : "잠시 후 다시 시도해 주세요."
       );
     } finally {
       setPendingChatUserId((currentValue) =>
         currentValue === targetUserId ? null : currentValue
       );
     }
+  }
+
+  if (status === "loading") {
+    return (
+      <SafeAreaView
+        className="flex-1 bg-bg px-4.5 py-6"
+        edges={["top", "bottom"]}
+      >
+        <View className="flex-1 justify-center rounded-[28px] border border-border bg-panel px-5 py-6">
+          <AppText className="text-center text-sm font-bold text-muted">
+            세션 정보를 확인하는 중입니다.
+          </AppText>
+        </View>
+      </SafeAreaView>
+    );
+  }
+
+  if (status === "anonymous") {
+    return (
+      <SafeAreaView
+        className="flex-1 bg-bg px-4.5 py-6"
+        edges={["top", "bottom"]}
+      >
+        <View className="flex-1 justify-center gap-4 rounded-[28px] border border-border bg-panel px-5 py-6">
+          <AppText className="text-[24px] font-extrabold text-text">
+            라이브 바이커는 로그인 후 이용할 수 있습니다.
+          </AppText>
+          <AppText className="text-sm leading-5 text-muted">
+            주변 바이커 위치 공유와 실시간 연결은 로그인된 계정에서만 열립니다.
+          </AppText>
+          <Button
+            fullWidth
+            onPress={() => {
+              router.push(MOBILE_PATHS.auth);
+            }}
+          >
+            로그인 하러 가기
+          </Button>
+        </View>
+      </SafeAreaView>
+    );
+  }
+
+  if (isAuthenticated && !isVerified) {
+    return (
+      <SafeAreaView
+        className="flex-1 bg-bg px-4.5 py-6"
+        edges={["top", "bottom"]}
+      >
+        <View className="flex-1 justify-center gap-4 rounded-[28px] border border-border bg-panel px-5 py-6">
+          <AppText className="text-[24px] font-extrabold text-text">
+            본인인증이 완료되어야 라이브 바이커를 사용할 수 있습니다.
+          </AppText>
+          <AppText className="text-sm leading-5 text-muted">
+            인증 전에는 지도, 위치 권한 요청, 실시간 연결, 주변 바이커 조회와
+            위치 공유가 모두 차단됩니다.
+          </AppText>
+          <Button
+            fullWidth
+            onPress={() => {
+              setIsVerifyDialogOpen(true);
+            }}
+          >
+            핸드폰 본인인증 하기
+          </Button>
+        </View>
+        <AuthVerifyDialog
+          open={isVerifyDialogOpen}
+          onOpenChange={() => {
+            setIsVerifyDialogOpen(false);
+          }}
+          onSuccess={() => {
+            setIsVerifyDialogOpen(false);
+          }}
+        />
+      </SafeAreaView>
+    );
   }
 
   return (
@@ -225,7 +345,12 @@ function formatDistanceKm(
     return "-";
   }
 
-  const distanceMeters = calculateDistanceMeters(fromLat, fromLng, toLat, toLng);
+  const distanceMeters = calculateDistanceMeters(
+    fromLat,
+    fromLng,
+    toLat,
+    toLng
+  );
   return (distanceMeters / 1000).toFixed(distanceMeters >= 1000 ? 1 : 2);
 }
 

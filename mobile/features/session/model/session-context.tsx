@@ -110,6 +110,11 @@ export function SessionProvider({ children }: PropsWithChildren) {
     status,
     user,
     setSession(newSession) {
+      void persistAuthResponse({
+        accessToken: getApiAuthState().accessToken,
+        refreshToken: getApiAuthState().refreshToken,
+        session: newSession,
+      });
       setUser(newSession);
       setStatus("authenticated");
     },
