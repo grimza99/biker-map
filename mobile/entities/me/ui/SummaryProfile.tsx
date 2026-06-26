@@ -29,6 +29,8 @@ export function SummaryProfile() {
   return (
     <View className="flex-col gap-5">
       {isLoading ? (
+        <SummaryProfileSkeleton />
+      ) : (
         <>
           <Profile />
           <View className="border-2 border-border flex-row rounded-[18px] py-3 px-3 justify-around bg-panel-solid ">
@@ -37,8 +39,6 @@ export function SummaryProfile() {
             <SummaryItem label="받은 좋아요" value={receivedFavoriteCount} />
           </View>
         </>
-      ) : (
-        <SummaryProfileSkeleton />
       )}
     </View>
   );
