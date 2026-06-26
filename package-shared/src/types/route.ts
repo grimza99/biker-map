@@ -1,5 +1,45 @@
 export type RouteProvider = "naver" | "etc";
-export type RouteSourceType = "curated" | "user";
+export type RouteSourceType = "curated";
+
+export type RouteFormWaypointValue = {
+  draftId: string;
+  address: string;
+  lat: string;
+  lng: string;
+};
+
+export type RouteFormValues = {
+  title: string;
+  summary: string;
+  content: string;
+  departureRegion: RouteRegion;
+  destinationRegion: RouteRegion;
+  externalMapUrl: string;
+  distanceKm: string;
+  estimatedDurationMinutes: string;
+  tags: string;
+  sourceType: RouteSourceType;
+  departureAddress: string;
+  destinationAddress: string;
+  departureLat: string;
+  departureLng: string;
+  destinationLat: string;
+  destinationLng: string;
+  waypoints: RouteFormWaypointValue[];
+};
+
+export type NormalizedWaypointsResult =
+  | {
+      data: Array<{
+        sequence: number;
+        lat: number;
+        lng: number;
+      }>;
+    }
+  | {
+      error: string;
+    };
+
 export type RouteRegion =
   | "seoul"
   | "busan"

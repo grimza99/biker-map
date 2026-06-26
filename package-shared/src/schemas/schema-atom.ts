@@ -1,5 +1,5 @@
 import z from "zod";
-import { PlaceCategory } from "../types";
+import { PlaceCategory, RouteRegion, RouteSourceType } from "../types";
 
 const phoneSchema = z
   .string()
@@ -56,4 +56,27 @@ export const SCHEMA_ATOM = {
   image: z.string().trim().url("이미지 URL 형식이 올바르지 않습니다."),
   address: z.string().trim().min(1, "주소를 입력해주세요."),
   url: z.string().trim().url("URL 형식이 올바르지 않습니다."),
+  route: {
+    region: z.enum([
+      "seoul",
+      "busan",
+      "daegu",
+      "incheon",
+      "gwangju",
+      "daejeon",
+      "ulsan",
+      "sejong",
+      "jeju",
+      "all",
+    ]) satisfies z.ZodType<RouteRegion>,
+    sourceType: z.enum(["curated"]) satisfies z.ZodType<RouteSourceType>,
+  },
+  requiredString: (msg: string) => z.string().trim().min(1, msg),
+  number: z
+    .string()
+    .trim()
+    .refine(
+      (value) => value.length === 0 || Number.isFinite(Number(value)),
+      "숫자만 입력해주세요."
+    ),
 };
