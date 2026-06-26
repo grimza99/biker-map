@@ -27,6 +27,7 @@ import { FloatingMapSheet } from "@/components/shell";
 export default function MapScreen() {
   const [activeCategory, setActiveCategory] =
     useState<MapCategoryFilter>("all");
+  const [isSheetOpen, setIsSheetOpen] = useState(false);
   const [focusedPlaceId, setFocusedPlaceId] = useState<string | null>(null);
   const [detailSheetItem, setDetailSheetItem] = useState<
     | null
@@ -57,10 +58,12 @@ export default function MapScreen() {
   const handleMarkerPressed = (place: PlaceListItem) => {
     setFocusedPlaceId(place.id);
     setDetailSheetItem({ kind: "place", ...place });
+    setIsSheetOpen(true);
   };
   const handleRoutePressed = (route: RouteMapPathItem) => {
     setFocusedPlaceId(null);
     setDetailSheetItem({ kind: "route", ...route });
+    setIsSheetOpen(true);
   };
 
   return (
@@ -96,6 +99,7 @@ export default function MapScreen() {
                   );
                   setFocusedPlaceId(null);
                   setDetailSheetItem(null);
+                  setIsSheetOpen(false);
                 }}
                 key={option.value}
                 style={[styles.filterChip, isActive && styles.filterChipActive]}
@@ -133,6 +137,8 @@ export default function MapScreen() {
       </SafeAreaView>
 
       <FloatingMapSheet
+        onOpenChange={setIsSheetOpen}
+        open={isSheetOpen}
         sheetTitle={detailSheetItem ? undefined : "지도 목록"}
         sheetIcon={
           detailSheetItem ? undefined : (
@@ -147,7 +153,7 @@ export default function MapScreen() {
           detailSheetItem ? (
             <MapMarkerClickSheetContent item={detailSheetItem} />
           ) : (
-            <MapListSheetContent activeCategory={placeCategory ?? "all"} />
+            <MapListSheetContent activeCategory={activeCategory} />
           )
         }
         contentContainerClassName={detailSheetItem ? "min-h-100" : undefined}
