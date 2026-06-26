@@ -8,6 +8,7 @@ import {
   FavoritesQuery,
   FavoriteTargetType,
   queryKeys,
+  ReceivedFavoriteCountResponseData,
   RoutesListResponseData,
   type PostsListResponseData,
 } from "@package-shared/index";
@@ -33,5 +34,18 @@ export function useMyFavorites<T extends FavoriteTargetType>(
       ),
     enabled,
     placeholderData: (previousData) => previousData,
+  });
+}
+
+/**----------------------내가 받은 favorite 카운트------------------------ */
+
+export function useReceivedFavoriteCount(enabled = true) {
+  return useQuery({
+    queryKey: queryKeys.receivedFavorites,
+    queryFn: () =>
+      apiFetch<ReceivedFavoriteCountResponseData>(
+        API_PATHS.me.receivedFavorites
+      ),
+    enabled,
   });
 }
