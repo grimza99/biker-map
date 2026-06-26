@@ -117,6 +117,12 @@ export default function BikerChatScreen() {
   }
 
   function renderMessageItem(item: TChatMessage) {
+    const readCount =
+      counterpart &&
+      counterpart.lastReadAt &&
+      counterpart.lastReadAt > item.createdAt
+        ? 0
+        : 1;
     return (
       <Message
         key={item.id}
@@ -125,6 +131,7 @@ export default function BikerChatScreen() {
         isOwn={item.authorId === currentUserId}
         author={item.author}
         createdAt={item.createdAt}
+        unleadCount={readCount}
       />
     );
   }
@@ -160,7 +167,6 @@ export default function BikerChatScreen() {
   }, [messages]);
 
   const headerStatusLabel = isCounterpartOnline ? "실시간 연결됨" : "오프라인";
-
   return (
     <SafeAreaView edges={["top"]} style={styles.container}>
       <KeyboardAvoidingView

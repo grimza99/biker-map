@@ -37,13 +37,8 @@ export function Message({
             avatarUrl={author.avatarUrl ?? null}
           />
         )}
-        <View
-          className={cn(
-            "flex flex-row items-end gap-2",
-            !isOwn && "flex-row-reverse"
-          )}
-        >
-          {unleadCount && (
+        <View className={cn("flex flex-row items-end gap-2")}>
+          {isOwn && unleadCount && (
             <AppText className="text-xs text-yellow-200">{unleadCount}</AppText>
           )}
           <View
