@@ -126,7 +126,7 @@ const createRouteSchema = z.object({
   distanceKm: z.number().optional(),
   estimatedDurationMinutes: z.number().int().optional(),
   tags: z.array(z.string()),
-  sourceType: z.enum(["curated", "user"]),
+  sourceType: z.enum(["curated"]),
   departureLat: z.number(),
   departureLng: z.number(),
   destinationLat: z.number(),
