@@ -37,71 +37,47 @@ export async function POST(request: Request) {
 
   const supabase = createSupabaseApiClient(request);
   const serviceSupabase = createSupabaseServiceClient();
-  let reactionTarget:
-    | {
-        postId: string;
-        postAuthorId: string;
-        postTitle: string;
-        commentAuthorId?: string;
-      }
-    | null = null;
+  let reactionTarget: {
+    postId: string;
+    postAuthorId: string;
+    postTitle: string;
+    commentAuthorId?: string;
+  } | null = null;
 
-  if (payload.targetType === "post") {
-    const { data: post, error: postError } = await supabase
-      .from("posts")
-      .select("id, author_id, title")
-      .eq("id", payload.targetId)
-      .maybeSingle();
+  const { data: comment, error: commentError } = await supabase
+    .from("comments")
+    .select("id, author_id, post_id")
+    .eq("id", payload.targetId)
+    .maybeSingle();
 
-    if (postError) {
-      return internalServerError(postError.message);
-    }
-
-    if (!post) {
-      return notFound("반응 대상을 찾을 수 없습니다.");
-    }
-
-    reactionTarget = {
-      postId: String(post.id),
-      postAuthorId: String(post.author_id ?? ""),
-      postTitle: String(post.title ?? "게시글"),
-    };
-  } else {
-    const { data: comment, error: commentError } = await supabase
-      .from("comments")
-      .select("id, author_id, post_id")
-      .eq("id", payload.targetId)
-      .maybeSingle();
-
-    if (commentError) {
-      return internalServerError(commentError.message);
-    }
-
-    if (!comment) {
-      return notFound("반응 대상을 찾을 수 없습니다.");
-    }
-
-    const { data: post, error: postError } = await supabase
-      .from("posts")
-      .select("id, author_id, title")
-      .eq("id", comment.post_id)
-      .maybeSingle();
-
-    if (postError) {
-      return internalServerError(postError.message);
-    }
-
-    if (!post) {
-      return notFound("반응 대상을 찾을 수 없습니다.");
-    }
-
-    reactionTarget = {
-      postId: String(comment.post_id),
-      postAuthorId: String(post.author_id ?? ""),
-      postTitle: String(post.title ?? "게시글"),
-      commentAuthorId: String(comment.author_id ?? ""),
-    };
+  if (commentError) {
+    return internalServerError(commentError.message);
   }
+
+  if (!comment) {
+    return notFound("반응 대상을 찾을 수 없습니다.");
+  }
+
+  const { data: post, error: postError } = await supabase
+    .from("posts")
+    .select("id, author_id, title")
+    .eq("id", comment.post_id)
+    .maybeSingle();
+
+  if (postError) {
+    return internalServerError(postError.message);
+  }
+
+  if (!post) {
+    return notFound("반응 대상을 찾을 수 없습니다.");
+  }
+
+  reactionTarget = {
+    postId: String(comment.post_id),
+    postAuthorId: String(post.author_id ?? ""),
+    postTitle: String(post.title ?? "게시글"),
+    commentAuthorId: String(comment.author_id ?? ""),
+  };
 
   const { data: activeReaction, error: toggleError } =
     await serviceSupabase.rpc("toggle_reaction", {
@@ -137,22 +113,6 @@ export async function POST(request: Request) {
         message: string;
         url: string;
       }> = [];
-
-      if (
-        payload.targetType === "post" &&
-        reactionTarget.postAuthorId &&
-        reactionTarget.postAuthorId !== session.userId
-      ) {
-        notifications.push({
-          userId: reactionTarget.postAuthorId,
-          kind: "reaction",
-          sourceType: "post",
-          sourcePostId: reactionTarget.postId,
-          title: "내 글에 새 반응이 추가되었습니다",
-          message: `${session.name}님이 '${reactionTarget.postTitle}' 글에 반응을 남겼습니다.`,
-          url: `/posts/${reactionTarget.postId}`,
-        });
-      }
 
       if (
         payload.targetType === "comment" &&
@@ -191,7 +151,10 @@ export async function POST(request: Request) {
 
       await createNotifications(notifications);
     } catch (notificationError) {
-      console.error("Failed to create reaction notifications", notificationError);
+      console.error(
+        "Failed to create reaction notifications",
+        notificationError
+      );
     }
   }
 
