@@ -30,16 +30,18 @@ export function Message({ message, isOwn, author, createdAt }: IMessageProps) {
             avatarUrl={author.avatarUrl ?? null}
           />
         )}
-        <View
-          className={cn(
-            "w-fit rounded-[22px] px-4 py-3",
-            isOwn
-              ? "bg-accent rounded-br-md"
-              : "border border-border bg-panel-solid rounded-tl-md"
-          )}
-          style={styles.bubble}
-        >
-          <AppText className="text-[14px] leading-5.5">{message}</AppText>
+        <View className={cn("flex flex-row items-end gap-2")}>
+          <View
+            className={cn(
+              "w-fit rounded-[22px] px-4 py-3",
+              isOwn
+                ? "bg-accent rounded-br-md"
+                : "border border-border bg-panel-solid rounded-tl-md"
+            )}
+            style={styles.bubble}
+          >
+            <AppText className="text-[14px] leading-5.5">{message}</AppText>
+          </View>
         </View>
         <AppText className="text-[10px] font-semibold" tone="muted">
           {timeLabel}
