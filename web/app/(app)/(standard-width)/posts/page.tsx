@@ -21,6 +21,9 @@ import {
 import { PostList } from "@/entities/community";
 import { communityCategories } from "@/entities/community/community-categories";
 import { getCommunityCategory } from "@/entities/community/ui/PostList";
+import { useSession } from "@/features";
+import { PATHS } from "@package-shared/constants";
+import Link from "next/link";
 
 const categoryTabs = [
   { value: "all", label: "전체" },
@@ -43,6 +46,7 @@ const sortOptions = [
 const pageSize = 12;
 
 export default function CommunityPostsPage() {
+  const { status } = useSession();
   const [category, setCategory] = useState<CommunityCategorySlug | undefined>();
   const [sort, setSort] = useState<"latest" | "views">("latest");
   const [searchInput, setSearchInput] = useState("");
@@ -78,11 +82,6 @@ export default function CommunityPostsPage() {
       <h1 className="text-3xl font-bold tracking-(--tracking-heading-lg)">
         {categoryMeta?.label ?? "전체"}
       </h1>
-      <div className="flex justify-end">
-        <Button variant="primary" size="md">
-          <a href="/posts/new">글 작성하기</a>
-        </Button>
-      </div>
 
       <div className="flex flex-1 gap-3 w-full flex-col items-start md:flex-row md:items-end">
         <Input
@@ -110,6 +109,17 @@ export default function CommunityPostsPage() {
           className="min-w-30 max-w-100"
           options={sortOptions}
         />
+        <Button size="md" asChild className="w-fit">
+          <Link
+            href={
+              status === "authenticated"
+                ? PATHS.community.createPost
+                : PATHS.auth
+            }
+          >
+            글 작성하기
+          </Link>
+        </Button>
       </div>
 
       <Tabs
