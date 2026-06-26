@@ -55,9 +55,33 @@ export function MyInfoSection({ session }: { session: AppSession }) {
             className="h-20 w-20 text-2xl"
           />
           <div className="grid gap-1">
-            <h1 className="m-0 text-[clamp(28px,4vw,42px)] font-semibold tracking-[-0.04em] text-text">
-              {name}
-            </h1>
+            <div className="flex flex-row gap-3 items-end">
+              <h1 className="m-0 text-[clamp(28px,4vw,36px)] font-semibold tracking-[-0.04em] text-text">
+                {name}
+              </h1>
+              <button
+                className="w-fit h-fit"
+                disabled={!!isVerified}
+                onClick={() => {
+                  setIsVerifyDialogOpen(true);
+                }}
+              >
+                <Chip
+                  icon={<ShieldHalfIcon className="size-4" />}
+                  label={verifiedLabel}
+                  className={cn(
+                    isVerified &&
+                      "bg-green-300/10 border-green-300/20 text-green-300"
+                  )}
+                />
+              </button>
+              {proficiency && (
+                <Chip
+                  label={proficiencyMap[proficiency]}
+                  className={proficiencyClassNameMap(proficiency)}
+                />
+              )}
+            </div>
             <p className="m-0 text-sm text-muted">{email}</p>
             {bikeBrand && bikeModel && (
               <div className="flex gap-2">
@@ -82,28 +106,6 @@ export function MyInfoSection({ session }: { session: AppSession }) {
                   {receivedFavorites?.data.totalFavoriteCount}
                 </strong>
               </div>
-              <button
-                className="w-fit h-fit"
-                disabled={!!isVerified}
-                onClick={() => {
-                  setIsVerifyDialogOpen(true);
-                }}
-              >
-                <Chip
-                  icon={<ShieldHalfIcon className="size-4" />}
-                  label={verifiedLabel}
-                  className={cn(
-                    isVerified &&
-                      "bg-green-300/10 border-green-300/20 text-green-300"
-                  )}
-                />
-              </button>
-              {proficiency && (
-                <Chip
-                  label={proficiencyMap[proficiency]}
-                  className={proficiencyClassNameMap(proficiency)}
-                />
-              )}
             </div>
           </div>
         </div>
