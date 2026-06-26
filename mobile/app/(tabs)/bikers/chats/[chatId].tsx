@@ -8,7 +8,7 @@ import {
   useChatRoom,
   useSendChatMessageMutation,
 } from "@/features/bikers";
-import { AppText, Button, Input } from "@/components/common";
+import { Button, Chip, Input } from "@/components/common";
 import { useSession } from "@/features/session/model";
 import { type TChatMessage } from "@package-shared/index";
 import { useEffect, useMemo, useState } from "react";
@@ -21,6 +21,8 @@ import {
   View,
 } from "react-native";
 import { Feather } from "@expo/vector-icons";
+import { AppText, BouncingDots, cn } from "@/shared";
+import dayjs from "@/shared/lib/day-js";
 import { AppScreen } from "@/components/shell";
 
 export default function BikerChatScreen() {
@@ -56,8 +58,6 @@ export default function BikerChatScreen() {
     [currentUserId, room?.participants]
   );
 
-  const screenTitle =
-    counterpart?.nickname ?? room?.participants[0]?.nickname ?? "채팅방";
   const isCounterpartOnline = counterpart
     ? realtime.onlineUserIds.includes(counterpart.userId)
     : false;
@@ -66,9 +66,8 @@ export default function BikerChatScreen() {
     : false;
   const latestIncomingMessage = useMemo(
     () =>
-      [...messages]
-        .reverse()
-        .find((item) => item.authorId !== currentUserId) ?? null,
+      [...messages].reverse().find((item) => item.authorId !== currentUserId) ??
+      null,
     [currentUserId, messages]
   );
   const latestReadableMessageId = useMemo(() => {
@@ -84,12 +83,7 @@ export default function BikerChatScreen() {
   }, [currentUserId, latestIncomingMessage?.id, room?.lastMessage]);
 
   useEffect(() => {
-    if (
-      !chatId ||
-      !room ||
-      !latestReadableMessageId ||
-      isMarkingChatRead
-    ) {
+    if (!chatId || !room || !latestReadableMessageId || isMarkingChatRead) {
       return;
     }
 
@@ -100,13 +94,7 @@ export default function BikerChatScreen() {
     void markChatRead(latestReadableMessageId).catch(() => {
       // 읽음 처리 실패는 화면을 깨지 않도록 무시하고, unread 상태로 남겨 재시도 기회를 둔다.
     });
-  }, [
-    chatId,
-    isMarkingChatRead,
-    latestReadableMessageId,
-    markChatRead,
-    room,
-  ]);
+  }, [chatId, isMarkingChatRead, latestReadableMessageId, markChatRead, room]);
 
   function handleChageMessage(text: string) {
     setMessage(text);
@@ -136,72 +124,56 @@ export default function BikerChatScreen() {
         message={item.body}
         isOwn={item.authorId === currentUserId}
         author={item.author}
+        createdAt={item.createdAt}
       />
     );
   }
+
+  const messageSections = useMemo(() => {
+    const sections: (
+      | { type: "date"; key: string; label: string }
+      | { type: "message"; key: string; item: TChatMessage }
+    )[] = [];
+
+    let previousDateKey: string | null = null;
+
+    for (const item of messages) {
+      const nextDateKey = dayjs(item.createdAt).format("YYYY-MM-DD");
+
+      if (nextDateKey !== previousDateKey) {
+        sections.push({
+          type: "date",
+          key: `date:${nextDateKey}`,
+          label: formatChatDateLabel(item.createdAt),
+        });
+        previousDateKey = nextDateKey;
+      }
+
+      sections.push({
+        type: "message",
+        key: item.id,
+        item,
+      });
+    }
+
+    return sections;
+  }, [messages]);
+
+  const headerStatusLabel = isCounterpartOnline ? "실시간 연결됨" : "오프라인";
+
   return (
-    <AppScreen title={screenTitle}>
-      <KeyboardAvoidingView
-        behavior={Platform.OS === "ios" ? "padding" : undefined}
-        className="flex-1 px-5 pt-5"
-      >
-        {roomQuery.isLoading ? (
-          <AppText className="mt-3 text-[14px] leading-5" tone="muted">
-            채팅방 정보를 불러오는 중입니다.
-          </AppText>
-        ) : null}
-        {counterpart ? (
-          <AppText className="mt-2 text-[13px] leading-5" tone="muted">
-            {isCounterpartTyping
-              ? `${counterpart.nickname}님이 입력 중입니다`
-              : isCounterpartOnline
-                ? `${counterpart.nickname}님이 채팅방에 있습니다`
-                : `${counterpart.nickname}님이 오프라인입니다`}
-          </AppText>
-        ) : null}
-        {room?.viewerUnreadCount ? (
-          <AppText className="mt-1 text-[12px] leading-4" tone="muted">
-            읽지 않은 메시지 {room.viewerUnreadCount}개
-          </AppText>
-        ) : null}
-        {realtime.errorMessage ? (
-          <View className="mt-3 flex-row items-center gap-2 rounded-2xl border border-border bg-panel-solid px-3 py-2">
-            <AppText className="flex-1 text-[13px] leading-5" tone="muted">
-              {realtime.errorMessage}
-            </AppText>
-            {realtime.canRetry ? (
-              <Button
-                onPress={realtime.retry}
-                size="sm"
-                variant="secondary"
-                style={styles.retryButton}
-              >
-                재연결
-              </Button>
-            ) : null}
-          </View>
-        ) : null}
-
-        <ScrollView
-          className="flex-1"
-          contentContainerClassName="gap-[18px] py-[18px]"
-          showsVerticalScrollIndicator={false}
-        >
-          {!messagesQuery.isLoading && messages.length === 0 ? (
-            <AppText className="text-[14px] leading-5" tone="muted">
-              아직 대화가 없습니다. 첫 메시지를 보내 보세요.
-            </AppText>
-          ) : null}
-          {messages.map(renderMessageItem)}
-        </ScrollView>
-
-        <View className="flex-row items-center gap-2 border-t border-border bg-bg py-3">
+    <AppScreen
+      overlay={
+        <View className="absolute bottom-0 right-0 left-0 bg-panel-solid p-2 flex-row items-start gap-2">
           <Input
             value={message}
             onChangeText={handleChageMessage}
             className="flex-1"
-            placeholder="메시지를 입력하세요"
+            fieldClassName="bg-bg"
+            inputClassName="text-md leading-5.5"
+            placeholder="메시지 입력"
             editable={!sendMessageMutation.isPending}
+            multiline
           />
           <Button
             disabled={!message.trim()}
@@ -212,21 +184,140 @@ export default function BikerChatScreen() {
             style={styles.sendButton}
           >
             {!sendMessageMutation.isPending && (
-              <Feather name="send" size={16} color="white" />
+              <Feather name="send" size={18} color="white" />
             )}
           </Button>
+        </View>
+      }
+    >
+      <KeyboardAvoidingView
+        behavior={Platform.OS === "ios" ? "padding" : undefined}
+        className="flex-1"
+      >
+        <View className="px-5 pt-4 border-b border-border pb-2">
+          <View className="flex-row items-start justify-between gap-3">
+            {counterpart && (
+              <AppText className="font-semibold">
+                {counterpart.nickname}
+              </AppText>
+            )}
+            {isCounterpartTyping ? (
+              <View className="flex-row items-center gap-2 rounded-full border border-active/30 bg-active/10 px-3 py-1.5">
+                <BouncingDots />
+              </View>
+            ) : (
+              <Chip
+                label={headerStatusLabel}
+                className={cn(
+                  isCounterpartOnline
+                    ? "border-active/30 bg-active/10 text-active"
+                    : "border-border bg-bg text-muted"
+                )}
+              />
+            )}
+          </View>
+          <View className="mt-4 flex-row flex-wrap items-center gap-2">
+            {room?.viewerUnreadCount ? (
+              <View className="rounded-full bg-warning/15 px-3 py-1.5">
+                <AppText className="text-[12px] font-bold text-warning">
+                  읽지 않은 메시지 {room.viewerUnreadCount}개
+                </AppText>
+              </View>
+            ) : (
+              <View className="rounded-full bg-active/10 px-3 py-1.5">
+                <AppText className="text-[12px] font-bold text-active">
+                  모두 읽음
+                </AppText>
+              </View>
+            )}
+          </View>
+        </View>
+        {realtime.errorMessage ? (
+          <View className="px-5 pb-3">
+            <View className="flex-row items-center gap-2 rounded-2xl border border-border bg-panel-solid px-3 py-2.5">
+              <AppText className="flex-1 text-[13px] leading-5" tone="muted">
+                {realtime.errorMessage}
+              </AppText>
+              {realtime.canRetry ? (
+                <Button
+                  onPress={realtime.retry}
+                  size="sm"
+                  variant="secondary"
+                  style={styles.retryButton}
+                >
+                  재연결
+                </Button>
+              ) : null}
+            </View>
+          </View>
+        ) : null}
+        <View className="flex-1 px-3">
+          {roomQuery.isLoading ? (
+            <View className="px-5 py-5">
+              <AppText className="text-[14px] leading-5" tone="muted">
+                채팅방 정보를 불러오는 중입니다.
+              </AppText>
+            </View>
+          ) : null}
+          <ScrollView
+            className="flex-1"
+            contentContainerClassName="gap-4 px-4 py-2 mb-30"
+            showsVerticalScrollIndicator={false}
+          >
+            {!messagesQuery.isLoading && messages.length === 0 && (
+              <View className="px-5 py-6">
+                <AppText className="text-center text-[15px] font-bold leading-6">
+                  아직 대화가 없습니다
+                </AppText>
+              </View>
+            )}
+            {messageSections.map((entry) =>
+              entry.type === "date" ? (
+                <View
+                  key={entry.key}
+                  className="flex-row items-center justify-center py-1"
+                >
+                  <View className="rounded-full bg-bg px-3 py-1.5">
+                    <AppText
+                      className="text-[11px] font-extrabold uppercase tracking-[1px]"
+                      tone="muted"
+                    >
+                      {entry.label}
+                    </AppText>
+                  </View>
+                </View>
+              ) : (
+                renderMessageItem(entry.item)
+              )
+            )}
+          </ScrollView>
         </View>
       </KeyboardAvoidingView>
     </AppScreen>
   );
 }
 
+function formatChatDateLabel(createdAt: string) {
+  const target = dayjs(createdAt);
+  const today = dayjs();
+
+  if (target.isSame(today, "day")) {
+    return "오늘";
+  }
+
+  if (target.isSame(today.subtract(1, "day"), "day")) {
+    return "어제";
+  }
+
+  return target.format("M월 D일 ddd");
+}
+
 const styles = StyleSheet.create({
   sendButton: {
-    borderRadius: 16,
-    minHeight: 20,
-    paddingHorizontal: 8,
-    paddingVertical: 8,
+    minHeight: 40,
+    minWidth: 40,
+    paddingHorizontal: 0,
+    paddingVertical: 0,
   },
   retryButton: {
     minHeight: 36,
