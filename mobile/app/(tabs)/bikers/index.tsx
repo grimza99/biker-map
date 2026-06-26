@@ -1,31 +1,38 @@
 import { Alert, Linking, StyleSheet, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 
 import { AppText, Button } from "@/components/common";
 import {
   useEnsureDirectChatRoomMutation,
   useLiveBikers,
 } from "@/features/bikers";
+import { AuthVerifyDialog } from "@/features/auth/ui";
 import { useCurrentLocation } from "@/features/location/hooks";
 import { MapCanvasWebView } from "@/features/map/ui/MapCanvasWebView";
 import { MOBILE_PATHS, Toggle } from "@/shared";
-import { Href, Redirect, useRouter } from "expo-router";
+import { Href, useRouter } from "expo-router";
 import { BikersBottomSheet } from "@/entities/bikers/ui/BikersBottomSheet";
 import { useSession } from "@/features/session/model";
+
 export default function BikersScreen() {
-  const { status } = useSession();
+  const { status, user } = useSession();
   const isAuthenticated = status === "authenticated";
+  const isVerified = Boolean(user?.isVerified);
+  const canUseLiveBiker = isAuthenticated && isVerified;
+  const shouldBlockForVerification = isAuthenticated && !isVerified;
   const router = useRouter();
   const [pendingChatUserId, setPendingChatUserId] = useState<string | null>(
     null
   );
+  const [isVerifyDialogOpen, setIsVerifyDialogOpen] = useState(false);
+  const hasShownAnonymousAlertRef = useRef(false);
   const {
     currentLocation,
     errorMessage,
     isLoading,
-  } = useCurrentLocation(isAuthenticated);
+  } = useCurrentLocation(canUseLiveBiker);
   const {
     canRetryRealtime,
     errorMessage: liveBikersErrorMessage,
@@ -38,7 +45,7 @@ export default function BikersScreen() {
     toggleSharing,
   } = useLiveBikers({
     currentLocation,
-    enabled: isAuthenticated,
+    enabled: canUseLiveBiker,
   });
   const ensureDirectChatRoomMutation = useEnsureDirectChatRoomMutation();
   const isLocationServiceDisabled =
@@ -46,7 +53,45 @@ export default function BikersScreen() {
     "기기의 위치 서비스가 꺼져 있어 현재 위치를 가져올 수 없습니다.";
 
   useEffect(() => {
-    if (!isLocationServiceDisabled) {
+    if (status !== "anonymous") {
+      hasShownAnonymousAlertRef.current = false;
+      return;
+    }
+
+    if (hasShownAnonymousAlertRef.current) {
+      return;
+    }
+
+    hasShownAnonymousAlertRef.current = true;
+
+    Alert.alert(
+      "로그인이 필요합니다",
+      "Live-biker 기능을 사용하려면 로그인이 필요합니다.",
+      [
+        {
+          text: "확인",
+          onPress: () => {
+            router.push(MOBILE_PATHS.auth as Href);
+          },
+        },
+      ],
+      {
+        cancelable: false,
+      }
+    );
+  }, [router, status]);
+
+  useEffect(() => {
+    if (!shouldBlockForVerification) {
+      setIsVerifyDialogOpen(false);
+      return;
+    }
+
+    setIsVerifyDialogOpen(true);
+  }, [shouldBlockForVerification]);
+
+  useEffect(() => {
+    if (!canUseLiveBiker || !isLocationServiceDisabled) {
       return;
     }
 
@@ -66,10 +111,20 @@ export default function BikersScreen() {
         },
       ]
     );
-  }, [isLocationServiceDisabled]);
+  }, [canUseLiveBiker, isLocationServiceDisabled]);
 
-  if (!isAuthenticated) {
-    return <Redirect href={MOBILE_PATHS.auth} />;
+  if (status === "loading") {
+    return null;
+  }
+
+  if (status === "anonymous") {
+    return (
+      <View className="bg-bg flex-1 items-center justify-center px-6">
+        <AppText className="text-center text-base font-bold text-text">
+          Live-biker는 로그인 후 사용할 수 있습니다.
+        </AppText>
+      </View>
+    );
   }
 
   async function handlePressChat(targetUserId: string) {
@@ -102,48 +157,77 @@ export default function BikersScreen() {
 
   return (
     <View className="bg-bg flex-1">
-      <MapCanvasWebView
-        activeFilter="all"
-        bikerPresences={nearbyBikers}
-        currentLocation={currentLocation}
-        places={[]}
-        routes={[]}
-      />
+      {shouldBlockForVerification ? (
+        <BlockedLiveBikerView
+          onPressVerify={() => {
+            setIsVerifyDialogOpen(true);
+          }}
+        />
+      ) : (
+        <MapCanvasWebView
+          activeFilter="all"
+          bikerPresences={nearbyBikers}
+          currentLocation={currentLocation}
+          places={[]}
+          routes={[]}
+        />
+      )}
 
       <SafeAreaView
         className="px-4.5 pb-3 pt-2"
         edges={["top"]}
         style={styles.overlay}
       >
-        <Toggle
-          value={isSharingEnabled}
-          onValueChange={(nextValue) => {
-            void toggleSharing(nextValue);
-          }}
-          label={isSharingEnabled ? "위치 공유중" : "위치 공유 끔"}
-          size="lg"
-        />
+        {!shouldBlockForVerification ? (
+          <Toggle
+            value={isSharingEnabled}
+            onValueChange={(nextValue) => {
+              void toggleSharing(nextValue);
+            }}
+            label={isSharingEnabled ? "위치 공유중" : "위치 공유 끔"}
+            size="lg"
+          />
+        ) : null}
         <View className="gap-3 rounded-[28px] border border-border bg-[rgba(17,19,21,0.9)] px-4.5 py-4">
-          {currentLocation ? (
+          {shouldBlockForVerification ? (
+            <>
+              <AppText className="text-sm font-bold text-text">
+                본인 인증을 완료하면 Live-biker 지도를 열고 주변 바이커를 볼 수 있습니다.
+              </AppText>
+              <Button
+                size="sm"
+                variant="secondary"
+                onPress={() => {
+                  setIsVerifyDialogOpen(true);
+                }}
+                style={styles.retryButton}
+                textStyle={styles.retryButtonLabel}
+              >
+                본인 인증하기
+              </Button>
+            </>
+          ) : null}
+
+          {!shouldBlockForVerification && currentLocation ? (
             <AppText className="text-xs font-bold text-text">
               LAT {currentLocation.lat.toFixed(5)} / LNG
               {currentLocation.lng.toFixed(5)}
             </AppText>
           ) : null}
 
-          {isLoading ? (
+          {!shouldBlockForVerification && isLoading ? (
             <AppText className="text-xs font-bold text-muted">
               현재 위치를 확인하는 중입니다
             </AppText>
           ) : null}
 
-          {isSyncing ? (
+          {!shouldBlockForVerification && isSyncing ? (
             <AppText className="text-xs font-bold text-muted">
               주변 바이커 정보를 동기화하는 중입니다
             </AppText>
           ) : null}
 
-          {errorMessage ? (
+          {!shouldBlockForVerification && errorMessage ? (
             <View className="gap-2">
               <AppText className="text-xs font-bold text-warning">
                 {errorMessage}
@@ -151,7 +235,7 @@ export default function BikersScreen() {
             </View>
           ) : null}
 
-          {liveBikersErrorMessage ? (
+          {!shouldBlockForVerification && liveBikersErrorMessage ? (
             <View className="gap-2">
               <AppText className="text-xs font-bold text-warning">
                 {liveBikersErrorMessage}
@@ -159,13 +243,13 @@ export default function BikersScreen() {
             </View>
           ) : null}
 
-          {isRealtimeRetrying ? (
+          {!shouldBlockForVerification && isRealtimeRetrying ? (
             <AppText className="text-xs font-bold text-warning">
               실시간 연결을 다시 시도하고 있습니다.
             </AppText>
           ) : null}
 
-          {realtimeErrorMessage ? (
+          {!shouldBlockForVerification && realtimeErrorMessage ? (
             <View className="gap-2">
               <AppText className="text-xs font-bold text-warning">
                 {realtimeErrorMessage}
@@ -187,30 +271,66 @@ export default function BikersScreen() {
             </View>
           ) : null}
 
-          <AppText className="text-xs font-bold text-text">
-            주변 바이커 {nearbyBikers.length}명
-          </AppText>
+          {!shouldBlockForVerification ? (
+            <AppText className="text-xs font-bold text-text">
+              주변 바이커 {nearbyBikers.length}명
+            </AppText>
+          ) : null}
         </View>
       </SafeAreaView>
-      <BikersBottomSheet
-        bikers={nearbyBikers.map((biker) => ({
-          userId: biker.userId,
-          nickname: biker.nickname,
-          bikeBrand: biker.bikeBrand ?? "바이크 정보 없음",
-          bikeModel: biker.bikeModel ?? "모델 정보 없음",
-          distance: formatDistanceKm(
-            currentLocation?.lat ?? null,
-            currentLocation?.lng ?? null,
-            biker.location.lat,
-            biker.location.lng
-          ),
-          proficiency: "미정",
-        }))}
-        onPressChat={(biker) => {
-          void handlePressChat(biker.userId);
+      {!shouldBlockForVerification ? (
+        <BikersBottomSheet
+          bikers={nearbyBikers.map((biker) => ({
+            userId: biker.userId,
+            nickname: biker.nickname,
+            bikeBrand: biker.bikeBrand ?? "바이크 정보 없음",
+            bikeModel: biker.bikeModel ?? "모델 정보 없음",
+            distance: formatDistanceKm(
+              currentLocation?.lat ?? null,
+              currentLocation?.lng ?? null,
+              biker.location.lat,
+              biker.location.lng
+            ),
+            proficiency: "미정",
+          }))}
+          onPressChat={(biker) => {
+            void handlePressChat(biker.userId);
+          }}
+          pendingChatUserId={pendingChatUserId}
+        />
+      ) : null}
+
+      <AuthVerifyDialog
+        open={isVerifyDialogOpen}
+        onOpenChange={() => {
+          setIsVerifyDialogOpen(false);
         }}
-        pendingChatUserId={pendingChatUserId}
+        onSuccess={() => {
+          setIsVerifyDialogOpen(false);
+        }}
       />
+    </View>
+  );
+}
+
+function BlockedLiveBikerView({
+  onPressVerify,
+}: {
+  onPressVerify: () => void;
+}) {
+  return (
+    <View className="flex-1 items-center justify-center bg-panel-solid px-6">
+      <View className="w-full max-w-[320px] gap-4 rounded-[28px] border border-border bg-[rgba(17,19,21,0.94)] px-5 py-6">
+        <AppText className="text-center text-xl font-bold text-text">
+          본인 인증이 필요합니다
+        </AppText>
+        <AppText className="text-center text-sm font-semibold leading-6 text-muted">
+          Live-biker의 현재 위치, 주변 바이커, 실시간 공유는 본인 인증 완료 후 사용할 수 있습니다.
+        </AppText>
+        <Button fullWidth onPress={onPressVerify} variant="secondary">
+          본인 인증하기
+        </Button>
+      </View>
     </View>
   );
 }

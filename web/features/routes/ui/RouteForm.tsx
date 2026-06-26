@@ -1,7 +1,7 @@
 "use client";
 
 import { zodResolver } from "@hookform/resolvers/zod";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Controller, useFieldArray, useForm, useWatch } from "react-hook-form";
 
 import {
@@ -158,6 +158,7 @@ export function RouteForm({
       control: form.control,
       name: "waypoints",
     }) ?? [];
+  const waypointsRef = useRef(waypoints);
   const departureLat =
     useWatch({
       control: form.control,
@@ -201,6 +202,10 @@ export function RouteForm({
   useEffect(() => {
     form.reset(createRouteDefaultValues(initialData));
   }, [form, initialData]);
+
+  useEffect(() => {
+    waypointsRef.current = waypoints;
+  }, [waypoints]);
 
   const geocodeAddress = (
     address: string,
@@ -288,20 +293,39 @@ export function RouteForm({
   }, [debouncedDestinationAddress, form]);
 
   useEffect(() => {
-    const cleanupList = waypoints
+    const cleanupList = waypointsRef.current
       .filter((waypoint) => waypoint.address.trim())
-      .map((waypoint, index) =>
+      .map((waypoint) =>
         geocodeAddress(
           waypoint.address,
           ({ lat, lng }) => {
-            form.setValue(`waypoints.${index}.lat`, String(lat), {
-              shouldDirty: true,
-              shouldValidate: true,
-            });
-            form.setValue(`waypoints.${index}.lng`, String(lng), {
-              shouldDirty: true,
-              shouldValidate: true,
-            });
+            const currentWaypointIndex = form
+              .getValues("waypoints")
+              .findIndex(
+                (currentWaypoint) =>
+                  currentWaypoint.draftId === waypoint.draftId
+              );
+
+            if (currentWaypointIndex < 0) {
+              return;
+            }
+
+            form.setValue(
+              `waypoints.${currentWaypointIndex}.lat`,
+              String(lat),
+              {
+                shouldDirty: true,
+                shouldValidate: true,
+              }
+            );
+            form.setValue(
+              `waypoints.${currentWaypointIndex}.lng`,
+              String(lng),
+              {
+                shouldDirty: true,
+                shouldValidate: true,
+              }
+            );
           },
           waypoint.draftId
         )
@@ -310,7 +334,7 @@ export function RouteForm({
     return () => {
       cleanupList.forEach((cleanup) => cleanup?.());
     };
-  }, [debouncedWaypointAddresses, form, waypoints]);
+  }, [debouncedWaypointAddresses, form]);
 
   const handleCreateSubmit = async (values: RouteFormValues) => {
     const payload = buildCreateRoutePayload(

@@ -28,6 +28,7 @@ type SessionStatus = "loading" | "anonymous" | "authenticated";
 type SessionContextValue = {
   accessToken: string | null;
   clearSession: () => Promise<void>;
+  refreshSession: () => Promise<void>;
   status: SessionStatus;
   user: AppSession | null;
   login: (body: LoginBody) => Promise<void>;
@@ -107,9 +108,29 @@ export function SessionProvider({ children }: PropsWithChildren) {
       setUser(null);
       setStatus("anonymous");
     },
+    async refreshSession() {
+      if (!getApiAuthState().accessToken) {
+        setUser(null);
+        setStatus("anonymous");
+        return;
+      }
+
+      const meResponse = await apiFetch.get<MeResponseData>(API_PATHS.me.profile);
+
+      if (meResponse.data.authenticated && meResponse.data.session) {
+        value.setSession(meResponse.data.session);
+        return;
+      }
+
+      await value.clearSession();
+    },
     status,
     user,
     setSession(newSession) {
+      void persistAuthResponse({
+        ...getApiAuthState(),
+        session: newSession,
+      });
       setUser(newSession);
       setStatus("authenticated");
     },

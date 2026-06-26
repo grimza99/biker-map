@@ -34,7 +34,7 @@ export function useSendSMSVerificationCodeMutation(
 /**--------------------------------인증 code 일치 확인 ------------------------------- */
 export function useVerifyMuation(payload: IVerificationCodeCheckBody) {
   const queryClient = useQueryClient();
-  const { setSession } = useSession();
+  const { refreshSession, setSession } = useSession();
   return useMutation({
     mutationFn: () =>
       apiFetch<AuthVerifyResponseData>(API_PATHS.auth.verify, {
@@ -42,8 +42,12 @@ export function useVerifyMuation(payload: IVerificationCodeCheckBody) {
         body: JSON.stringify(payload),
       }),
     onSuccess: async (response) => {
-      const nextSession = response.data;
-      setSession(nextSession);
+      const nextSession = response.data.session;
+      if (nextSession) {
+        setSession(nextSession);
+      } else {
+        await refreshSession();
+      }
       queryClient.setQueryData<ApiResponse<MeResponseData>>(queryKeys.session, {
         data: {
           authenticated: Boolean(nextSession),
