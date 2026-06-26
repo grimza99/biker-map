@@ -44,7 +44,6 @@ export function AppShell({ children }: { children: ReactNode }) {
                 <NotificationBell />
                 <Profile
                   name={session?.name ? session.name : ""}
-                  href={PATHS.me}
                   avatarUrl={session?.avatarUrl}
                 />
                 <div>
