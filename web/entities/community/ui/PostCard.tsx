@@ -24,7 +24,7 @@ export function PostCard({ post, categoryLabel, className }: PostCardProps) {
       : "";
 
   return (
-    <Link href={`/posts/${post.id}`} className="block">
+    <Link href={`/posts/${post.id}`} className="block w-full">
       <DefaultCardContainer className={className}>
         <div className="flex items-start justify-between gap-2">
           <div className="flex items-center gap-2">
@@ -35,8 +35,8 @@ export function PostCard({ post, categoryLabel, className }: PostCardProps) {
                 className="text-muted border-border bg-panel"
               />
             )}
-            <h2 className="m-0 max-w-20 text-xl font-semibold tracking-(--tracking-heading-md) text-text truncate">
-              {post.title}
+            <h2 className="m-0 w-full max-w-100 text-xl font-semibold tracking-(--tracking-heading-md) text-text truncate">
+              {post.title}dasdfdsfdsafdsfdfadsfdafdfdfdfdfdfadsfdasfadsfdafdasf
             </h2>
           </div>
           <span className="text-xs text-muted">
