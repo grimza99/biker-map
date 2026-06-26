@@ -84,7 +84,11 @@ export async function apiFetch<T>(
     const refreshedAccessToken = await refreshAccessToken(true);
 
     if (refreshedAccessToken) {
-      return apiFetch<T>(input, init, true);
+      return apiFetch<T>(
+        input,
+        withAuthorizationHeader(init, refreshedAccessToken),
+        true
+      );
     }
   }
 
@@ -105,4 +109,17 @@ export async function apiFetch<T>(
   }
 
   return payload as ApiResponse<T>;
+}
+
+function withAuthorizationHeader(
+  init: RequestInit | undefined,
+  nextAccessToken: string
+): RequestInit {
+  const headers = new Headers(init?.headers);
+  headers.set("Authorization", `Bearer ${nextAccessToken}`);
+
+  return {
+    ...init,
+    headers,
+  };
 }
