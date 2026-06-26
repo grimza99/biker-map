@@ -1,6 +1,5 @@
 "use client";
 
-import { zodResolver } from "@hookform/resolvers/zod";
 import {
   allowedCommunityCategoryOptions,
   communityCategoryOptions,
@@ -11,16 +10,10 @@ import {
   type UpdatePostBody,
   type UpdatePostResponseData,
 } from "@package-shared/index";
-import { useEffect, useState } from "react";
-import { Controller, useForm } from "react-hook-form";
 
 import { uploadImage } from "@/features/image";
 import { Button, ImageInput, Input, SelectInput, Textarea } from "@shared/ui";
-import {
-  communityPostFormSchema,
-  type CommunityPostFormInput,
-  type CommunityPostFormValues,
-} from "../model/community-form-schemas";
+import { useState } from "react";
 import { useCreateCommunityPost } from "../model/use-post";
 
 type CommunityPostFormProps = {
@@ -56,120 +49,99 @@ export function CommunityPostForm({
   const options = communityCategoryOptions.filter((option) =>
     allowedCategories.includes(option.value)
   );
-  const createPostMutation = useCreateCommunityPost();
-  const [firstCategoryOption] = options;
+  const [category, setCategory] = useState<CommunityCategorySlug>(
+    initialValues?.category ??
+      defaultCategory ??
+      options[0]?.value ??
+      "question"
+  );
+  const [title, setTitle] = useState(initialValues?.title ?? "");
+  const [content, setContent] = useState(initialValues?.content ?? "");
+  const [images, setImages] = useState(initialValues?.images ?? []);
   const [isImageUploading, setIsImageUploading] = useState(false);
-  const form = useForm<CommunityPostFormInput, unknown, CommunityPostFormValues>({
-    resolver: zodResolver(communityPostFormSchema),
-    mode: "onChange",
-    defaultValues: {
-      category:
-        initialValues?.category ??
-        defaultCategory ??
-        firstCategoryOption?.value ??
-        "question",
-      title: initialValues?.title ?? "",
-      content: initialValues?.content ?? "",
-      images: initialValues?.images ?? [],
-    },
-  });
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
-  useEffect(() => {
-    form.reset({
-      category:
-        initialValues?.category ??
-        defaultCategory ??
-        firstCategoryOption?.value ??
-        "question",
-      title: initialValues?.title ?? "",
-      content: initialValues?.content ?? "",
-      images: initialValues?.images ?? [],
-    });
-  }, [defaultCategory, firstCategoryOption?.value, form, initialValues]);
+  const createPostMutation = useCreateCommunityPost();
 
-  const isSubmitting = form.formState.isSubmitting;
-  const isPending = createPostMutation.isPending;
-
-  const handleSubmit = form.handleSubmit(async (values) => {
+  async function handleSubmit(payload: CreatePostBody | UpdatePostBody) {
     if (onSubmit) {
-      const response = await onSubmit(values);
-      onSuccess?.("data" in response ? response.data : response);
+      try {
+        setIsSubmitting(true);
+        const response = await onSubmit(payload);
+        onSuccess?.("data" in response ? response.data : response);
+      } finally {
+        setIsSubmitting(false);
+      }
       return;
     }
 
-    createPostMutation.mutate(values, {
+    createPostMutation.mutate(payload as CreatePostBody, {
       onSuccess(response) {
-        form.reset({
-          category: defaultCategory ?? firstCategoryOption?.value ?? "question",
-          title: "",
-          content: "",
-          images: [],
-        });
+        setTitle("");
+        setContent("");
+        setImages([]);
+        setCategory(defaultCategory ?? options[0]?.value ?? "question");
         onSuccess?.(response.data);
       },
     });
-  });
+  }
 
   return (
     <form
       className={className ?? "grid gap-4"}
       onSubmit={(event) => {
         event.preventDefault();
-        void handleSubmit();
+        if (isImageUploading) {
+          return;
+        }
+
+        const payload: CreatePostBody | UpdatePostBody = {
+          category,
+          title: title.trim(),
+          content: content.trim(),
+          images: images.map((url) => url.trim()).filter(Boolean),
+        };
+
+        void handleSubmit(payload);
       }}
-      noValidate
     >
-      <Controller
-        control={form.control}
-        name="category"
-        render={({ field, fieldState }) => (
-          <SelectInput
-            label="카테고리"
-            value={field.value}
-            onValueChange={(nextValue) =>
-              field.onChange(nextValue as CommunityCategorySlug)
-            }
-            options={options}
-            errorText={fieldState.error?.message}
-          />
-        )}
+      <SelectInput
+        label="카테고리"
+        value={category}
+        onValueChange={(nextValue) =>
+          setCategory(nextValue as CommunityCategorySlug)
+        }
+        options={options}
       />
 
       <Input
         label="제목"
         placeholder="게시글 제목을 입력하세요"
+        value={title}
+        onChange={(event) => setTitle(event.target.value)}
         required
-        errorText={form.formState.errors.title?.message}
-        {...form.register("title")}
       />
 
       <Textarea
         label="본문"
         placeholder="내용을 입력하세요"
+        value={content}
+        onChange={(event) => setContent(event.target.value)}
         required
         fieldClassName="min-h-[220px]"
         helperText="게시글 본문은 최소 1자 이상 입력해야 합니다."
-        errorText={form.formState.errors.content?.message}
-        {...form.register("content")}
       />
 
-      <Controller
-        control={form.control}
-        name="images"
-        render={({ field, fieldState }) => (
-          <ImageInput
-            label="이미지 업로드"
-            value={field.value}
-            onValueChange={(urls) => field.onChange(urls ?? [])}
-            onUploadingChange={setIsImageUploading}
-            onUpload={async (file) => {
-              const uploaded = await uploadImage(file);
-              return uploaded.url;
-            }}
-            errorText={fieldState.error?.message}
-            disabled={isSubmitting || isPending}
-          />
-        )}
+      <ImageInput
+        label="이미지 업로드"
+        value={images}
+        onValueChange={(urls) => setImages(urls ?? [])}
+        onUploadingChange={setIsImageUploading}
+        onUpload={async (file) => {
+          const uploaded = await uploadImage(file);
+          return uploaded.url;
+        }}
+        disabled={isSubmitting || createPostMutation.isPending}
       />
 
       <div className="flex items-center justify-end gap-2">
@@ -180,8 +152,10 @@ export function CommunityPostForm({
         )}
         <Button
           type="submit"
-          loading={isSubmitting || isPending || isImageUploading}
-          disabled={!form.formState.isValid || isSubmitting || isPending || isImageUploading}
+          loading={
+            isImageUploading || isSubmitting || createPostMutation.isPending
+          }
+          disabled={isImageUploading}
         >
           {submitLabel}
         </Button>
