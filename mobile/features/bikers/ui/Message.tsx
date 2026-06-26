@@ -10,16 +10,9 @@ interface IMessageProps {
   isOwn: boolean;
   author: TChatParticipantProfile;
   createdAt: string;
-  unleadCount?: number;
 }
 
-export function Message({
-  message,
-  isOwn,
-  author,
-  createdAt,
-  unleadCount,
-}: IMessageProps) {
+export function Message({ message, isOwn, author, createdAt }: IMessageProps) {
   const timeLabel = dayjs(createdAt).format("A h:mm");
 
   return (
@@ -38,9 +31,6 @@ export function Message({
           />
         )}
         <View className={cn("flex flex-row items-end gap-2")}>
-          {isOwn && unleadCount && (
-            <AppText className="text-xs text-yellow-200">{unleadCount}</AppText>
-          )}
           <View
             className={cn(
               "w-fit rounded-[22px] px-4 py-3",

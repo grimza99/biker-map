@@ -30,7 +30,9 @@ export default function BikerChatScreen() {
   const [message, setMessage] = useState("");
   const { user } = useSession();
 
-  const roomQuery = useChatRoom(chatId ?? "");
+  const roomQuery = useChatRoom(chatId ?? "", {
+    refetchIntervalMs: 3000,
+  });
   const messagesQuery = useChatMessages(chatId ?? "");
   const markChatReadMutation = useMarkChatReadMutation(chatId ?? "");
   const sendMessageMutation = useSendChatMessageMutation(chatId ?? "");
@@ -117,12 +119,6 @@ export default function BikerChatScreen() {
   }
 
   function renderMessageItem(item: TChatMessage) {
-    const readCount =
-      counterpart &&
-      counterpart.lastReadAt &&
-      counterpart.lastReadAt > item.createdAt
-        ? 0
-        : 1;
     return (
       <Message
         key={item.id}
@@ -131,7 +127,6 @@ export default function BikerChatScreen() {
         isOwn={item.authorId === currentUserId}
         author={item.author}
         createdAt={item.createdAt}
-        unleadCount={readCount}
       />
     );
   }
