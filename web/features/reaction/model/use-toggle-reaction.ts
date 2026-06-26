@@ -6,8 +6,6 @@ import {
   type ApiResponse,
   type CreateReactionResponseData,
   type PostCommentsResponseData,
-  type PostDetailResponseData,
-  type PostsListResponseData,
   type ReactionSummary,
   type ReactionTargetType,
   type ReactionType,
@@ -22,16 +20,8 @@ type ToggleReactionParams = {
 };
 
 type ReactionMutationContext = {
-  previousPosts?: Array<[readonly unknown[], ApiResponse<PostsListResponseData> | undefined]>;
-  previousPostDetail?: ApiResponse<PostDetailResponseData> | undefined;
   previousComments?: ApiResponse<PostCommentsResponseData> | undefined;
 };
-
-function isPostsListResponse(
-  value: ApiResponse<PostsListResponseData> | ApiResponse<PostDetailResponseData> | undefined
-): value is ApiResponse<PostsListResponseData> {
-  return Array.isArray((value as ApiResponse<PostsListResponseData> | undefined)?.data?.items);
-}
 
 function isPostsListQueryKey(queryKey: readonly unknown[]) {
   return (
@@ -50,7 +40,9 @@ function getNextReactionSummary(
     return {
       ...current,
       likeCount:
-        reaction === "like" ? Math.max(current.likeCount - 1, 0) : current.likeCount,
+        reaction === "like"
+          ? Math.max(current.likeCount - 1, 0)
+          : current.likeCount,
       dislikeCount:
         reaction === "dislike"
           ? Math.max(current.dislikeCount - 1, 0)
@@ -106,80 +98,17 @@ export function useToggleReaction({
           predicate: (query) => isPostsListQueryKey(query.queryKey),
         }),
         postId
-          ? queryClient.cancelQueries({ queryKey: queryKeys.post(postId) })
-          : Promise.resolve(),
-        postId
           ? queryClient.cancelQueries({ queryKey: queryKeys.comments(postId) })
           : Promise.resolve(),
       ]);
 
-      const previousPosts = queryClient
-        .getQueriesData<
-          ApiResponse<PostsListResponseData> | ApiResponse<PostDetailResponseData>
-        >({
-          queryKey: queryKeys.postsRoot,
-        })
-        .filter(
-          (
-            entry
-          ): entry is [readonly unknown[], ApiResponse<PostsListResponseData> | undefined] =>
-            isPostsListQueryKey(entry[0]) && isPostsListResponse(entry[1])
-        );
-      const previousPostDetail = postId
-        ? queryClient.getQueryData<ApiResponse<PostDetailResponseData>>(
-            queryKeys.post(postId)
-          )
-        : undefined;
       const previousComments = postId
         ? queryClient.getQueryData<ApiResponse<PostCommentsResponseData>>(
             queryKeys.comments(postId)
           )
         : undefined;
 
-      queryClient.setQueriesData<ApiResponse<PostsListResponseData>>(
-        {
-          predicate: (query) => isPostsListQueryKey(query.queryKey),
-        },
-        (current) => {
-          if (!isPostsListResponse(current)) {
-            return current;
-          }
-
-          return {
-            ...current,
-            data: {
-              ...current.data,
-              items: current.data.items.map((item) =>
-                targetType === "post" && item.id === targetId
-                  ? {
-                      ...item,
-                      reactions: getNextReactionSummary(item.reactions, reaction),
-                    }
-                  : item
-              ),
-            },
-          };
-        }
-      );
-
       if (postId) {
-        queryClient.setQueryData<ApiResponse<PostDetailResponseData>>(
-          queryKeys.post(postId),
-          (current) => {
-            if (!current || targetType !== "post" || current.data.id !== targetId) {
-              return current;
-            }
-
-            return {
-              ...current,
-              data: {
-                ...current.data,
-                reactions: getNextReactionSummary(current.data.reactions, reaction),
-              },
-            };
-          }
-        );
-
         queryClient.setQueryData<ApiResponse<PostCommentsResponseData>>(
           queryKeys.comments(postId),
           (current) => {
@@ -195,7 +124,10 @@ export function useToggleReaction({
                   if (comment.id === targetId) {
                     return {
                       ...comment,
-                      reactions: getNextReactionSummary(comment.reactions, reaction),
+                      reactions: getNextReactionSummary(
+                        comment.reactions,
+                        reaction
+                      ),
                     };
                   }
 
@@ -205,7 +137,10 @@ export function useToggleReaction({
                       reply.id === targetId
                         ? {
                             ...reply,
-                            reactions: getNextReactionSummary(reply.reactions, reaction),
+                            reactions: getNextReactionSummary(
+                              reply.reactions,
+                              reaction
+                            ),
                           }
                         : reply
                     ),
@@ -218,18 +153,11 @@ export function useToggleReaction({
       }
 
       return {
-        previousPosts,
-        previousPostDetail,
         previousComments,
       };
     },
     onError: (_error, _reaction, context) => {
-      for (const [queryKey, data] of context?.previousPosts ?? []) {
-        queryClient.setQueryData(queryKey, data);
-      }
-
       if (postId) {
-        queryClient.setQueryData(queryKeys.post(postId), context?.previousPostDetail);
         queryClient.setQueryData(
           queryKeys.comments(postId),
           context?.previousComments
