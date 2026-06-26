@@ -8,16 +8,12 @@ import {
 } from "@/shared";
 import type { CommunityPost } from "@package-shared/types/community";
 
-type CommunityPostCardProps = {
+type PostCardProps = {
   post: CommunityPost;
   categoryLabel: string;
   className?: string;
 };
-export function CommunityPostCard({
-  post,
-  categoryLabel,
-  className,
-}: CommunityPostCardProps) {
+export function PostCard({ post, categoryLabel, className }: PostCardProps) {
   const chipColor =
     post.category === "notice"
       ? "bg-yellow-100/10 text-yellow-600 border-yellow-300/25"
