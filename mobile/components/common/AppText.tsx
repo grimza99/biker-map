@@ -21,10 +21,5 @@ export function AppText({
   tone = "default",
   ...props
 }: AppTextProps) {
-  return (
-    <Text
-      className={cn("whitespace-nowrap", toneClassName[tone], className)}
-      {...props}
-    />
-  );
+  return <Text className={cn(toneClassName[tone], className)} {...props} />;
 }
