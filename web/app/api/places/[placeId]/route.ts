@@ -44,7 +44,7 @@ export async function GET(
 const updatePlaceSchema = z
   .object({
     name: z.string().min(1).optional(),
-    category: z.enum(["gas", "repair", "cafe", "shop", "rest"]).optional(),
+    category: z.enum(["gas", "repair", "cafe", "shop"]).optional(),
     address: z.string().min(1).optional(),
     phone: z.string().optional(),
     description: z.string().optional(),

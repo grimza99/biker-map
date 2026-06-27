@@ -92,7 +92,7 @@ export async function GET(request: NextRequest) {
 
 const createPlaceSchema = z.object({
   name: z.string().min(1),
-  category: z.enum(["gas", "repair", "cafe", "shop", "rest"]),
+  category: z.enum(["gas", "repair", "cafe", "shop"]),
   address: z.string().min(1),
   phone: z.string().optional(),
   description: z.string().optional(),
