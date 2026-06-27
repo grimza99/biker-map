@@ -1,13 +1,13 @@
-import { View } from "react-native";
 import type {
   CommunityComment,
   CommunityReply,
   ReactionType,
 } from "@package-shared/index";
+import { View } from "react-native";
 
 import { AppText, DefaultCardContainer } from "@/components/common";
-import { CommentActionBar } from "./CommentActionBar";
 import { ProfileIdentity } from "@/shared";
+import { CommentActionBar } from "./CommentActionBar";
 
 type CommentCardProps = {
   item: CommunityComment | CommunityReply;
@@ -17,7 +17,6 @@ type CommentCardProps = {
   onReaction?: (reaction: ReactionType) => void;
 };
 
-//todo : author의 avatarUrl 넘겨주기
 export function CommentCard({
   item,
   disabled,
@@ -28,7 +27,10 @@ export function CommentCard({
   return (
     <DefaultCardContainer containerStyle="gap-2 rounded-3xl bg-panel-solid px-3 py-2">
       <View className="flex-1 gap-1 flex-row items-center justify-between">
-        <ProfileIdentity avatarUrl={null} name={item.author.name} />
+        <ProfileIdentity
+          avatarUrl={item.author.avatarUrl}
+          name={item.author.name}
+        />
         <AppText tone="muted" className="pl-10 text-xs font-semibold">
           {item.timeLabel}
         </AppText>

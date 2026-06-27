@@ -1,4 +1,5 @@
 import type {
+  Author,
   CreatePostCommentBody,
   PostCommentsResponseData,
 } from "@package-shared/types/community";
@@ -9,14 +10,14 @@ import {
   createSupabaseApiClient,
   created,
   internalServerError,
-  loadProfileNameMap,
+  loadProfileMap,
   loadReactionSummaryMap,
   ok,
   parseRequestBody,
   syncPostCommentCountBestEffort,
 } from "@shared/api";
-import { formatRelativeLabel } from "@shared/lib";
 import { getSupabaseAuthSession, requireApiSession } from "@shared/api/auth";
+import { formatRelativeLabel } from "@shared/lib";
 import { z } from "zod";
 
 const createCommentSchema = z.object({
@@ -35,7 +36,9 @@ export async function GET(
 
   const { data, error } = await supabase
     .from("comments")
-    .select("id, post_id, author_id, parent_comment_id, content, reply_count, created_at")
+    .select(
+      "id, post_id, author_id, parent_comment_id, content, reply_count, created_at"
+    )
     .eq("post_id", postId)
     .order("created_at", { ascending: true });
 
@@ -45,9 +48,9 @@ export async function GET(
 
   const rows = data ?? [];
   let reactionMap = new Map<string, ReactionSummary>();
-  let authorMap: Map<string, string>;
+  let authorMap: Map<string, Author>;
   try {
-    authorMap = await loadProfileNameMap(
+    authorMap = await loadProfileMap(
       supabase,
       rows.map((row) => String(row.author_id ?? ""))
     );
@@ -76,41 +79,48 @@ export async function GET(
   const parentComments = rows.filter((row) => !row.parent_comment_id);
   const replies = rows.filter((row) => Boolean(row.parent_comment_id));
 
-  const items: PostCommentsResponseData["items"] = parentComments.map((row) => ({
-    id: String(row.id),
-    postId: String(row.post_id),
-    author: {
-      id: String(row.author_id),
-      name: authorMap.get(String(row.author_id ?? "")) ?? "익명",
-    },
-    content: String(row.content ?? ""),
-    timeLabel: formatRelativeLabel(String(row.created_at ?? new Date().toISOString())),
-    replyCount: Number(row.reply_count ?? 0),
-    reactions: reactionMap.get(String(row.id ?? "")) ?? {
-      likeCount: 0,
-      dislikeCount: 0,
-      myReaction: null,
-    },
-    replies: replies
-      .filter((reply) => String(reply.parent_comment_id) === String(row.id))
-      .map((reply) => ({
-        id: String(reply.id),
-        parentCommentId: String(reply.parent_comment_id),
-        author: {
-          id: String(reply.author_id),
-          name: authorMap.get(String(reply.author_id ?? "")) ?? "익명",
-        },
-        content: String(reply.content ?? ""),
-        timeLabel: formatRelativeLabel(
-          String(reply.created_at ?? new Date().toISOString())
-        ),
-        reactions: reactionMap.get(String(reply.id ?? "")) ?? {
-          likeCount: 0,
-          dislikeCount: 0,
-          myReaction: null,
-        },
-      })),
-  }));
+  const items: PostCommentsResponseData["items"] = parentComments.map(
+    (row) => ({
+      id: String(row.id),
+      postId: String(row.post_id),
+      author: {
+        id: String(row.author_id),
+        name: authorMap.get(String(row.author_id ?? ""))?.name ?? "익명",
+        avatarUrl: authorMap.get(String(row.author_id ?? ""))?.avatarUrl ?? null,
+      },
+      content: String(row.content ?? ""),
+      timeLabel: formatRelativeLabel(
+        String(row.created_at ?? new Date().toISOString())
+      ),
+      replyCount: Number(row.reply_count ?? 0),
+      reactions: reactionMap.get(String(row.id ?? "")) ?? {
+        likeCount: 0,
+        dislikeCount: 0,
+        myReaction: null,
+      },
+      replies: replies
+        .filter((reply) => String(reply.parent_comment_id) === String(row.id))
+        .map((reply) => ({
+          id: String(reply.id),
+          parentCommentId: String(reply.parent_comment_id),
+          author: {
+            id: String(reply.author_id),
+            name: authorMap.get(String(reply.author_id ?? ""))?.name ?? "익명",
+            avatarUrl:
+              authorMap.get(String(reply.author_id ?? ""))?.avatarUrl ?? null,
+          },
+          content: String(reply.content ?? ""),
+          timeLabel: formatRelativeLabel(
+            String(reply.created_at ?? new Date().toISOString())
+          ),
+          reactions: reactionMap.get(String(reply.id ?? "")) ?? {
+            likeCount: 0,
+            dislikeCount: 0,
+            myReaction: null,
+          },
+        })),
+    })
+  );
 
   return ok({ items });
 }
@@ -177,11 +187,16 @@ export async function POST(
         sourceType: "post",
         sourcePostId: postId,
         title: "내 글에 새 댓글이 달렸습니다",
-        message: `${session.name}님이 '${String(post.title ?? "게시글")}' 글에 댓글을 남겼습니다.`,
+        message: `${session.name}님이 '${String(
+          post.title ?? "게시글"
+        )}' 글에 댓글을 남겼습니다.`,
         url: `/posts/${postId}`,
       });
     } catch (notificationError) {
-      console.error("Failed to create post comment notification", notificationError);
+      console.error(
+        "Failed to create post comment notification",
+        notificationError
+      );
     }
   }
 

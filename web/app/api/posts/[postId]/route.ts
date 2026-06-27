@@ -1,4 +1,5 @@
 import type {
+  Author,
   CommunityCategorySlug,
   UpdatePostBody,
 } from "@package-shared/types/community";
@@ -8,7 +9,7 @@ import {
   forbidden,
   internalServerError,
   loadFavoriteState,
-  loadProfileNameMap,
+  loadProfileMap,
   mapCommunityPostDetail,
   notFound,
   ok,
@@ -62,9 +63,9 @@ export async function GET(
     return notFound("게시글을 찾을 수 없습니다.");
   }
 
-  let authorMap: Map<string, string>;
+  let authorMap: Map<string, Author>;
   try {
-    authorMap = await loadProfileNameMap(supabase, [
+    authorMap = await loadProfileMap(supabase, [
       String(currentPost.author_id ?? ""),
     ]);
   } catch (profileError) {
@@ -97,7 +98,8 @@ export async function GET(
     ? mapCommunityPostDetail({
         ...currentPost,
         author_name:
-          authorMap.get(String(currentPost.author_id ?? "")) ?? "익명",
+          authorMap.get(String(currentPost.author_id ?? ""))?.name ?? "익명",
+        avatarUrl: authorMap.get(String(currentPost.author_id ?? ""))?.avatarUrl,
         favorite_id: favoriteState.favoriteId,
         favorited: favoriteState.favorited,
       })

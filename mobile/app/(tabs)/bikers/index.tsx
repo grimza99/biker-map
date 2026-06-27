@@ -1,9 +1,11 @@
+import { Href, useRouter } from "expo-router";
+import { useEffect, useState } from "react";
 import { Alert, Linking, StyleSheet, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
-import { useEffect, useState } from "react";
-
-import { AppText, Button } from "@/components/common";
+import { Button } from "@/components/common";
+import { AppScreen } from "@/components/shell";
+import { BikersBottomSheet } from "@/entities/bikers/ui/BikersBottomSheet";
 import { AuthVerifyDialog } from "@/features/auth/ui";
 import {
   useEnsureDirectChatRoomMutation,
@@ -11,11 +13,9 @@ import {
 } from "@/features/bikers";
 import { useCurrentLocation } from "@/features/location/hooks";
 import { MapCanvasWebView } from "@/features/map/ui/MapCanvasWebView";
-import { MOBILE_PATHS, Toggle } from "@/shared";
-import { Href, useRouter } from "expo-router";
-import { BikersBottomSheet } from "@/entities/bikers/ui/BikersBottomSheet";
 import { useSession } from "@/features/session/model";
-import { AppScreen } from "@/components/shell";
+import { AppText, Indicator, MOBILE_PATHS, Toggle } from "@/shared";
+import { bikerMapTheme, proficiencyMap } from "@package-shared/index";
 
 export default function BikersScreen() {
   const { status, user } = useSession();
@@ -216,6 +216,7 @@ export default function BikersScreen() {
     );
   }
 
+  const isReLoad = isLoading || isSyncing || isRealtimeRetrying;
   return (
     <View className="bg-bg flex-1">
       <MapCanvasWebView
@@ -231,82 +232,34 @@ export default function BikersScreen() {
         edges={["top"]}
         style={styles.overlay}
       >
-        <Toggle
-          value={isSharingEnabled}
-          onValueChange={(nextValue) => {
-            void toggleSharing(nextValue);
-          }}
-          label={isSharingEnabled ? "위치 공유중" : "위치 공유 끔"}
-          size="lg"
-        />
-        <View className="gap-3 rounded-[28px] border border-border bg-[rgba(17,19,21,0.9)] px-4.5 py-4">
-          {currentLocation ? (
-            <AppText className="text-xs font-bold text-text">
-              LAT {currentLocation.lat.toFixed(5)} / LNG
-              {currentLocation.lng.toFixed(5)}
-            </AppText>
-          ) : null}
-
-          {isLoading ? (
-            <AppText className="text-xs font-bold text-muted">
-              현재 위치를 확인하는 중입니다
-            </AppText>
-          ) : null}
-
-          {isSyncing ? (
-            <AppText className="text-xs font-bold text-muted">
-              주변 바이커 정보를 동기화하는 중입니다
-            </AppText>
-          ) : null}
-
-          {errorMessage ? (
-            <View className="gap-2">
-              <AppText className="text-xs font-bold text-warning">
-                {errorMessage}
-              </AppText>
-            </View>
-          ) : null}
-
-          {liveBikersErrorMessage ? (
-            <View className="gap-2">
-              <AppText className="text-xs font-bold text-warning">
-                {liveBikersErrorMessage}
-              </AppText>
-            </View>
-          ) : null}
-
-          {isRealtimeRetrying ? (
-            <AppText className="text-xs font-bold text-warning">
-              실시간 연결을 다시 시도하고 있습니다.
-            </AppText>
-          ) : null}
-
-          {realtimeErrorMessage ? (
-            <View className="gap-2">
-              <AppText className="text-xs font-bold text-warning">
-                {realtimeErrorMessage}
-              </AppText>
-
-              {canRetryRealtime ? (
-                <Button
-                  size="sm"
-                  variant="secondary"
-                  onPress={() => {
-                    retryRealtime();
-                  }}
-                  style={styles.retryButton}
-                  textStyle={styles.retryButtonLabel}
-                >
-                  다시 연결
-                </Button>
-              ) : null}
-            </View>
-          ) : null}
-
-          <AppText className="text-xs font-bold text-text">
-            주변 바이커 {nearbyBikers.length}명
-          </AppText>
+        <View className="flex flex-row gap-2">
+          {isReLoad && <Indicator color={bikerMapTheme.colors.active} />}
+          <Toggle
+            value={isSharingEnabled}
+            onValueChange={(nextValue) => {
+              void toggleSharing(nextValue);
+            }}
+            label={isSharingEnabled ? "위치 공유중" : "위치 공유 끔"}
+            size="lg"
+          />
         </View>
+        {realtimeErrorMessage ? (
+          <View className="gap-2">
+            {canRetryRealtime && (
+              <Button
+                size="sm"
+                variant="secondary"
+                onPress={() => {
+                  retryRealtime();
+                }}
+                style={styles.retryButton}
+                textStyle={styles.retryButtonLabel}
+              >
+                다시 연결
+              </Button>
+            )}
+          </View>
+        ) : null}
       </SafeAreaView>
       <BikersBottomSheet
         bikers={nearbyBikers.map((biker) => ({
@@ -320,7 +273,9 @@ export default function BikersScreen() {
             biker.location.lat,
             biker.location.lng
           ),
-          proficiency: "미정",
+          proficiency: biker.proficiency
+            ? proficiencyMap[biker.proficiency]
+            : "숙련도 정보 없음",
         }))}
         onPressChat={(biker) => {
           void handlePressChat(biker.userId);
@@ -380,9 +335,8 @@ function degreesToRadians(value: number) {
 const styles = StyleSheet.create({
   overlay: {
     position: "absolute",
-    top: 0,
-    right: 0,
-    left: 0,
+    bottom: 50,
+    right: 10,
     zIndex: 10,
   },
   retryButton: {

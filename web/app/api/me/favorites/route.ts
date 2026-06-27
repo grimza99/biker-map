@@ -1,17 +1,27 @@
-import type { CommunityPost, PostsListResponseData } from "@package-shared/types/community";
+import type {
+  Author,
+  CommunityPost,
+  PostsListResponseData,
+} from "@package-shared/types/community";
 import type { FavoriteTargetType } from "@package-shared/types/favorite";
-import type { RouteListItem, RoutesListResponseData } from "@package-shared/types/route";
+import type {
+  RouteListItem,
+  RoutesListResponseData,
+} from "@package-shared/types/route";
 import {
   badRequest,
   createSupabaseApiClient,
   getNumberParam,
   getStringParam,
   internalServerError,
-  loadProfileNameMap,
+  loadProfileMap,
   ok,
 } from "@shared/api";
 import { requireApiSession } from "@shared/api/auth";
-import { mapCommunityPostItem, mapRouteListItem } from "@shared/api/supabase-mappers";
+import {
+  mapCommunityPostItem,
+  mapRouteListItem,
+} from "@shared/api/supabase-mappers";
 
 function isFavoriteTargetType(
   value: string | undefined
@@ -40,7 +50,11 @@ export async function GET(request: Request) {
   const supabase = createSupabaseApiClient(request);
   const from = (page - 1) * pageSize;
   const to = from + pageSize - 1;
-  const { data: favoriteRows, count, error: favoriteError } = await supabase
+  const {
+    data: favoriteRows,
+    count,
+    error: favoriteError,
+  } = await supabase
     .from("favorites")
     .select("target_id, created_at", { count: "exact" })
     .eq("user_id", session.userId)
@@ -73,9 +87,9 @@ export async function GET(request: Request) {
       return internalServerError(error.message);
     }
 
-    let authorMap: Map<string, string>;
+    let authorMap: Map<string, Author>;
     try {
-      authorMap = await loadProfileNameMap(
+      authorMap = await loadProfileMap(
         supabase,
         (data ?? []).map((row) => String(row.author_id ?? ""))
       );
@@ -92,7 +106,7 @@ export async function GET(request: Request) {
         .map((row) =>
           mapCommunityPostItem({
             ...row,
-            author_name: authorMap.get(String(row.author_id ?? "")) ?? "익명",
+            author_name: authorMap.get(String(row.author_id ?? ""))?.name ?? "익명",
           })
         )
         .filter((item): item is CommunityPost => Boolean(item))

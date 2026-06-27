@@ -7,7 +7,7 @@ export type CommunityPost = {
   category: CommunityCategorySlug;
   title: string;
   excerpt: string;
-  author: string;
+  author: Author;
   timeLabel: string;
   commentCount: number;
   viewCount: number;
@@ -24,17 +24,18 @@ export type CommunityPostsQuery = {
   sort?: "latest" | "views";
 };
 
-export type CommunityPostAuthor = {
+export interface Author {
   id?: string;
   name: string;
-};
+  avatarUrl: string | null;
+}
 
 export type CommunityPostDetail = {
   id: string;
   category: CommunityCategorySlug;
   title: string;
   content: string;
-  author: CommunityPostAuthor;
+  author: Author;
   timeLabel: string;
   commentCount: number;
   viewCount: number;
@@ -47,7 +48,7 @@ export type CommunityPostDetail = {
 export type CommunityReply = {
   id: string;
   parentCommentId: string;
-  author: CommunityPostAuthor;
+  author: Author;
   content: string;
   timeLabel: string;
   reactions: ReactionSummary;
@@ -56,7 +57,7 @@ export type CommunityReply = {
 export type CommunityComment = {
   id: string;
   postId: string;
-  author: CommunityPostAuthor;
+  author: Author;
   content: string;
   timeLabel: string;
   replyCount: number;
