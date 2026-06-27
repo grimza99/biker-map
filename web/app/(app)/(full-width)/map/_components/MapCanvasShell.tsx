@@ -1,7 +1,7 @@
 "use client";
 
 import { ArrowLeftToLine } from "lucide-react";
-import { useRouter } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import { startTransition, useCallback, useMemo } from "react";
 
 import {
@@ -21,6 +21,7 @@ const EMPTY_ROUTES: RouteMapPathItem[] = [];
 
 export function MapCanvasShell() {
   const router = useRouter();
+  const pathname = usePathname();
   const { category, setCategory, placesQuery, routeMapPathsQuery } =
     useMapCanvasData();
   const places = placesQuery.data?.data.items ?? EMPTY_PLACES;
@@ -45,6 +46,21 @@ export function MapCanvasShell() {
     },
     [router]
   );
+  const handleOpenListPanel = useCallback(() => {
+    const searchParams = new URLSearchParams();
+    const isRouteContext =
+      category === "route" || pathname.startsWith(PATHS.map.detailRoute(""));
+
+    if (isRouteContext) {
+      searchParams.set("category", "route");
+    }
+
+    const targetPath = searchParams.toString()
+      ? `${PATHS.map.list}?${searchParams.toString()}`
+      : PATHS.map.list;
+
+    router.push(targetPath);
+  }, [category, pathname, router]);
 
   return (
     <div className="relative min-h-[calc(100vh-11rem)] h-full overflow-hidden">
@@ -85,7 +101,7 @@ export function MapCanvasShell() {
               variant="primary"
               size="icon"
               aria-label="목록 패널 열기"
-              onClick={() => router.push(PATHS.map.list)}
+              onClick={handleOpenListPanel}
             >
               <ArrowLeftToLine className="m-0 h-4 w-4" />
             </Button>
