@@ -1,6 +1,6 @@
 import { CommunityPost } from "@package-shared/types/community";
 import { communityCategories } from "../community-categories";
-import { CommunityPostCard } from "./post-card";
+import { PostCard } from "./PostCard";
 
 export function getCommunityCategory(slug: string) {
   return communityCategories.find((category) => category.slug === slug);
@@ -13,7 +13,7 @@ export default function PostList({ posts }: { posts: CommunityPost[] }) {
         const categoryMeta = getCommunityCategory(post.category);
 
         return (
-          <CommunityPostCard
+          <PostCard
             key={post.id}
             post={post}
             categoryLabel={categoryMeta?.label ?? post.category}
