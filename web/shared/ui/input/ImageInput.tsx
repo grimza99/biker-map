@@ -44,6 +44,7 @@ export type ImageInputProps = FieldBaseProps & {
   disabled?: boolean;
   previewAlt?: string;
   maxImages?: number;
+  previewVariant?: "default" | "avatar";
 };
 
 export function ImageInput({
@@ -63,6 +64,7 @@ export function ImageInput({
   disabled,
   previewAlt = "선택한 이미지 미리보기",
   maxImages = 5,
+  previewVariant = "default",
 }: ImageInputProps) {
   const fallbackId = useId();
   const resolvedId = id ?? fallbackId;
@@ -72,10 +74,10 @@ export function ImageInput({
   const [uncontrolledValue, setUncontrolledValue] = useState<string[] | null>(
     normalizeImageUrls(defaultValue)
   );
-  const [localPreviewUrls, setLocalPreviewUrls] = useState<ImageValueItem[]>([]);
-  const [selectedFiles, setSelectedFiles] = useState<
-    SelectedFileMeta[]
-  >([]);
+  const [localPreviewUrls, setLocalPreviewUrls] = useState<ImageValueItem[]>(
+    []
+  );
+  const [selectedFiles, setSelectedFiles] = useState<SelectedFileMeta[]>([]);
   const [isUploading, setIsUploading] = useState(false);
   const [uploadError, setUploadError] = useState<string | null>(null);
 
@@ -114,7 +116,9 @@ export function ImageInput({
     const nextValues = currentValueItems
       .filter((item) => item.id !== targetId)
       .map((item) => item.value);
-    const removedPreview = localPreviewUrls.find((item) => item.id === targetId);
+    const removedPreview = localPreviewUrls.find(
+      (item) => item.id === targetId
+    );
     const nextLocalPreviewUrls = localPreviewUrls.filter(
       (item) => item.id !== targetId
     );
@@ -262,43 +266,62 @@ export function ImageInput({
 
       {previewUrls.length > 0 ? (
         <div className="grid gap-3 rounded-[22px] border border-border bg-panel-solid/72 p-4">
-          <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-3">
+          <div
+            className={cn(
+              "grid gap-3",
+              previewVariant === "avatar"
+                ? "grid-cols-1"
+                : "sm:grid-cols-2 xl:grid-cols-3"
+            )}
+          >
             {previewUrls.map((url, index) => {
               const fileMeta = selectedFiles.find((item) => item.id === url.id);
-              const isCover = index === 0;
 
               return (
                 <div
                   key={url.id}
-                  className="grid gap-3 rounded-[18px] border border-border bg-bg/40 p-3"
+                  className={cn(
+                    "grid gap-3 rounded-[18px] border border-border bg-bg/40 p-3",
+                    previewVariant === "avatar" &&
+                      "max-w-56 justify-items-center"
+                  )}
                 >
-                  <div className="relative aspect-4/3 overflow-hidden rounded-[14px] border border-border bg-bg/50">
+                  <div
+                    className={cn(
+                      "relative overflow-hidden border border-border bg-bg/50",
+                      previewVariant === "avatar"
+                        ? "h-40 w-40"
+                        : "aspect-4/3 rounded-[14px]"
+                    )}
+                  >
                     <Image
                       src={url.value}
                       alt={`${previewAlt} ${index + 1}`}
                       fill
-                      sizes="(max-width: 768px) 100vw, 320px"
+                      sizes={
+                        previewVariant === "avatar"
+                          ? "112px"
+                          : "(max-width: 768px) 100vw, 320px"
+                      }
                       className="object-cover"
                       unoptimized
                     />
-                    {isCover && (
-                      <span className="absolute left-3 top-3 rounded-full bg-accent px-2.5 py-1 text-[11px] font-semibold text-white">
-                        대표 이미지
-                      </span>
-                    )}
                   </div>
-                  <div className="flex items-center justify-between gap-3">
+                  <div
+                    className={cn(
+                      "flex items-center justify-between gap-3",
+                      previewVariant === "avatar" && "w-full"
+                    )}
+                  >
                     <div className="min-w-0">
                       <p className="m-0 truncate text-sm font-semibold text-text">
-                        {fileMeta?.name ?? `업로드된 이미지 ${index + 1}`}
+                        {fileMeta?.name ??
+                          (previewVariant === "default" &&
+                            `업로드된 이미지 ${index + 1}`)}
                       </p>
-                      {fileMeta?.size !== undefined ? (
+                      {fileMeta?.size !== undefined && (
                         <p className="m-0 text-xs text-muted">
                           {(fileMeta.size / 1024 / 1024).toFixed(2)} MB
-                        </p>
-                      ) : (
-                        <p className="m-0 truncate text-xs text-muted">
-                          {url.value}
                         </p>
                       )}
                     </div>
