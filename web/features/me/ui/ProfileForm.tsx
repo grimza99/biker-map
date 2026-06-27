@@ -110,6 +110,7 @@ export function ProfileForm() {
         label="프로필 이미지"
         value={avatarUrl}
         maxImages={1}
+        previewVariant="avatar"
         onValueChange={(urls) => setAvatarUrl(urls?.[0] ?? null)}
         onUpload={async (file) => {
           const uploaded = await uploadImage(file);
