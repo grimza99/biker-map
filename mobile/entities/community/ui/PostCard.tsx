@@ -1,6 +1,6 @@
+import { type CommunityPost, CHIP_COLOR } from "@package-shared/index";
 import { type Href, useRouter } from "expo-router";
 import { Pressable, View } from "react-native";
-import { type CommunityPost, CHIP_COLOR } from "@package-shared/index";
 
 import {
   AppText,
@@ -54,7 +54,7 @@ export function PostCard({ post, categoryLabel }: PostCardProps) {
               tone="subtle"
               className="flex-1 truncate text-sm font-medium"
             >
-              {post.author}
+              {post.author.name}
             </AppText>
             <MetaCounts
               commentCount={post.commentCount}

@@ -2,13 +2,10 @@ import type { NextRequest } from "next/server";
 import { z } from "zod";
 
 import {
-  TMyBikerLocationResponseData,
-  TBikerPresenceItem,
-  TUpdateMyBikerLocationBody,
-  TUpdateMyBikerLocationResponseData,
-  DEFAULT_BIKER_REALTIME_CHANNEL,
   BIKER_LOCATION_SHARING_STATUSES,
   BIKER_PRESENCE_STALE_TIMEOUT_SECONDS,
+  DEFAULT_BIKER_REALTIME_CHANNEL,
+  TBikerPresenceItem,
   TBikerPresenceSyncEvent,
   Tproficiency,
 } from "@package-shared/index";

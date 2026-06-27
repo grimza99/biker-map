@@ -7,7 +7,7 @@ export type CommunityPost = {
   category: CommunityCategorySlug;
   title: string;
   excerpt: string;
-  author: string;
+  author: Author;
   timeLabel: string;
   commentCount: number;
   viewCount: number;
