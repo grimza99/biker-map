@@ -26,9 +26,27 @@ const MapCanvasDataContext = createContext<MapCanvasDataContextValue | null>(
 export function MapCanvasDataProvider({ children }: { children: ReactNode }) {
   const searchParams = useSearchParams();
   const searchParamCategory = searchParams.get("category");
-  const restoredCategory: MapCategoryFilter =
+  const initialCategory: MapCategoryFilter =
     searchParamCategory === "route" ? "route" : "all";
-  const [category, setCategory] = useState<MapCategoryFilter>(restoredCategory);
+
+  return (
+    <MapCanvasDataProviderContent
+      key={initialCategory}
+      initialCategory={initialCategory}
+    >
+      {children}
+    </MapCanvasDataProviderContent>
+  );
+}
+
+function MapCanvasDataProviderContent({
+  children,
+  initialCategory,
+}: {
+  children: ReactNode;
+  initialCategory: MapCategoryFilter;
+}) {
+  const [category, setCategory] = useState<MapCategoryFilter>(initialCategory);
   const placeCategory = category === "route" ? undefined : category;
 
   const filters = useMemo(
