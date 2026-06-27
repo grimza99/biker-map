@@ -1,4 +1,5 @@
 import type {
+  Author,
   CommunityCategorySlug,
   CommunityPostsQuery,
   CreatePostBody,
@@ -11,7 +12,7 @@ import {
   getNumberParam,
   getStringParam,
   internalServerError,
-  loadProfileNameMap,
+  loadProfileMap,
   mapCommunityPostItem,
   ok,
   parseRequestBody,
@@ -88,9 +89,9 @@ export async function GET(request: NextRequest) {
     return internalServerError(error.message);
   }
 
-  let authorMap: Map<string, string>;
+  let authorMap: Map<string, Author>;
   try {
-    authorMap = await loadProfileNameMap(
+    authorMap = await loadProfileMap(
       supabase,
       (data ?? []).map((row) => String(row.author_id ?? ""))
     );
@@ -101,12 +102,11 @@ export async function GET(request: NextRequest) {
         : "게시글 작성자 정보를 불러오지 못했습니다."
     );
   }
-
   const items = (data ?? [])
     .map((row) =>
       mapCommunityPostItem({
         ...row,
-        author_name: authorMap.get(String(row.author_id ?? "")) ?? "익명",
+        author_name: authorMap.get(String(row.author_id ?? ""))?.name ?? "익명",
       })
     )
     .filter((item): item is NonNullable<typeof item> => Boolean(item));
