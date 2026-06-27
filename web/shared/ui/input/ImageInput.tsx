@@ -292,7 +292,7 @@ export function ImageInput({
                       "relative overflow-hidden border border-border bg-bg/50",
                       previewVariant === "avatar"
                         ? "h-40 w-40"
-                        : "aspect-auto rounded-[14px]"
+                        : "aspect-4/3 rounded-[14px]"
                     )}
                   >
                     <Image
