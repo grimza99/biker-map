@@ -29,7 +29,9 @@ export function MapListPanelClient() {
   const searchPlacesQuery = usePlaces(filters, {
     enabled: trimmedSearch.length > 0,
   });
-  const routesQuery = useRoutes(filters);
+  const routesQuery = useRoutes(filters, {
+    enabled: isRoutePanel,
+  });
   const activePlacesQuery =
     trimmedSearch.length > 0 ? searchPlacesQuery : mapPlacesQuery;
 

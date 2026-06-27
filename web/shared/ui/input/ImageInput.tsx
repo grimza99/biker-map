@@ -276,7 +276,6 @@ export function ImageInput({
           >
             {previewUrls.map((url, index) => {
               const fileMeta = selectedFiles.find((item) => item.id === url.id);
-              const isCover = index === 0;
 
               return (
                 <div

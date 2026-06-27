@@ -2,6 +2,7 @@
 
 import type { Dispatch, ReactNode, SetStateAction } from "react";
 import { createContext, useContext, useMemo, useState } from "react";
+import { useSearchParams } from "next/navigation";
 
 import { MapCategoryFilter } from "@biker-map/package-shared";
 
@@ -23,7 +24,11 @@ const MapCanvasDataContext = createContext<MapCanvasDataContextValue | null>(
 );
 
 export function MapCanvasDataProvider({ children }: { children: ReactNode }) {
-  const [category, setCategory] = useState<MapCategoryFilter>("all");
+  const searchParams = useSearchParams();
+  const searchParamCategory = searchParams.get("category");
+  const restoredCategory: MapCategoryFilter =
+    searchParamCategory === "route" ? "route" : "all";
+  const [category, setCategory] = useState<MapCategoryFilter>(restoredCategory);
   const placeCategory = category === "route" ? undefined : category;
 
   const filters = useMemo(
