@@ -36,7 +36,7 @@ export function PostCard({ post, categoryLabel, className }: PostCardProps) {
               />
             )}
             <h2 className="m-0 w-full max-w-100 text-xl font-semibold tracking-(--tracking-heading-md) text-text truncate">
-              {post.title}dasdfdsfdsafdsfdfadsfdafdfdfdfdfdfadsfdasfadsfdafdasf
+              {post.title}
             </h2>
           </div>
           <span className="text-xs text-muted">
