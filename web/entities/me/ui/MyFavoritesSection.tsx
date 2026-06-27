@@ -1,9 +1,10 @@
 "use client";
+import { useState } from "react";
 
-import { CommunityPostCard } from "@/entities/community";
+import { FavoriteTargetType, categoryLabelMap } from "@package-shared/index";
+
+import { PostCard } from "@/entities/community";
 import { RouteCard } from "@/entities/route/ui/RouteCard";
-import { FavoriteTargetType } from "@package-shared/index";
-import { categoryLabelMap } from "@package-shared/model";
 import {
   EmptyState,
   ErrorState,
@@ -13,7 +14,6 @@ import {
   TabsContent,
   TabsList,
 } from "@shared/ui";
-import { useState } from "react";
 import { useMyFavorites } from "../model";
 
 const FAVORITE_PAGE_SIZE = 4;
@@ -71,7 +71,7 @@ export function MyFavoritesSection() {
           ) : posts.length ? (
             <div className="grid gap-4">
               {posts.map((post) => (
-                <CommunityPostCard
+                <PostCard
                   key={post.id}
                   post={post}
                   categoryLabel={categoryLabelMap[post.category]}
