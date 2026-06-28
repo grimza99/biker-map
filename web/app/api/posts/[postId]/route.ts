@@ -2,7 +2,6 @@ import type {
   CommunityCategorySlug,
   UpdatePostBody,
 } from "@package-shared/types/community";
-import type { ReactionSummary } from "@package-shared/types/reaction";
 import {
   badRequest,
   createSupabaseApiClient,
@@ -10,7 +9,6 @@ import {
   internalServerError,
   loadFavoriteState,
   loadProfileNameMap,
-  loadSingleReactionSummary,
   mapCommunityPostDetail,
   notFound,
   ok,
@@ -77,21 +75,6 @@ export async function GET(
     );
   }
 
-  let reactionSummary: ReactionSummary;
-  try {
-    reactionSummary = await loadSingleReactionSummary(
-      "post",
-      postId,
-      viewerUserId
-    );
-  } catch (reactionError) {
-    return internalServerError(
-      reactionError instanceof Error
-        ? reactionError.message
-        : "게시글 반응 정보를 불러오지 못했습니다."
-    );
-  }
-
   let favoriteState: { favorited: boolean; favoriteId?: string } = {
     favorited: false,
   };
@@ -115,7 +98,6 @@ export async function GET(
         ...currentPost,
         author_name:
           authorMap.get(String(currentPost.author_id ?? "")) ?? "익명",
-        reactions: reactionSummary,
         favorite_id: favoriteState.favoriteId,
         favorited: favoriteState.favorited,
       })

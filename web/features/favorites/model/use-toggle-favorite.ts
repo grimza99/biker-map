@@ -145,10 +145,6 @@ export function useToggleFavorite({
             | FavoriteDetailData
             | undefined
       );
-      showToast({
-        title:
-          targetType === "post" ? TOAST_MESSAGE.POST.F : TOAST_MESSAGE.ROUTE.F,
-      });
     },
     onSettled: async () => {
       await Promise.all([
