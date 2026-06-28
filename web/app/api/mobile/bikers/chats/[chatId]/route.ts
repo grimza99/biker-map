@@ -9,7 +9,7 @@ import {
   notFound,
   ok,
 } from "@shared/api";
-import { requireApiSession } from "@shared/api/auth";
+import { requireVerifiedApiSession } from "@shared/api/auth";
 import { loadChatRoomOrNull } from "@shared/api/chat";
 
 const chatIdSchema = z.string().uuid();
@@ -24,7 +24,7 @@ export async function GET(
     return badRequest("채팅방 식별자가 올바르지 않습니다.");
   }
 
-  const session = await requireApiSession(request);
+  const session = await requireVerifiedApiSession(request);
   if (session instanceof Response) {
     return session;
   }

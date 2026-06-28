@@ -20,7 +20,7 @@ import {
   ok,
   parseRequestBody,
 } from "@shared/api";
-import { requireApiSession } from "@shared/api/auth";
+import { requireVerifiedApiSession } from "@shared/api/auth";
 import {
   broadcastChatMessage,
   findExistingChatMessageByClientMessageId,
@@ -49,7 +49,7 @@ export async function GET(
     return badRequest("채팅방 식별자가 올바르지 않습니다.");
   }
 
-  const session = await requireApiSession(request);
+  const session = await requireVerifiedApiSession(request);
   if (session instanceof Response) {
     return session;
   }
@@ -109,7 +109,7 @@ export async function POST(
     return badRequest("채팅방 식별자가 올바르지 않습니다.");
   }
 
-  const session = await requireApiSession(request);
+  const session = await requireVerifiedApiSession(request);
   if (session instanceof Response) {
     return session;
   }
