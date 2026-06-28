@@ -19,7 +19,7 @@ import {
   ok,
   parseRequestBody,
 } from "@shared/api";
-import { requireApiSession } from "@shared/api/auth";
+import { requireVerifiedApiSession } from "@shared/api/auth";
 import { createSupabaseServiceClient } from "@shared/lib/supabase";
 
 const updateMyBikerLocationSchema = z.object({
@@ -69,7 +69,7 @@ const MAX_BIKER_OBSERVED_AT_FUTURE_SKEW_MS = 5000;
 /*------------------------------ get (my active biker presence) ---------------------------------------*/
 
 export async function GET(request: NextRequest) {
-  const session = await requireApiSession(request);
+  const session = await requireVerifiedApiSession(request);
   if (session instanceof Response) {
     return session;
   }
@@ -108,7 +108,7 @@ export async function GET(request: NextRequest) {
 /*------------------------------ post (upsert my active biker presence) ---------------------------------------*/
 
 export async function POST(request: NextRequest) {
-  const session = await requireApiSession(request);
+  const session = await requireVerifiedApiSession(request);
   if (session instanceof Response) {
     return session;
   }
