@@ -7,7 +7,7 @@ import {
   createSupabaseAuthClient,
   mapSupabaseSession,
 } from "@shared/lib/supabase";
-import { unauthorized } from "./response";
+import { forbidden, unauthorized } from "./response";
 import { getProfileStatus } from "./supabase-profiles";
 
 /**
@@ -98,6 +98,19 @@ export async function requireApiSession(request: Request) {
   const session = await getApiSession(request);
   if (!session) {
     return unauthorized();
+  }
+
+  return session;
+}
+
+export async function requireVerifiedApiSession(request: Request) {
+  const session = await requireApiSession(request);
+  if (session instanceof Response) {
+    return session;
+  }
+
+  if (!session.isVerified) {
+    return forbidden("본인인증이 완료된 계정만 라이브 바이커를 사용할 수 있습니다.");
   }
 
   return session;

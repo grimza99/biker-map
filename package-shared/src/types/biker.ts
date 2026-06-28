@@ -1,10 +1,4 @@
-export type BikerPreview = {
-  nickname: string;
-  bikeBrand: string;
-  bikeModel: string;
-  distance: string;
-  proficiency: string;
-};
+import type { Tproficiency } from "./me";
 
 export type TLocationCoordinate = {
   lat: number;
@@ -41,6 +35,7 @@ export type TBikerPresenceItem = {
   nickname: string;
   bikeBrand?: string | null;
   bikeModel?: string | null;
+  proficiency: Tproficiency | null;
   isMe?: boolean;
   location: TLocationCoordinate;
   accuracyMeters?: number | null;

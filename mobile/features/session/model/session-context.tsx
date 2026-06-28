@@ -19,26 +19,41 @@ import { API_PATHS } from "@package-shared/index";
 import {
   apiFetch,
   clearApiAuthState,
+  getApiAuthState,
   persistAuthResponse,
   restoreApiAuthState,
+  subscribeApiAuthState,
 } from "@/shared";
 type SessionStatus = "loading" | "anonymous" | "authenticated";
 type SessionContextValue = {
+  accessToken: string | null;
+  clearSession: () => Promise<void>;
   status: SessionStatus;
   user: AppSession | null;
   login: (body: LoginBody) => Promise<void>;
   signUp: (body: SignUpBody) => Promise<void>;
   signOut: () => Promise<void>;
+  setSession: (session: AppSession) => void;
 };
 
 const SessionContext = createContext<SessionContextValue | null>(null);
 
 export function SessionProvider({ children }: PropsWithChildren) {
   const [status, setStatus] = useState<SessionStatus>("loading");
+  const [accessToken, setAccessToken] = useState<string | null>(
+    getApiAuthState().accessToken
+  );
   const [user, setUser] = useState<AppSession | null>(null);
 
   useEffect(() => {
     let mounted = true;
+    const unsubscribe = subscribeApiAuthState((nextState) => {
+      if (!mounted) {
+        return;
+      }
+
+      setAccessToken(nextState.accessToken);
+    });
 
     async function restoreSession() {
       try {
@@ -81,12 +96,28 @@ export function SessionProvider({ children }: PropsWithChildren) {
 
     return () => {
       mounted = false;
+      unsubscribe();
     };
   }, []);
 
   const value: SessionContextValue = {
+    accessToken,
+    async clearSession() {
+      await clearApiAuthState();
+      setUser(null);
+      setStatus("anonymous");
+    },
     status,
     user,
+    setSession(newSession) {
+      void persistAuthResponse({
+        accessToken: getApiAuthState().accessToken,
+        refreshToken: getApiAuthState().refreshToken,
+        session: newSession,
+      });
+      setUser(newSession);
+      setStatus("authenticated");
+    },
     async login(loginBody) {
       const response = await apiFetch.post<AuthResponseData>(
         API_PATHS.auth.login,
@@ -107,9 +138,7 @@ export function SessionProvider({ children }: PropsWithChildren) {
       try {
         await apiFetch.post<LogoutResponseData>(API_PATHS.auth.logout);
       } finally {
-        await clearApiAuthState();
-        setUser(null);
-        setStatus("anonymous");
+        await value.clearSession();
       }
     },
   };

@@ -1,29 +1,44 @@
-import type { PlaceListItem } from "@package-shared/types/place";
 import { useEffect, useMemo, useRef, useState } from "react";
-import { ActivityIndicator, StyleSheet, Text, View } from "react-native";
+import { ActivityIndicator, View, type ViewStyle } from "react-native";
 import { WebView, type WebViewMessageEvent } from "react-native-webview";
 
-import { bikerMapTheme } from "@package-shared/constants/theme";
+import {
+  PlaceListItem,
+  RouteMapPathItem,
+  TBikerPresenceItem,
+  TLocationCoordinate,
+  bikerMapTheme,
+} from "@package-shared/index";
+
+import { AppText } from "@/components/common";
 
 type MapCanvasWebViewProps = {
   activeFilter: string;
+  bikerPresences?: TBikerPresenceItem[];
+  currentLocation?: TLocationCoordinate | null;
   focusedPlaceId?: string | null;
   onMapReady?: () => void;
-  onMarkerPressed?: (placeId: string) => void;
+  onMarkerPressed?: (place: PlaceListItem) => void;
+  onRoutePressed?: (route: RouteMapPathItem) => void;
   places: PlaceListItem[];
+  routes?: RouteMapPathItem[];
 };
 
 type BridgeEvent =
   | { type: "MAP_READY" }
   | { payload?: { message?: string }; type: "MAP_ERROR" }
-  | { payload: { placeId: string }; type: "MARKER_PRESSED" }
+  | { payload: { place: PlaceListItem }; type: "MARKER_PRESSED" }
+  | { payload: { route: RouteMapPathItem }; type: "ROUTE_PRESSED" }
   | {
       payload: {
         activeFilter: string;
+        bikerPresences: TBikerPresenceItem[];
+        currentLocation: TLocationCoordinate | null;
         focusedPlaceId: string | null;
         places: PlaceListItem[];
+        routes: RouteMapPathItem[];
       };
-      type: "SET_PLACES";
+      type: "SET_MAP_DATA";
     };
 
 type WebViewLoadErrorEvent = {
@@ -34,10 +49,14 @@ type WebViewLoadErrorEvent = {
 
 export function MapCanvasWebView({
   activeFilter,
+  bikerPresences = [],
+  currentLocation = null,
   focusedPlaceId = null,
   onMapReady,
   onMarkerPressed,
+  onRoutePressed,
   places,
+  routes = [],
 }: MapCanvasWebViewProps) {
   const webViewRef = useRef<WebView>(null);
   const [isReady, setIsReady] = useState(false);
@@ -52,18 +71,29 @@ export function MapCanvasWebView({
     }
 
     const message: BridgeEvent = {
-      type: "SET_PLACES",
+      type: "SET_MAP_DATA",
       payload: {
         activeFilter,
+        bikerPresences,
+        currentLocation,
         focusedPlaceId,
         places,
+        routes,
       },
     };
 
     webViewRef.current?.injectJavaScript(
       `window.__receiveFromNative?.(${JSON.stringify(message)}); true;`
     );
-  }, [activeFilter, focusedPlaceId, isReady, places]);
+  }, [
+    activeFilter,
+    bikerPresences,
+    currentLocation,
+    focusedPlaceId,
+    isReady,
+    places,
+    routes,
+  ]);
 
   function handleMessage(event: WebViewMessageEvent) {
     try {
@@ -85,7 +115,11 @@ export function MapCanvasWebView({
       }
 
       if (data.type === "MARKER_PRESSED") {
-        onMarkerPressed?.(data.payload.placeId);
+        onMarkerPressed?.(data.payload.place);
+      }
+
+      if (data.type === "ROUTE_PRESSED") {
+        onRoutePressed?.(data.payload.route);
       }
     } catch {
       // ignore malformed bridge events
@@ -100,7 +134,7 @@ export function MapCanvasWebView({
   }
 
   return (
-    <View style={styles.container}>
+    <View className="flex-1">
       <WebView
         ref={webViewRef}
         originWhitelist={["*"]}
@@ -114,13 +148,15 @@ export function MapCanvasWebView({
         bounces={false}
         showsHorizontalScrollIndicator={false}
         showsVerticalScrollIndicator={false}
-        style={styles.webView}
+        style={webViewStyle}
       />
 
       {!isReady ? (
-        <View style={styles.loadingOverlay}>
+        <View className="absolute inset-0 items-center justify-center bg-[rgba(15,19,24,0.82)]">
           {errorMessage ? (
-            <Text style={styles.errorText}>{errorMessage}</Text>
+            <AppText className="px-7 text-center text-sm font-bold leading-5">
+              {errorMessage}
+            </AppText>
           ) : (
             <ActivityIndicator color={bikerMapTheme.colors.accent} />
           )}
@@ -168,6 +204,9 @@ function buildMapHtml(clientId: string) {
 
       var map = null;
       var activeMarkers = [];
+      var activeBikerMarkers = [];
+      var activeRoutePolylines = [];
+      var activeCurrentLocationMarker = null;
       var sdkScriptUrl = ${serializedScriptUrl};
 
       var CATEGORY_COLORS = {
@@ -192,6 +231,25 @@ function buildMapHtml(clientId: string) {
         return '<div style="position:relative;width:' + dotSize + 'px;height:' + dotSize + 'px;">' + card + dot + '</div>';
       }
 
+      function makeCurrentLocationMarkerContent() {
+        return '<div style="position:relative;width:22px;height:22px;">'
+          + '<div style="position:absolute;left:50%;top:50%;width:22px;height:22px;border-radius:999px;transform:translate(-50%,-50%);background:rgba(0,149,255,0.18);"></div>'
+          + '<div style="position:absolute;left:50%;top:50%;width:20px;height:20px;border-radius:999px;transform:translate(-50%,-50%);background:#0095FF;border:3px solid rgba(245,247,251,0.95);box-shadow:0 4px 12px rgba(0,0,0,0.32);"></div>'
+          + '</div>';
+      }
+
+      function makeBikerMarkerContent(nickname, isMe) {
+        var safeName = escapeHtml(nickname);
+        var color = isMe ? '#0095FF' : '#F97316';
+        var ringColor = isMe ? 'rgba(0,149,255,0.18)' : 'rgba(249,115,22,0.16)';
+
+        return '<div style="position:relative;min-width:18px;height:18px;">'
+          + '<div style="position:absolute;bottom:24px;left:50%;transform:translateX(-50%);padding:5px 8px;border-radius:999px;background:rgba(12,16,22,0.92);border:1px solid rgba(99,114,130,0.32);white-space:nowrap;font-size:11px;font-weight:800;color:#f5f7fb;">' + safeName + '</div>'
+          + '<div style="position:absolute;left:50%;top:50%;width:22px;height:22px;border-radius:999px;transform:translate(-50%,-50%);background:' + ringColor + ';"></div>'
+          + '<div style="position:absolute;left:50%;top:50%;width:14px;height:14px;border-radius:999px;transform:translate(-50%,-50%);background:' + color + ';border:2px solid rgba(245,247,251,0.95);box-shadow:0 4px 12px rgba(0,0,0,0.28);"></div>'
+          + '</div>';
+      }
+
       function escapeHtml(value) {
         return String(value || '')
           .replace(/&/g, '&amp;')
@@ -206,13 +264,78 @@ function buildMapHtml(clientId: string) {
         activeMarkers = [];
       }
 
-      function renderMarkers(payload) {
+      function clearBikerMarkers() {
+        activeBikerMarkers.forEach(function(marker) { marker.setMap(null); });
+        activeBikerMarkers = [];
+      }
+
+      function clearRoutePolylines() {
+        activeRoutePolylines.forEach(function(polyline) { polyline.setMap(null); });
+        activeRoutePolylines = [];
+      }
+
+      function clearCurrentLocationMarker() {
+        if (activeCurrentLocationMarker) {
+          activeCurrentLocationMarker.setMap(null);
+          activeCurrentLocationMarker = null;
+        }
+      }
+
+      function extendBounds(bounds, position) {
+        if (!bounds) {
+          return new naver.maps.LatLngBounds(position, position);
+        }
+
+        bounds.extend(position);
+        return bounds;
+      }
+
+      function renderMapData(payload) {
         clearMarkers();
+        clearBikerMarkers();
+        clearRoutePolylines();
+        clearCurrentLocationMarker();
         if (!map) return;
 
         var places = payload.places;
+        var bikerPresences = payload.bikerPresences || [];
+        var currentLocation = payload.currentLocation;
+        var routes = payload.routes || [];
         var focusedId = payload.focusedPlaceId;
         var bounds = null;
+
+        routes.forEach(function(route) {
+          var path = Array.isArray(route.path) ? route.path : [];
+          var naverPath = path
+            .filter(function(point) {
+              return Number.isFinite(Number(point.lat)) && Number.isFinite(Number(point.lng));
+            })
+            .map(function(point) {
+              return new naver.maps.LatLng(Number(point.lat), Number(point.lng));
+            });
+
+          if (naverPath.length < 2) return;
+
+          var polyline = new naver.maps.Polyline({
+            map: map,
+            path: naverPath,
+            strokeColor: '#E5572F',
+            strokeOpacity: 0.9,
+            strokeWeight: 5,
+            strokeLineCap: 'round',
+            strokeLineJoin: 'round',
+            clickable: true
+          });
+
+          naver.maps.Event.addListener(polyline, 'click', function() {
+            postToNative({ type: 'ROUTE_PRESSED', payload: { route: route } });
+          });
+
+          activeRoutePolylines.push(polyline);
+          naverPath.forEach(function(position) {
+            bounds = extendBounds(bounds, position);
+          });
+        });
 
         places.forEach(function(place) {
           var color = CATEGORY_COLORS[place.category] || '#E5572F';
@@ -230,20 +353,68 @@ function buildMapHtml(clientId: string) {
           });
 
           naver.maps.Event.addListener(marker, 'click', function() {
-            postToNative({ type: 'MARKER_PRESSED', payload: { placeId: place.id } });
+            postToNative({ type: 'MARKER_PRESSED', payload: { place: place } });
           });
 
           activeMarkers.push(marker);
-
-          if (!bounds) {
-            bounds = new naver.maps.LatLngBounds(position, position);
-          } else {
-            bounds.extend(position);
-          }
+          bounds = extendBounds(bounds, position);
         });
 
+        bikerPresences.forEach(function(biker) {
+          if (!biker || !biker.location) return;
+          if (!Number.isFinite(Number(biker.location.lat)) || !Number.isFinite(Number(biker.location.lng))) {
+            return;
+          }
+
+          var bikerPosition = new naver.maps.LatLng(
+            Number(biker.location.lat),
+            Number(biker.location.lng)
+          );
+
+          var bikerMarker = new naver.maps.Marker({
+            position: bikerPosition,
+            map: map,
+            icon: {
+              content: makeBikerMarkerContent(biker.nickname, Boolean(biker.isMe)),
+              anchor: new naver.maps.Point(11, 11)
+            }
+          });
+
+          activeBikerMarkers.push(bikerMarker);
+          bounds = extendBounds(bounds, bikerPosition);
+        });
+
+        if (
+          currentLocation &&
+          Number.isFinite(Number(currentLocation.lat)) &&
+          Number.isFinite(Number(currentLocation.lng))
+        ) {
+          var currentPosition = new naver.maps.LatLng(
+            Number(currentLocation.lat),
+            Number(currentLocation.lng)
+          );
+          
+          activeCurrentLocationMarker = new naver.maps.Marker({
+            position: currentPosition,
+            map: map,
+            icon: {
+              content: makeCurrentLocationMarkerContent(),
+              anchor: new naver.maps.Point(18, 18),
+            },
+          });
+          bounds = extendBounds(bounds, currentPosition);
+        }
+
         if (bounds) {
-          if (places.length === 1) {
+          if (places.length === 0 && routes.length === 0 && bikerPresences.length === 0 && currentLocation) {
+            map.setCenter(
+              new naver.maps.LatLng(
+                Number(currentLocation.lat),
+                Number(currentLocation.lng)
+              )
+            );
+            map.setZoom(17, true);
+          } else if (places.length === 1 && routes.length === 0 && !currentLocation) {
             map.setCenter(new naver.maps.LatLng(places[0].lat, places[0].lng));
           } else {
             map.fitBounds(bounds, { padding: 60 });
@@ -253,7 +424,9 @@ function buildMapHtml(clientId: string) {
 
       window.__receiveFromNative = function(message) {
         if (!message || !message.type) return;
-        if (message.type === 'SET_PLACES') renderMarkers(message.payload);
+        if (message.type === 'SET_MAP_DATA' || message.type === 'SET_PLACES') {
+          renderMapData(message.payload);
+        }
       };
 
       function initializeMap() {
@@ -300,26 +473,7 @@ function buildMapHtml(clientId: string) {
 </html>`;
 }
 
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-  },
-  loadingOverlay: {
-    ...StyleSheet.absoluteFillObject,
-    alignItems: "center",
-    backgroundColor: "rgba(15, 19, 24, 0.82)",
-    justifyContent: "center",
-  },
-  webView: {
-    backgroundColor: "transparent",
-    flex: 1,
-  },
-  errorText: {
-    color: bikerMapTheme.colors.text,
-    fontSize: 14,
-    fontWeight: "700",
-    lineHeight: 20,
-    paddingHorizontal: 28,
-    textAlign: "center",
-  },
-});
+const webViewStyle: ViewStyle = {
+  backgroundColor: "transparent",
+  flex: 1,
+};
