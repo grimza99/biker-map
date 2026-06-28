@@ -14,17 +14,36 @@ export async function GET(request: Request) {
   }
 
   const supabase = createSupabaseApiClient(request);
-  const { data, error } = await supabase
+  const { data: posts, error: postsError } = await supabase
     .from("posts")
-    .select("favorite_count")
+    .select("id")
     .eq("author_id", session.userId);
 
-  if (error) {
-    return internalServerError(error.message);
+  if (postsError) {
+    return internalServerError(postsError.message);
   }
 
-  const favoriteCount =
-    data?.reduce((sum, post) => sum + (post.favorite_count ?? 0), 0) ?? 0;
+  const postIds = (posts ?? []).map((post) => String(post.id));
+
+  if (!postIds.length) {
+    return ok<ReceivedFavoriteCountResponseData>(
+      { totalFavoriteCount: 0 },
+      undefined,
+      { total: 0 }
+    );
+  }
+
+  const { count, error: favoritesError } = await supabase
+    .from("favorites")
+    .select("id", { count: "exact", head: true })
+    .eq("target_type", "post")
+    .in("target_id", postIds);
+
+  if (favoritesError) {
+    return internalServerError(favoritesError.message);
+  }
+
+  const favoriteCount = count ?? 0;
 
   return ok<ReceivedFavoriteCountResponseData>(
     { totalFavoriteCount: favoriteCount },
