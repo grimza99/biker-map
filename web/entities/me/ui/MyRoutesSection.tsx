@@ -15,7 +15,6 @@ import {
 import { useState } from "react";
 import { MyRouteCard } from "./MyRouteCard";
 
-//**-------- 정책상 me page tab에서 제외 되어있음 */
 export function MyRoutesSection() {
   const myRoutesQuery = useMyRoutes();
   const routes = myRoutesQuery.data?.data.items ?? [];
