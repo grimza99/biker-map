@@ -1,7 +1,8 @@
 "use client";
 
-import { createContext, useContext, useMemo, useState } from "react";
 import type { Dispatch, ReactNode, SetStateAction } from "react";
+import { createContext, useContext, useMemo, useState } from "react";
+import { useSearchParams } from "next/navigation";
 
 import type { MapCategoryFilter } from "@/entities/map";
 import { usePlaces } from "@features/places/model/use-places";
@@ -21,7 +22,29 @@ const MapCanvasDataContext =
   createContext<MapCanvasDataContextValue | null>(null);
 
 export function MapCanvasDataProvider({ children }: { children: ReactNode }) {
-  const [category, setCategory] = useState<MapCategoryFilter>("all");
+  const searchParams = useSearchParams();
+  const searchParamCategory = searchParams.get("category");
+  const initialCategory: MapCategoryFilter =
+    searchParamCategory === "route" ? "route" : "all";
+
+  return (
+    <MapCanvasDataProviderContent
+      key={initialCategory}
+      initialCategory={initialCategory}
+    >
+      {children}
+    </MapCanvasDataProviderContent>
+  );
+}
+
+function MapCanvasDataProviderContent({
+  children,
+  initialCategory,
+}: {
+  children: ReactNode;
+  initialCategory: MapCategoryFilter;
+}) {
+  const [category, setCategory] = useState<MapCategoryFilter>(initialCategory);
   const placeCategory = category === "route" ? undefined : category;
   const filters = useMemo(
     () => ({

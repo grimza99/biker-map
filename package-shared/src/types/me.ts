@@ -19,3 +19,7 @@ export type MeResponseData = {
 export type UpdateMeResponseData = {
   session: AppSession | null;
 };
+
+export type ReceivedFavoriteCountResponseData = {
+  totalFavoriteCount: number;
+};

@@ -19,7 +19,6 @@ const SOUTH_KOREA_BOUNDS = {
   southWest: { lat: 34.0, lng: 125.5 },
   northEast: { lat: 37.75, lng: 130.9 },
 };
-const ROUTE_POLYLINE_MIN_ZOOM = 9;
 
 function buildNaverMapScriptUrl(clientId: string) {
   return `https://oapi.map.naver.com/openapi/v3/maps.js?ncpKeyId=${clientId}`;
@@ -90,7 +89,6 @@ export function NaverDynamicMap({
   const mapsApiRef = useRef<any>(null);
   const markersRef = useRef<PlaceMarker[]>([]);
   const routePolylinesRef = useRef<RoutePolyline[]>([]);
-  const routePolylineVisibleRef = useRef(false);
   const onClickPlaceMarkerRef = useRef(onClickPlaceMarker);
   const onClickRoutePolylineRef = useRef(onClickRoutePolyline);
   const [error, setError] = useState<string | null>(null);
@@ -129,19 +127,9 @@ export function NaverDynamicMap({
       return;
     }
 
-    const shouldShow = map.getZoom() >= ROUTE_POLYLINE_MIN_ZOOM;
-    if (routePolylineVisibleRef.current === shouldShow) {
-      return;
-    }
-
-    routePolylineVisibleRef.current = shouldShow;
     routePolylinesRef.current.forEach((routePolyline) => {
-      if (shouldShow) {
-        routePolyline.attach();
-        return;
-      }
-
-      routePolyline.detach();
+      routePolyline.attach();
+      return;
     });
   }, []);
 
@@ -254,7 +242,6 @@ export function NaverDynamicMap({
     routePolylinesRef.current = validRoutes.map(
       (route) => new RoutePolyline(maps, map, route, handleClickRoutePolyline)
     );
-    routePolylineVisibleRef.current = false;
     syncRouteVisibility();
   }, [handleClickRoutePolyline, isLoaded, syncRouteVisibility, validRoutes]);
 

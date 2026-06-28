@@ -3,8 +3,8 @@
 import type { PlaceListItem } from "@package-shared/types/place";
 import type { RouteMapPathItem } from "@package-shared/types/route";
 import { ArrowLeftToLine } from "lucide-react";
-import { useRouter } from "next/navigation";
-import { startTransition, useCallback, useMemo } from "react";
+import { usePathname, useRouter, useSearchParams } from "next/navigation";
+import { startTransition, useCallback, useEffect, useMemo } from "react";
 
 import { NaverDynamicMap, mapCategoryOptions } from "@/entities/map";
 import { Button } from "@shared/ui";
@@ -17,6 +17,8 @@ const EMPTY_ROUTES: RouteMapPathItem[] = [];
 
 export function MapCanvasShell() {
   const router = useRouter();
+  const pathname = usePathname();
+  const searchParams = useSearchParams();
   const { category, setCategory, placesQuery, routeMapPathsQuery } =
     useMapCanvasData();
   const places = placesQuery.data?.data.items ?? EMPTY_PLACES;
@@ -41,6 +43,48 @@ export function MapCanvasShell() {
     },
     [router]
   );
+  const handleOpenListPanel = useCallback(() => {
+    const searchParams = new URLSearchParams();
+    const isRouteContext =
+      category === "route" || pathname.startsWith(PATHS.map.detailRoute(""));
+
+    if (isRouteContext) {
+      searchParams.set("category", "route");
+    }
+
+    const targetPath = searchParams.toString()
+      ? `${PATHS.map.list}?${searchParams.toString()}`
+      : PATHS.map.list;
+
+    router.push(targetPath);
+  }, [category, pathname, router]);
+
+  useEffect(() => {
+    if (pathname !== PATHS.map.list) {
+      return;
+    }
+
+    const nextSearchParams = new URLSearchParams(searchParams.toString());
+
+    if (category === "route") {
+      nextSearchParams.set("category", "route");
+    } else {
+      nextSearchParams.delete("category");
+    }
+
+    const currentQuery = searchParams.toString();
+    const nextQuery = nextSearchParams.toString();
+
+    if (currentQuery === nextQuery) {
+      return;
+    }
+
+    const targetPath = nextQuery
+      ? `${PATHS.map.list}?${nextQuery}`
+      : PATHS.map.list;
+
+    router.replace(targetPath, { scroll: false });
+  }, [category, pathname, router, searchParams]);
 
   return (
     <div className="relative min-h-[calc(100vh-11rem)] h-full overflow-hidden">
@@ -81,7 +125,7 @@ export function MapCanvasShell() {
               variant="primary"
               size="icon"
               aria-label="목록 패널 열기"
-              onClick={() => router.push(PATHS.map.list)}
+              onClick={handleOpenListPanel}
             >
               <ArrowLeftToLine className="m-0 h-4 w-4" />
             </Button>
