@@ -1,8 +1,7 @@
-import { apiFetch, queryKeys, useToast } from "@/shared";
+import { apiFetch, queryKeys } from "@/shared";
 import {
   API_PATHS,
   DeleteCommentResponseData,
-  TOAST_MESSAGE,
   UpdateCommentBody,
   UpdateCommentResponseData,
 } from "@package-shared/index";
@@ -10,7 +9,6 @@ import { useMutation, useQueryClient } from "@tanstack/react-query";
 
 export function useCreateCommentReply(postId: string, commentId?: string) {
   const queryClient = useQueryClient();
-  const { showToast } = useToast();
 
   return useMutation({
     mutationFn: async (content: string) => {
@@ -31,23 +29,12 @@ export function useCreateCommentReply(postId: string, commentId?: string) {
       await queryClient.invalidateQueries({
         queryKey: queryKeys.posts(),
       });
-      showToast({
-        tone: "success",
-        title: TOAST_MESSAGE.POST.C,
-      });
-    },
-    onError: () => {
-      showToast({
-        tone: "danger",
-        title: TOAST_MESSAGE.POST.E,
-      });
     },
   });
 }
 
 export function useUpdateCommentReply(postId: string, replyId: string) {
   const queryClient = useQueryClient();
-  const { showToast } = useToast();
 
   return useMutation({
     mutationFn: (payload: UpdateCommentBody) =>
@@ -59,23 +46,12 @@ export function useUpdateCommentReply(postId: string, replyId: string) {
       await queryClient.invalidateQueries({
         queryKey: queryKeys.comments(postId),
       });
-      showToast({
-        tone: "success",
-        title: TOAST_MESSAGE.POST.U,
-      });
-    },
-    onError: () => {
-      showToast({
-        tone: "danger",
-        title: TOAST_MESSAGE.POST.E,
-      });
     },
   });
 }
 
 export function useDeleteCommentReply(postId: string, replyId: string) {
   const queryClient = useQueryClient();
-  const { showToast } = useToast();
 
   return useMutation({
     mutationFn: () =>
@@ -94,16 +70,6 @@ export function useDeleteCommentReply(postId: string, replyId: string) {
           queryKey: queryKeys.posts(),
         }),
       ]);
-      showToast({
-        tone: "success",
-        title: TOAST_MESSAGE.POST.D,
-      });
-    },
-    onError: () => {
-      showToast({
-        tone: "danger",
-        title: TOAST_MESSAGE.POST.E,
-      });
     },
   });
 }
