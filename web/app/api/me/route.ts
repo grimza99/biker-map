@@ -102,6 +102,7 @@ export async function PATCH(request: Request) {
       bike_brand: payload.bikeBrand,
       bike_model: payload.bikeModel,
       proficiency: payload.proficiency,
+      avatar_url: payload.avatarUrl,
     })
     .eq("id", session.user.id);
 

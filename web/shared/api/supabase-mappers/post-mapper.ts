@@ -58,7 +58,8 @@ export function mapCommunityPostItem(
   const category = toCommunityCategory(getRecordString(row, ["category"]));
   const title = getRecordString(row, ["title"]);
   const content = getRecordString(row, ["content", "body", "excerpt"]);
-  const author = toAuthorName(row);
+  const authorName = toAuthorName(row);
+  const authorAvatarUrl = getRecordString(row, ["avatar_url"]);
 
   if (!id || !category || !title || !content) {
     return null;
@@ -69,7 +70,7 @@ export function mapCommunityPostItem(
     category,
     title,
     excerpt: getRecordString(row, ["excerpt"], "") || content.slice(0, 80),
-    author,
+    author: { name: authorName, avatarUrl: authorAvatarUrl },
     timeLabel: getRecordRelativeLabel(
       row,
       ["created_at", "createdAt", "time_label", "timeLabel"],
@@ -101,7 +102,8 @@ export function mapCommunityPostDetail(
     content: getRecordString(row, ["content", "body"], item.excerpt),
     author: {
       id: authorId || undefined,
-      name: item.author,
+      name: item.author.name,
+      avatarUrl: item.author.avatarUrl,
     },
     timeLabel: item.timeLabel,
     commentCount: item.commentCount,

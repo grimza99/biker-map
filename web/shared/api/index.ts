@@ -36,7 +36,7 @@ export {
 } from "./response";
 export * from "./supabase";
 export * from "./supabase-mappers";
-export { loadProfileNameMap } from "./supabase-profiles";
+export * from "./supabase-profiles";
 export {
   getRecordArray,
   getRecordBoolean,

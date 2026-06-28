@@ -1,13 +1,3 @@
-import {
-  Button,
-  DefaultCardContainer,
-  Dialog,
-  DialogBody,
-  DialogContent,
-  DialogFooter,
-  DialogHeader,
-  Profile,
-} from "@/shared";
 import { useSession } from "@/features";
 import {
   useDeletePostComment,
@@ -18,6 +8,16 @@ import {
   useUpdateCommentReply,
 } from "@/features/community/model/use-reply";
 import { CommentEditForm } from "@/features/community/ui/CommentEditForm";
+import {
+  Button,
+  DefaultCardContainer,
+  Dialog,
+  DialogBody,
+  DialogContent,
+  DialogFooter,
+  DialogHeader,
+  Profile,
+} from "@/shared";
 import { CommunityEngagementBar } from "@/widgets";
 import { CommunityComment, CommunityReply } from "@package-shared/index";
 import { MessageSquare, ReplyIcon } from "lucide-react";
@@ -39,7 +39,9 @@ export function CommentCard({
   const { session } = useSession();
   const [isEditing, setIsEditing] = useState(false);
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
-  const isOwner = Boolean(session?.userId && session.userId === content.author.id);
+  const isOwner = Boolean(
+    session?.userId && session.userId === content.author.id
+  );
   const updateCommentMutation = useUpdatePostComment(postId, content.id);
   const updateReplyMutation = useUpdateCommentReply(postId, content.id);
   const deleteCommentMutation = useDeletePostComment(postId, content.id);
@@ -84,6 +86,7 @@ export function CommentCard({
         <div className="flex items-center justify-between gap-3">
           <Profile
             name={content.author.name}
+            avatarUrl={content.author.avatarUrl}
             className="w-auto gap-2 p-0 border-none bg-transparent"
             imgClassName="h-7 w-7"
           />

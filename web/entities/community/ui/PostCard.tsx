@@ -50,7 +50,7 @@ export function PostCard({ post, categoryLabel, className }: PostCardProps) {
 
         <div className="flex items-center justify-between gap-3 text-sm text-muted">
           <span className="truncate font-medium text-text/88">
-            {post.author}
+            {post.author.name}
           </span>
           <MetaCounts
             commentCount={post.commentCount}
