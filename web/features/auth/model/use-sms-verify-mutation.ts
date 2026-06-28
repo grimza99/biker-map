@@ -42,7 +42,7 @@ export function useVerifyMuation(payload: IVerificationCodeCheckBody) {
         body: JSON.stringify(payload),
       }),
     onSuccess: async (response) => {
-      const nextSession = response.data;
+      const nextSession = response.data.session;
       sessionState.setSession(nextSession, sessionState.accessToken);
       queryClient.setQueryData<ApiResponse<MeResponseData>>(queryKeys.session, {
         data: {

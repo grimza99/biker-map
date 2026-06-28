@@ -9,6 +9,7 @@ import {
   BIKER_LOCATION_SHARING_STATUSES,
   TBikerPresenceItem,
   TBikersNearbyResponseData,
+  Tproficiency,
 } from "@package-shared/index";
 
 import {
@@ -53,6 +54,7 @@ type NearbyProfileRow = {
   name: string | null;
   bike_brand: string | null;
   bike_model: string | null;
+  proficiency: Tproficiency | null;
 };
 
 type NearbyCandidate = BikerPresenceNearbyRow & {
@@ -193,7 +195,7 @@ async function loadNearbyProfileMap(
 
   const { data, error } = await supabase
     .from("profiles")
-    .select("id, name, bike_brand, bike_model")
+    .select("id, name, bike_brand, bike_model, proficiency")
     .in("id", ids);
 
   if (error) {
@@ -217,6 +219,7 @@ function mapNearbyPresenceItem(
     nickname: profile?.name?.trim() || "알 수 없는 라이더",
     bikeBrand: profile?.bike_brand ?? null,
     bikeModel: profile?.bike_model ?? null,
+    proficiency: profile?.proficiency ?? null,
     isMe: row.user_id === currentUserId,
     location: {
       lat: row.lat,

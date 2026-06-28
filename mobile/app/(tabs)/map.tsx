@@ -50,8 +50,8 @@ export default function MapScreen() {
     placesQuery.error instanceof Error ? placesQuery.error.message : null;
   const isLoading = placesQuery.isLoading;
 
-  const handleMarkerPressed = (placeId: string) => {
-    setFocusedPlaceId(placeId);
+  const handleMarkerPressed = (place: { id: string }) => {
+    setFocusedPlaceId(place.id);
   };
 
   return (
