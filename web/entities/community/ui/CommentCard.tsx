@@ -91,7 +91,7 @@ export function CommentCard({
             imgClassName="h-7 w-7"
           />
           <div className="flex items-center gap-2">
-            {isOwner ? (
+            {isOwner || session?.role === "admin" ? (
               <>
                 <Button
                   size="sm"
