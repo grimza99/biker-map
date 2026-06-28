@@ -9,7 +9,6 @@ import {
   MyFavoritesSection,
   MyInfoSection,
   MyPostsSection,
-  MyRoutesSection,
   useMe,
 } from "@/entities/me";
 import { useDeleteAccount } from "@features/me/model/use-delete-account";
@@ -18,9 +17,7 @@ import { Button, ErrorState, LoadingState, PageWrapper } from "@shared/ui";
 
 export default function MePage() {
   const router = useRouter();
-  const [tab, setTab] = useState<
-    "info" | "my-posts" | "my-routes" | "favorites"
-  >("info");
+  const [tab, setTab] = useState<"info" | "my-posts" | "favorites">("info");
   const sessionState = useSession();
   const meQuery = useMe(sessionState.status === "authenticated");
   const deleteAccountMutation = useDeleteAccount();
@@ -44,16 +41,12 @@ export default function MePage() {
 
   const session = me.session;
 
-  const getSection = (
-    currentTab: "info" | "my-posts" | "my-routes" | "favorites"
-  ) => {
+  const getSection = (currentTab: "info" | "my-posts" | "favorites") => {
     switch (currentTab) {
       case "info":
         return <MyInfoSection session={session} />;
       case "my-posts":
         return <MyPostsSection />;
-      case "my-routes":
-        return <MyRoutesSection />;
       case "favorites":
         return <MyFavoritesSection />;
     }
@@ -81,15 +74,6 @@ export default function MePage() {
           className="rounded-lg"
         >
           내가 쓴 글
-        </Button>
-        <Button
-          asChild
-          variant="tertiary"
-          selected={tab === "my-routes"}
-          onClick={() => setTab("my-routes")}
-          className="rounded-lg"
-        >
-          내 경로
         </Button>
         <Button
           asChild
