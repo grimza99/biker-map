@@ -1,4 +1,4 @@
-export type ReactionTargetType = "comment";
+export type ReactionTargetType = "post" | "comment";
 export type ReactionType = "like" | "dislike";
 
 export type ReactionSummary = {

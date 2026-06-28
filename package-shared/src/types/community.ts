@@ -11,6 +11,7 @@ export type CommunityPost = {
   timeLabel: string;
   commentCount: number;
   viewCount: number;
+  reactions?: ReactionSummary;
   pinned?: boolean;
   favoriteId?: string;
   favorited?: boolean;
@@ -38,6 +39,7 @@ export type CommunityPostDetail = {
   timeLabel: string;
   commentCount: number;
   viewCount: number;
+  reactions?: ReactionSummary;
   pinned?: boolean;
   images?: string[];
   favoriteId?: string;
