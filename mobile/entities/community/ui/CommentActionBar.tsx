@@ -11,17 +11,25 @@ import { bikerMapTheme } from "@package-shared/index";
 import { ReactionActionGroup } from "../../../widgets/ui/ReactionActionGroup";
 
 type CommentActionBarProps = {
+  canManage?: boolean;
+  isEditing?: boolean;
   item: CommunityComment | CommunityReply;
   disabled?: boolean;
   showReplyAction?: boolean; //reply는 false
+  onDeletePress?: () => void;
+  onEditPress?: () => void;
   onReplyPress?: () => void;
   onReaction?: (action: ReactionType) => void;
 };
 
 export function CommentActionBar({
+  canManage = false,
+  isEditing = false,
   item,
   disabled,
   showReplyAction = false,
+  onDeletePress,
+  onEditPress,
   onReplyPress,
   onReaction,
 }: CommentActionBarProps) {
@@ -58,12 +66,52 @@ export function CommentActionBar({
           </>
         )}
       </View>
+      <View className="flex-row items-center gap-1">
+        {canManage && !isEditing ? (
+          <>
+            <Button
+              size="sm"
+              variant="ghost"
+              disabled={disabled}
+              onPress={onEditPress}
+              leftIcon={
+                <Feather
+                  name="edit-3"
+                  size={14}
+                  color={bikerMapTheme.colors.muted}
+                />
+              }
+            >
+              <AppText tone="muted" className="text-xs font-semibold">
+                수정
+              </AppText>
+            </Button>
+            <Button
+              size="sm"
+              variant="ghost"
+              disabled={disabled}
+              onPress={onDeletePress}
+              leftIcon={
+                <Feather
+                  name="trash-2"
+                  size={14}
+                  color={bikerMapTheme.colors.danger}
+                />
+              }
+            >
+              <AppText className="text-xs font-semibold text-danger">
+                삭제
+              </AppText>
+            </Button>
+          </>
+        ) : null}
 
-      <ReactionActionGroup
-        reactions={item.reactions}
-        disabled={disabled}
-        onToggle={(action) => onReaction?.(action)}
-      />
+        <ReactionActionGroup
+          reactions={item.reactions}
+          disabled={disabled || isEditing}
+          onToggle={(action) => onReaction?.(action)}
+        />
+      </View>
     </View>
   );
 }
