@@ -10,7 +10,14 @@ import { CommentCard } from "./CommentCard";
 import { Button, Input } from "@/components/common";
 import { Feather } from "@expo/vector-icons";
 import { useSession } from "@/features/session/model";
-import { useCreateCommentReply, useToggleReaction } from "@/features/community";
+import {
+  useCreateCommentReply,
+  useDeleteComment,
+  useDeleteCommentReply,
+  useToggleReaction,
+  useUpdateComment,
+  useUpdateCommentReply,
+} from "@/features/community";
 
 type CommentThreadProps = {
   comment: CommunityComment;
@@ -26,16 +33,24 @@ export function CommentThread({
   const [reply, setReply] = useState("");
   const [replyInputOpen, setReplyInputOpen] = useState(false);
 
-  const { status } = useSession();
+  const { status, user } = useSession();
 
   const { mutateAsync: createReply, isPending: isCreateReplyPending } =
     useCreateCommentReply(postId, comment.id);
+  const { mutateAsync: updateComment, isPending: isUpdateCommentPending } =
+    useUpdateComment(postId, comment.id);
+  const { mutateAsync: deleteComment, isPending: isDeleteCommentPending } =
+    useDeleteComment(postId, comment.id);
   const { mutateAsync: CommentReaction } = useToggleReaction({
     targetType: "comment",
     postId: postId,
     targetId: comment.id,
   });
   const isLoggedin = status === "authenticated";
+  const canManageComment =
+    isLoggedin &&
+    (user?.userId === comment.author.id || user?.role === "admin");
+  const isCommentMutating = isUpdateCommentPending || isDeleteCommentPending;
 
   async function handleReplySubmit() {
     try {
@@ -53,9 +68,13 @@ export function CommentThread({
   return (
     <View className="gap-2.5 px-4">
       <CommentCard
+        canManage={canManageComment}
+        isMutating={isCommentMutating}
         item={comment}
         disabled={!canReply}
+        onDelete={() => deleteComment()}
         showReplyAction
+        onUpdate={(content) => updateComment({ content })}
         onReplyPress={() => setReplyInputOpen((prev) => !prev)}
         onReaction={(reaction) => CommentReaction(reaction)}
       />
@@ -110,17 +129,30 @@ function ReplyCard({
   postId: string;
   reply: CommunityReply;
 }) {
+  const { status, user } = useSession();
   const { mutateAsync: toggleReplyReaction } = useToggleReaction({
     targetType: "comment",
     postId,
     targetId: reply.id,
   });
+  const { mutateAsync: updateReply, isPending: isUpdateReplyPending } =
+    useUpdateCommentReply(postId, reply.id);
+  const { mutateAsync: deleteReply, isPending: isDeleteReplyPending } =
+    useDeleteCommentReply(postId, reply.id);
+  const canManageReply =
+    status === "authenticated" &&
+    (user?.userId === reply.author.id || user?.role === "admin");
+  const isReplyMutating = isUpdateReplyPending || isDeleteReplyPending;
 
   return (
     <CommentCard
+      canManage={canManageReply}
+      isMutating={isReplyMutating}
       item={reply}
       disabled={!canReply}
+      onDelete={() => deleteReply()}
       onReaction={(reaction) => toggleReplyReaction(reaction)}
+      onUpdate={(content) => updateReply({ content })}
     />
   );
 }
