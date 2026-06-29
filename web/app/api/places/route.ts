@@ -1,8 +1,12 @@
-import type {
+import type { NextRequest } from "next/server";
+
+import {
   CreatePlaceBody,
   PlaceCategory,
   PlacesQuery,
-} from "@package-shared/types/place";
+  placeSchema,
+} from "@package-shared/index";
+
 import {
   badRequest,
   createSupabaseApiClient,
@@ -17,8 +21,6 @@ import {
   paginateByCursor,
   placeCategories,
 } from "@shared/api";
-import type { NextRequest } from "next/server";
-import { z } from "zod";
 import { requireApiSession } from "@shared/api/auth";
 
 /**-----------------------------get place list-------------------------------- */
@@ -90,17 +92,6 @@ export async function GET(request: NextRequest) {
 
 /**-----------------------------create place-------------------------------- */
 
-const createPlaceSchema = z.object({
-  name: z.string().min(1),
-  category: z.enum(["gas", "repair", "cafe", "shop"]),
-  address: z.string().min(1),
-  phone: z.string().optional(),
-  description: z.string().optional(),
-  lat: z.number(),
-  lng: z.number(),
-  images: z.array(z.string()).optional(),
-  naverPlaceUrl: z.string().url(),
-});
 export async function POST(request: Request) {
   const session = await requireApiSession(request);
   if (session instanceof Response) {
@@ -110,7 +101,7 @@ export async function POST(request: Request) {
   let payload: CreatePlaceBody;
   try {
     payload = await request.json();
-    payload = createPlaceSchema.parse(payload);
+    payload = placeSchema.parse(payload);
   } catch {
     return badRequest("장소 생성 payload가 올바르지 않습니다.");
   }

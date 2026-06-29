@@ -1,7 +1,7 @@
 import { AdminModalId } from "@/app/admin/page";
 import { useRouteDetail } from "@/features/routes/model/use-route-detail";
 import { useRoutes } from "@/features/routes/model/use-routes";
-import { RouteForm } from "@/features/routes/ui/route-form";
+import { RouteForm } from "@/features/routes/ui/RouteForm";
 import { useMemo, useState } from "react";
 
 import { ManageRouteItem } from "@/features/admin/route";

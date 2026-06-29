@@ -1,6 +1,6 @@
 import type {
   CreateRouteBody,
-  RouteRegion,
+  RouteRegionFilter,
   RoutesQuery,
 } from "@package-shared/types/route";
 import {
@@ -27,10 +27,10 @@ export async function GET(request: NextRequest) {
   const query: RoutesQuery = {
     search: getStringParam(searchParams, "search"),
     departureRegion: getStringParam(searchParams, "departureRegion") as
-      | RouteRegion
+      | RouteRegionFilter
       | undefined,
     destinationRegion: getStringParam(searchParams, "destinationRegion") as
-      | RouteRegion
+      | RouteRegionFilter
       | undefined,
     maxDistanceKm: getNumberParam(searchParams, "maxDistanceKm"),
     cursor: getStringParam(searchParams, "cursor"),
@@ -126,7 +126,7 @@ const createRouteSchema = z.object({
   distanceKm: z.number().optional(),
   estimatedDurationMinutes: z.number().int().optional(),
   tags: z.array(z.string()),
-  sourceType: z.enum(["curated", "user"]),
+  sourceType: z.enum(["curated"]),
   departureLat: z.number(),
   departureLng: z.number(),
   destinationLat: z.number(),

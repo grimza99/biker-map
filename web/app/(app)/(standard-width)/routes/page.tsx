@@ -3,7 +3,7 @@
 import {
   distanceOptions,
   routeRegionOptions,
-  type RouteRegion,
+  type RouteRegionFilter,
 } from "@package-shared/index";
 import {
   DefaultCardContainer,
@@ -20,9 +20,10 @@ import { RouteCard } from "@/entities";
 import { useRoutes } from "@features/routes/model/use-routes";
 
 export default function RouteListPage() {
-  const [departureRegion, setDepartureRegion] = useState<RouteRegion>("all");
+  const [departureRegion, setDepartureRegion] =
+    useState<RouteRegionFilter>("all");
   const [destinationRegion, setDestinationRegion] =
-    useState<RouteRegion>("all");
+    useState<RouteRegionFilter>("all");
   const [maxDistanceKm, setMaxDistanceKm] = useState<string>("all");
 
   const filters = useMemo(
@@ -59,7 +60,7 @@ export default function RouteListPage() {
           placeholder="전체"
           value={departureRegion}
           onValueChange={(nextValue) =>
-            setDepartureRegion(nextValue as RouteRegion)
+            setDepartureRegion(nextValue as RouteRegionFilter)
           }
           options={routeRegionOptions}
         />
@@ -68,7 +69,7 @@ export default function RouteListPage() {
           placeholder="전체"
           value={destinationRegion}
           onValueChange={(nextValue) =>
-            setDestinationRegion(nextValue as RouteRegion)
+            setDestinationRegion(nextValue as RouteRegionFilter)
           }
           options={routeRegionOptions}
         />

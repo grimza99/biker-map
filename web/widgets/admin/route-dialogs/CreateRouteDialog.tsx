@@ -1,5 +1,5 @@
 import { AdminModalId } from "@/app/admin/page";
-import { RouteForm } from "@/features/routes/ui/route-form";
+import { RouteForm } from "@/features/routes/ui/RouteForm";
 import {
   Button,
   Dialog,
