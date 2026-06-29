@@ -24,4 +24,4 @@ export type MapCategoryFilter = AllPlaceCategory | "route";
 export const mapCategoryOptions: Array<{
   label: string;
   value: MapCategoryFilter;
-}> = [...placeCategoryOptions, { label: "라이딩 경로", value: "route" }];
+}> = [...placeCategoryOptions, { label: "경로", value: "route" }];

@@ -10,9 +10,9 @@ import { Ionicons } from "@expo/vector-icons";
 import { SafeAreaView } from "react-native-safe-area-context";
 
 import {
-  AllPlaceCategory,
   bikerMapTheme,
   placeCategoryOptions,
+  type AllPlaceCategory,
 } from "@package-shared/index";
 
 import { MapCanvasWebView } from "../../features/map/ui/MapCanvasWebView";

@@ -1,6 +1,5 @@
 import type { PlaceCategory, PlaceListItem } from "@package-shared/types/place";
 import {
-  CircleEllipsis,
   Coffee,
   Drill,
   Droplet,
@@ -34,11 +33,6 @@ const categoryMarkerMeta: Record<
     label: "상점",
     icon: ShoppingCart,
     color: "#FFC857",
-  },
-  rest: {
-    label: "그외",
-    icon: CircleEllipsis,
-    color: "#8B7CF6",
   },
 };
 
