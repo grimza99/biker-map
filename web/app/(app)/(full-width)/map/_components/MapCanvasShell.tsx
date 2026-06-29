@@ -1,15 +1,19 @@
 "use client";
 
-import type { PlaceListItem } from "@package-shared/types/place";
-import type { RouteMapPathItem } from "@package-shared/types/route";
 import { ArrowLeftToLine } from "lucide-react";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { startTransition, useCallback, useEffect, useMemo } from "react";
 
-import { NaverDynamicMap, mapCategoryOptions } from "@/entities/map";
+import {
+  mapCategoryOptions,
+  PATHS,
+  PlaceListItem,
+  RouteMapPathItem,
+} from "@biker-map/package-shared";
+
+import { NaverDynamicMap } from "@/entities/map";
 import { Button } from "@shared/ui";
 
-import { PATHS } from "@package-shared/constants";
 import { useMapCanvasData } from "./MapCanvasDataProvider";
 
 const EMPTY_PLACES: PlaceListItem[] = [];
