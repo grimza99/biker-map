@@ -1,5 +1,10 @@
 import z from "zod";
-import { PlaceCategory, RouteRegion, RouteSourceType } from "../types";
+import {
+  PlaceCategory,
+  RouteRegion,
+  RouteRegionFilter,
+  RouteSourceType,
+} from "../types";
 
 const phoneSchema = z
   .string()
@@ -22,6 +27,7 @@ export const SCHEMA_ATOM = {
     .min(1, "이름을 입력해주세요.")
     .max(40, "이름은 40자 이하로 입력해주세요."),
   email: z.string().trim().email("이메일 형식이 올바르지 않습니다."),
+  loginPassword: z.string().min(1, "비밀번호를 입력해주세요."),
   password: z.string().min(8, "비밀번호는 8자 이상이어야 합니다."),
   phone: phoneSchema,
   code: z
@@ -66,8 +72,19 @@ export const SCHEMA_ATOM = {
       "ulsan",
       "sejong",
       "jeju",
-      "all",
     ]) satisfies z.ZodType<RouteRegion>,
+    filterRegion: z.enum([
+      "seoul",
+      "busan",
+      "daegu",
+      "incheon",
+      "gwangju",
+      "daejeon",
+      "ulsan",
+      "sejong",
+      "jeju",
+      "all",
+    ]) satisfies z.ZodType<RouteRegionFilter>,
     sourceType: z.enum(["curated"]) satisfies z.ZodType<RouteSourceType>,
   },
   requiredString: (msg: string) => z.string().trim().min(1, msg),
@@ -77,5 +94,13 @@ export const SCHEMA_ATOM = {
     .refine(
       (value) => value.length === 0 || Number.isFinite(Number(value)),
       "숫자만 입력해주세요."
+    ),
+  integerNumber: z
+    .string()
+    .trim()
+    .refine(
+      (value) =>
+        value.length === 0 || Number.isInteger(Number(value)),
+      "정수만 입력해주세요."
     ),
 };

@@ -1,5 +1,16 @@
 export type RouteProvider = "naver" | "etc";
 export type RouteSourceType = "curated";
+export type RouteRegion =
+  | "seoul"
+  | "busan"
+  | "daegu"
+  | "incheon"
+  | "gwangju"
+  | "daejeon"
+  | "ulsan"
+  | "sejong"
+  | "jeju";
+export type RouteRegionFilter = RouteRegion | "all";
 
 export type RouteFormWaypointValue = {
   draftId: string;
@@ -40,22 +51,10 @@ export type NormalizedWaypointsResult =
       error: string;
     };
 
-export type RouteRegion =
-  | "seoul"
-  | "busan"
-  | "daegu"
-  | "incheon"
-  | "gwangju"
-  | "daejeon"
-  | "ulsan"
-  | "sejong"
-  | "jeju"
-  | "all";
-
 export type RoutesQuery = {
   search?: string;
-  departureRegion?: RouteRegion;
-  destinationRegion?: RouteRegion;
+  departureRegion?: RouteRegionFilter;
+  destinationRegion?: RouteRegionFilter;
   maxDistanceKm?: number;
   cursor?: string;
   limit?: number;

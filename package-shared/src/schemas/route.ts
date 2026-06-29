@@ -16,7 +16,7 @@ export const routeSchema = z.object({
   destinationRegion: SCHEMA_ATOM.route.region,
   externalMapUrl: SCHEMA_ATOM.url,
   distanceKm: SCHEMA_ATOM.number,
-  estimatedDurationMinutes: SCHEMA_ATOM.number,
+  estimatedDurationMinutes: SCHEMA_ATOM.integerNumber,
   tags: z.string(),
   sourceType: SCHEMA_ATOM.route.sourceType,
   departureAddress: z.string(),

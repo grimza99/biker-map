@@ -3,22 +3,25 @@ import {
   NormalizedWaypointsResult,
   RouteFormValues,
   RouteRegion,
+  RouteRegionFilter,
   UpdateRouteBody,
 } from "../types";
 
-export const routeRegionOptions: Array<{ label: string; value: RouteRegion }> =
-  [
-    { value: "all", label: "전체" },
-    { value: "seoul", label: "서울" },
-    { value: "busan", label: "부산" },
-    { value: "daegu", label: "대구" },
-    { value: "incheon", label: "인천" },
-    { value: "gwangju", label: "광주" },
-    { value: "daejeon", label: "대전" },
-    { value: "ulsan", label: "울산" },
-    { value: "sejong", label: "세종" },
-    { value: "jeju", label: "제주" },
-  ];
+export const routeRegionOptions: Array<{
+  label: string;
+  value: RouteRegionFilter;
+}> = [
+  { value: "all", label: "전체" },
+  { value: "seoul", label: "서울" },
+  { value: "busan", label: "부산" },
+  { value: "daegu", label: "대구" },
+  { value: "incheon", label: "인천" },
+  { value: "gwangju", label: "광주" },
+  { value: "daejeon", label: "대전" },
+  { value: "ulsan", label: "울산" },
+  { value: "sejong", label: "세종" },
+  { value: "jeju", label: "제주" },
+];
 
 export const distanceOptions = [
   { value: "all", label: "전체" },
@@ -28,7 +31,7 @@ export const distanceOptions = [
   { value: "over200", label: "200km 이상" },
 ];
 
-export const regionLabel: Record<RouteRegion, string> = {
+export const regionLabel: Record<RouteRegionFilter, string> = {
   all: "전체",
   seoul: "서울",
   busan: "부산",
