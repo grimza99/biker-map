@@ -1,4 +1,10 @@
-import type { AuthResponseData, SignUpBody } from "@package-shared/types/auth";
+import { NextResponse } from "next/server";
+
+import {
+  AuthResponseData,
+  SignUpBody,
+  signUpSchema,
+} from "@package-shared/index";
 import { badRequest, created, parseRequestBody } from "@shared/api";
 import { setRefreshTokenCookie } from "@shared/api/auth";
 import { isMobileClientRequest } from "@shared/api/auth.server";
@@ -6,14 +12,6 @@ import {
   createSupabaseAuthClient,
   mapSupabaseSession,
 } from "@shared/lib/supabase";
-import { NextResponse } from "next/server";
-import { z } from "zod";
-
-const signUpSchema = z.object({
-  email: z.string().email(),
-  password: z.string().min(8),
-  name: z.string().min(1).max(40),
-});
 
 export async function POST(request: Request) {
   const isMobileClient = isMobileClientRequest(request);

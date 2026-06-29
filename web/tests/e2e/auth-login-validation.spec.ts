@@ -16,11 +16,11 @@ test.describe("로그인 입력 검증", () => {
 
     await expect(loginButton).toBeDisabled();
 
-    await emailInput.fill("rider@example.com");
+    await emailInput.fill("wrong-email");
     await passwordInput.fill("short");
 
     await expect(
-      page.getByText("비밀번호는 8자 이상이어야 합니다.")
+      page.getByText("이메일 형식이 올바르지 않습니다.")
     ).toBeVisible();
     await expect(loginButton).toBeDisabled();
 
@@ -33,7 +33,7 @@ test.describe("로그인 입력 검증", () => {
       page.getByRole("heading", { name: "바이커맵 로그인" })
     ).toBeVisible();
     await expect(
-      page.getByText("비밀번호는 8자 이상이어야 합니다.")
+      page.getByText("이메일 형식이 올바르지 않습니다.")
     ).toBeVisible();
     await expect(loginButton).toBeDisabled();
   });

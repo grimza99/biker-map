@@ -18,7 +18,7 @@ import {
 } from "../supabase-record";
 
 const routeProviders = new Set<RouteProvider>(["naver"]);
-const routeSourceTypes = new Set<RouteSourceType>(["curated", "user"]);
+const routeSourceTypes = new Set<RouteSourceType>(["curated"]);
 const routeRegions = new Set<RouteRegion>([
   "seoul",
   "busan",

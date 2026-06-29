@@ -1,3 +1,5 @@
+import { ISendVerificationCodeBody, phoneSchema } from "@package-shared/index";
+
 import {
   badRequest,
   internalServerError,
@@ -14,12 +16,6 @@ import {
   hashVerificationCode,
   sendVerificationSms,
 } from "@/shared/lib/sms";
-import { ISendVerificationCodeBody } from "@package-shared/index";
-import z from "zod";
-
-const sendCodeSMSSchema = z.object({
-  phone: z.string().regex(/^01\d{8,9}$/),
-});
 
 export async function POST(request: Request) {
   const session = await getSupabaseAuthSession(request);
@@ -29,7 +25,7 @@ export async function POST(request: Request) {
 
   let payload: ISendVerificationCodeBody;
   try {
-    payload = await parseRequestBody(request, sendCodeSMSSchema);
+    payload = await parseRequestBody(request, phoneSchema);
   } catch {
     return badRequest("핸드폰 번호가 올바르지 않습니다.");
   }

@@ -1,6 +1,6 @@
 "use client";
 
-import { RouteForm } from "@/features/routes/ui/route-form";
+import { RouteForm } from "@/features/routes/ui/RouteForm";
 import { useMyRoutes } from "@features/me/model/use-my-routes";
 import { useRouteDetail } from "@features/routes/model/use-route-detail";
 import {

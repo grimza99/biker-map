@@ -32,8 +32,12 @@ test.describe("회원가입 입력 검증", () => {
     await expect(
       page.getByText("비밀번호는 8자 이상이어야 합니다.")
     ).toHaveCount(0);
-    await expect(page.getByText("이름을 입력해주세요.")).toBeVisible();
     await expect(signupButton).toBeDisabled();
+
+    await nameInput.fill("라이더");
+    await nameInput.clear();
+
+    await expect(page.getByText("이름을 입력해주세요.")).toBeVisible();
 
     await nameInput.fill("라이더");
 

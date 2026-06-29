@@ -126,7 +126,7 @@ const updateRouteSchema = z
     distanceKm: z.number().optional(),
     estimatedDurationMinutes: z.number().int().optional(),
     tags: z.array(z.string()).optional(),
-    sourceType: z.enum(["curated", "user"]).optional(),
+    sourceType: z.enum(["curated"]).optional(),
     departureLat: z.number().optional(),
     departureLng: z.number().optional(),
     destinationLat: z.number().optional(),
@@ -344,7 +344,10 @@ export async function PATCH(
     };
 
     const restoreRoute = async () => {
-      await supabase.from("routes").update(routeRollbackInput).eq("id", routeId);
+      await supabase
+        .from("routes")
+        .update(routeRollbackInput)
+        .eq("id", routeId);
     };
 
     const restoreWaypoints = async () => {
