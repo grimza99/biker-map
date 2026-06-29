@@ -12,7 +12,7 @@ import {
   ok,
   parseRequestBody,
 } from "@shared/api";
-import { requireApiSession } from "@shared/api/auth";
+import { requireVerifiedApiSession } from "@shared/api/auth";
 import { ensureDirectChatRoom } from "@shared/api/chat";
 
 const ensureDirectChatRoomSchema = z.object({
@@ -20,7 +20,7 @@ const ensureDirectChatRoomSchema = z.object({
 }) satisfies z.ZodType<TEnsureDirectChatRoomBody>;
 
 export async function POST(request: NextRequest) {
-  const session = await requireApiSession(request);
+  const session = await requireVerifiedApiSession(request);
   if (session instanceof Response) {
     return session;
   }

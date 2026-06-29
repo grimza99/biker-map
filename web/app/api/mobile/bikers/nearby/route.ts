@@ -18,7 +18,7 @@ import {
   internalServerError,
   ok,
 } from "@shared/api";
-import { requireApiSession } from "@shared/api/auth";
+import { requireVerifiedApiSession } from "@shared/api/auth";
 import { createSupabaseServiceClient } from "@shared/lib/supabase";
 
 const nearbyBikersQuerySchema = z.object({
@@ -66,7 +66,7 @@ const EARTH_RADIUS_METERS = 6371000;
 /*------------------------------ get (list active nearby bikers) ---------------------------------------*/
 
 export async function GET(request: NextRequest) {
-  const session = await requireApiSession(request);
+  const session = await requireVerifiedApiSession(request);
   if (session instanceof Response) {
     return session;
   }

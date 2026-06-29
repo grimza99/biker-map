@@ -16,7 +16,7 @@ import {
   ok,
   parseRequestBody,
 } from "@shared/api";
-import { requireApiSession } from "@shared/api/auth";
+import { requireVerifiedApiSession } from "@shared/api/auth";
 import { createSupabaseServiceClient } from "@shared/lib/supabase";
 
 const updateMyBikerSharingSchema = z.object({
@@ -45,7 +45,7 @@ const SHARING_SESSION_GUARD_WINDOW_MS =
 /*------------------------------ post (update my sharing status) ---------------------------------------*/
 
 export async function POST(request: NextRequest) {
-  const session = await requireApiSession(request);
+  const session = await requireVerifiedApiSession(request);
   if (session instanceof Response) {
     return session;
   }
