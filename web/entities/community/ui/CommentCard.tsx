@@ -29,6 +29,7 @@ export interface CommentCardProps {
   onClickShowReplyForm?: () => void;
   disabled?: boolean;
 }
+
 export function CommentCard({
   postId,
   content,
@@ -84,6 +85,7 @@ export function CommentCard({
         <div className="flex items-center justify-between gap-3">
           <Profile
             name={content.author.name}
+            avatarUrl={content.author.avatarUrl}
             className="w-auto gap-2 p-0 border-none bg-transparent"
             imgClassName="h-7 w-7"
           />

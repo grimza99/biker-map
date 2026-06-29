@@ -15,18 +15,18 @@ export type ProfileStatus = {
   proficiency: Tproficiency;
 };
 
-export async function loadProfileNameMap(
+export async function loadProfileMap(
   client: SupabaseClient,
   userIds: string[]
 ) {
   const ids = Array.from(new Set(userIds.filter(Boolean)));
   if (!ids.length) {
-    return new Map<string, string>();
+    return new Map<string, { name: string; avatarUrl: string | null }>();
   }
 
   const { data, error } = await client
     .from("profiles")
-    .select("id, name")
+    .select("id, name, avatar_url")
     .in("id", ids);
 
   if (error) {
@@ -34,7 +34,13 @@ export async function loadProfileNameMap(
   }
 
   return new Map(
-    (data ?? []).map((row) => [String(row.id), String(row.name ?? "")])
+    (data ?? []).map((row) => [
+      String(row.id),
+      {
+        name: String(row.name ?? ""),
+        avatarUrl: row.avatar_url ? String(row.avatar_url) : null,
+      },
+    ])
   );
 }
 
