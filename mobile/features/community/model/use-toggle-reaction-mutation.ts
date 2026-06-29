@@ -6,8 +6,6 @@ import {
   type ApiResponse,
   type CreateReactionResponseData,
   type PostCommentsResponseData,
-  type PostDetailResponseData,
-  type PostsListResponseData,
   type ReactionSummary,
   type ReactionTargetType,
   type ReactionType,
@@ -22,10 +20,6 @@ type ToggleReactionParams = {
 };
 
 type ReactionMutationContext = {
-  previousPosts?: Array<
-    [readonly unknown[], ApiResponse<PostsListResponseData> | undefined]
-  >;
-  previousPostDetail?: ApiResponse<PostDetailResponseData> | undefined;
   previousComments?: ApiResponse<PostCommentsResponseData> | undefined;
 };
 
@@ -35,26 +29,6 @@ function createEmptyReactionSummary(): ReactionSummary {
     dislikeCount: 0,
     myReaction: null,
   };
-}
-
-function isPostsListResponse(
-  value:
-    | ApiResponse<PostsListResponseData>
-    | ApiResponse<PostDetailResponseData>
-    | undefined
-): value is ApiResponse<PostsListResponseData> {
-  return Array.isArray(
-    (value as ApiResponse<PostsListResponseData> | undefined)?.data?.items
-  );
-}
-
-function isPostsListQueryKey(queryKey: readonly unknown[]) {
-  return (
-    queryKey[0] === queryKeys.postsRoot[0] &&
-    queryKey.length > 1 &&
-    typeof queryKey[1] === "object" &&
-    queryKey[1] !== null
-  );
 }
 
 function getNextReactionSummary(
@@ -125,102 +99,21 @@ export function useToggleReaction({
         }),
       }),
     onMutate: async (reaction): Promise<ReactionMutationContext> => {
-      await Promise.all([
-        queryClient.cancelQueries({
-          predicate: (query) => isPostsListQueryKey(query.queryKey),
-        }),
-        postId
-          ? queryClient.cancelQueries({ queryKey: queryKeys.post(postId) })
-          : Promise.resolve(),
-        postId
-          ? queryClient.cancelQueries({ queryKey: queryKeys.comments(postId) })
-          : Promise.resolve(),
-      ]);
+      await (postId
+        ? queryClient.cancelQueries({ queryKey: queryKeys.comments(postId) })
+        : Promise.resolve());
 
-      const previousPosts = queryClient
-        .getQueriesData<
-          | ApiResponse<PostsListResponseData>
-          | ApiResponse<PostDetailResponseData>
-        >({
-          queryKey: queryKeys.postsRoot,
-        })
-        .filter(
-          (
-            entry
-          ): entry is [
-            readonly unknown[],
-            ApiResponse<PostsListResponseData> | undefined
-          ] => isPostsListQueryKey(entry[0]) && isPostsListResponse(entry[1])
-        );
-      const previousPostDetail = postId
-        ? queryClient.getQueryData<ApiResponse<PostDetailResponseData>>(
-            queryKeys.post(postId)
-          )
-        : undefined;
       const previousComments = postId
         ? queryClient.getQueryData<ApiResponse<PostCommentsResponseData>>(
             queryKeys.comments(postId)
           )
         : undefined;
 
-      queryClient.setQueriesData<ApiResponse<PostsListResponseData>>(
-        {
-          predicate: (query) => isPostsListQueryKey(query.queryKey),
-        },
-        (current) => {
-          if (!isPostsListResponse(current)) {
-            return current;
-          }
-
-          return {
-            ...current,
-            data: {
-              ...current.data,
-              items: current.data.items.map((item) =>
-                targetType === "post" && item.id === targetId
-                  ? {
-                      ...item,
-                      reactions: getNextReactionSummary(
-                        item.reactions,
-                        reaction
-                      ),
-                    }
-                  : item
-              ),
-            },
-          };
-        }
-      );
-
       if (postId) {
-        queryClient.setQueryData<ApiResponse<PostDetailResponseData>>(
-          queryKeys.post(postId),
-          (current) => {
-            if (
-              !current ||
-              targetType !== "post" ||
-              current.data.id !== targetId
-            ) {
-              return current;
-            }
-
-            return {
-              ...current,
-              data: {
-                ...current.data,
-                reactions: getNextReactionSummary(
-                  current.data.reactions,
-                  reaction
-                ),
-              },
-            };
-          }
-        );
-
         queryClient.setQueryData<ApiResponse<PostCommentsResponseData>>(
           queryKeys.comments(postId),
           (current) => {
-            if (!current || targetType !== "comment") {
+            if (!current) {
               return current;
             }
 
@@ -260,22 +153,10 @@ export function useToggleReaction({
         );
       }
 
-      return {
-        previousPosts,
-        previousPostDetail,
-        previousComments,
-      };
+      return { previousComments };
     },
     onError: (_error, _reaction, context) => {
-      for (const [queryKey, data] of context?.previousPosts ?? []) {
-        queryClient.setQueryData(queryKey, data);
-      }
-
       if (postId) {
-        queryClient.setQueryData(
-          queryKeys.post(postId),
-          context?.previousPostDetail
-        );
         queryClient.setQueryData(
           queryKeys.comments(postId),
           context?.previousComments
@@ -283,19 +164,11 @@ export function useToggleReaction({
       }
     },
     onSettled: async () => {
-      await Promise.all([
-        queryClient.invalidateQueries({
-          predicate: (query) => isPostsListQueryKey(query.queryKey),
-        }),
-        postId
-          ? queryClient.invalidateQueries({ queryKey: queryKeys.post(postId) })
-          : Promise.resolve(),
-        postId
-          ? queryClient.invalidateQueries({
-              queryKey: queryKeys.comments(postId),
-            })
-          : Promise.resolve(),
-      ]);
+      if (postId) {
+        await queryClient.invalidateQueries({
+          queryKey: queryKeys.comments(postId),
+        });
+      }
     },
   });
 }
