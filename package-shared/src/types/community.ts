@@ -104,6 +104,11 @@ export type DeletePostResponseData = {
   deleted: true;
 };
 
+export type IncrementPostViewResponseData = {
+  postId: string;
+  viewCount: number;
+};
+
 export type CreatePostCommentBody = {
   content: string;
 };

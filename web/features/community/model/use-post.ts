@@ -3,14 +3,38 @@ import { useMutation, useQueryClient } from "@tanstack/react-query";
 
 import {
   API_PATHS,
+  type ApiResponse,
   CreatePostBody,
   CreatePostResponseData,
   DeletePostResponseData,
+  type IncrementPostViewResponseData,
+  type PostDetailResponseData,
+  type PostsListResponseData,
   TOAST_MESSAGE,
   UpdatePostBody,
   UpdatePostResponseData,
 } from "@package-shared/index";
 import { apiFetch, queryKeys, useToast } from "@shared/index";
+
+function updatePostListViewCount(
+  current: ApiResponse<PostsListResponseData> | undefined,
+  postId: string,
+  viewCount: number
+) {
+  if (!Array.isArray(current?.data?.items)) {
+    return current;
+  }
+
+  return {
+    ...current,
+    data: {
+      ...current.data,
+      items: current.data.items.map((item) =>
+        item.id === postId ? { ...item, viewCount } : item
+      ),
+    },
+  };
+}
 
 export function useCreateCommunityPost() {
   const { showToast } = useToast();
@@ -97,6 +121,50 @@ export function useDeleteCommunityPost(postId?: string) {
       showToast({
         tone: "danger",
         title: TOAST_MESSAGE.POST.E,
+      });
+    },
+  });
+}
+
+export function useIncrementCommunityPostView(postId: string) {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: () =>
+      apiFetch<IncrementPostViewResponseData>(API_PATHS.community.view(postId), {
+        method: "POST",
+      }),
+    onSuccess: ({ data }) => {
+      queryClient.setQueryData<ApiResponse<PostDetailResponseData>>(
+        queryKeys.post(postId),
+        (current) => {
+          if (!current) {
+            return current;
+          }
+
+          return {
+            ...current,
+            data: {
+              ...current.data,
+              viewCount: data.viewCount,
+            },
+          };
+        }
+      );
+
+      queryClient.setQueriesData<ApiResponse<PostsListResponseData>>(
+        { queryKey: queryKeys.postsRoot },
+        (current) => updatePostListViewCount(current, postId, data.viewCount)
+      );
+
+      queryClient.setQueriesData<ApiResponse<PostsListResponseData>>(
+        { queryKey: ["me", "posts"] },
+        (current) => updatePostListViewCount(current, postId, data.viewCount)
+      );
+
+      void queryClient.invalidateQueries({
+        queryKey: queryKeys.post(postId),
+        exact: true,
       });
     },
   });

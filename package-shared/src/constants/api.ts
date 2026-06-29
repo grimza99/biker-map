@@ -18,6 +18,7 @@ export const API_PATHS = {
   community: {
     posts: `${BASE_URL}/posts`,
     post: (postId: string) => `${BASE_URL}/posts/${postId}`,
+    view: (postId: string) => `${BASE_URL}/posts/${postId}/view`,
     comments: (postId: string) => `${BASE_URL}/posts/${postId}/comments`,
     comment: (commentId: string) => `${BASE_URL}/comments/${commentId}`,
     reply: (commentId: string) => `${BASE_URL}/comments/${commentId}/replies`,

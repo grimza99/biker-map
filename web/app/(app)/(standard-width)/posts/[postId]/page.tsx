@@ -1,7 +1,7 @@
 "use client";
 import { formatDateByType } from "@/shared";
 import { useParams, useRouter } from "next/navigation";
-import { useState } from "react";
+import { useEffect, useEffectEvent, useRef, useState } from "react";
 
 import Comment from "@/entities/community/ui/Comment";
 import { useCommunityPostComments } from "@/features/community/model/use-comments";
@@ -9,6 +9,7 @@ import { FavoriteHeartButton } from "@/features/favorites/ui/FavoriteHeartButton
 
 import {
   useDeleteCommunityPost,
+  useIncrementCommunityPostView,
   useUpdateCommunityPost,
 } from "@/features/community/model/use-post";
 import CommentForm from "@/features/community/ui/CommentForm";
@@ -50,6 +51,27 @@ export default function PostDetailPage() {
   const post = detailpostData?.data;
   const updatePostMutation = useUpdateCommunityPost(postId);
   const deletePostMutation = useDeleteCommunityPost(postId);
+  const incrementPostViewMutation = useIncrementCommunityPostView(postId);
+  const trackedPostIdRef = useRef<string | null>(null);
+
+  const triggerPostView = useEffectEvent((targetPostId: string) => {
+    incrementPostViewMutation.mutate(undefined, {
+      onError: () => {
+        if (trackedPostIdRef.current === targetPostId) {
+          trackedPostIdRef.current = null;
+        }
+      },
+    });
+  });
+
+  useEffect(() => {
+    if (!postId || trackedPostIdRef.current === postId) {
+      return;
+    }
+
+    trackedPostIdRef.current = postId;
+    triggerPostView(postId);
+  }, [postId]);
 
   if (isLoading) {
     return <LoadingState label="게시글을 불러오는 중" />;
