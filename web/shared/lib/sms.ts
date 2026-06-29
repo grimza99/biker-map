@@ -1,3 +1,5 @@
+import "server-only";
+
 import {
   createHmac,
   randomBytes,
@@ -5,7 +7,10 @@ import {
   timingSafeEqual,
 } from "node:crypto";
 
-import { getSmsServerEnv, type SmsProvider } from "@shared/config";
+import {
+  getSmsServerEnv,
+  type SmsProvider,
+} from "@shared/config/sms";
 
 const SOLAPI_API_BASE_URL = "https://api.solapi.com";
 
