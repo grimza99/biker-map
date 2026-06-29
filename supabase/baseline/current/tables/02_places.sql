@@ -12,7 +12,7 @@ create table public.places (
   created_at timestamp with time zone default now() not null,
   updated_at timestamp with time zone default now() not null,
   constraint places_pkey primary key (id),
-  constraint places_category_check check (category = any (array['gas'::text, 'repair'::text, 'cafe'::text, 'shop'::text, 'rest'::text]))
+  constraint places_category_check check (category = any (array['gas'::text, 'repair'::text, 'cafe'::text, 'shop'::text]))
 );
 
 create index idx_places_category on public.places using btree (category);
