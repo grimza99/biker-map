@@ -16,7 +16,7 @@ import {
   DialogTrigger,
   Input,
 } from "@shared/ui";
-import { useDebouncedValue } from "@/shared";
+import { useDebouncedValue } from "@/shared/hooks";
 
 interface ManageRouteDialogProps {
   openModalId: AdminModalId | null;

@@ -103,9 +103,3 @@ export async function logoutAction() {
     redirectTo: "/auth?toast=logout-success",
   });
 }
-
-export async function logoutAction() {
-  await signOut({
-    redirectTo: "/auth?toast=logout-success",
-  });
-}

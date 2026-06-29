@@ -18,7 +18,7 @@ import {
   Input,
   Pagination,
 } from "@shared/ui";
-import { useDebouncedValue } from "@/shared";
+import { useDebouncedValue } from "@/shared/hooks";
 
 interface ManagePlaceDialogProps {
   openModalId: AdminModalId | null;
