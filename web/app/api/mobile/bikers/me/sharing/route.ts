@@ -213,15 +213,7 @@ async function sendBikerRealtimeBroadcast(
   const channel = supabase.channel(DEFAULT_BIKER_REALTIME_CHANNEL);
 
   try {
-    const result = await channel.send({
-      type: "broadcast",
-      event,
-      payload,
-    });
-
-    if (result !== "ok") {
-      throw new Error(`broadcast send failed: ${result}`);
-    }
+    await channel.httpSend(event, payload);
   } finally {
     await supabase.removeChannel(channel);
   }

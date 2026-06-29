@@ -1,14 +1,17 @@
-import { AppText } from "@/components/common";
-import { cn } from "@/shared";
-import type { BikerPreview } from "@/entities/bikers";
 import { View } from "react-native";
+
+import { TChatParticipantProfile } from "@package-shared/index";
+
+import { AppText } from "@/components/common";
+import { cn, ProfileIdentity } from "@/shared";
 
 interface IMessageProps {
   id: string;
   message: string;
   isOwn: boolean;
-  author: BikerPreview;
+  author: TChatParticipantProfile;
 }
+
 export function Message({ message, isOwn, author }: IMessageProps) {
   return (
     <View className={cn("w-full flex", isOwn ? "items-end" : "items-start")}>
@@ -18,9 +21,10 @@ export function Message({ message, isOwn, author }: IMessageProps) {
           isOwn ? "items-end" : "items-start"
         )}
       >
-        <AppText className="text-xs font-semibold" tone="muted">
-          {author.nickname}
-        </AppText>
+        <ProfileIdentity
+          name={author.nickname}
+          avatarUrl={author.avatarUrl ?? null}
+        />
         <View
           className={cn(
             "border border-none w-fit max-w-50 rounded-2xl py-1.5 px-3 min-w-30",

@@ -1,12 +1,15 @@
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 
-import { useRouter } from "expo-router";
+import { Href, useRouter } from "expo-router";
 import { Alert, Linking, StyleSheet, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
 import { AppText, Button } from "@/components/common";
 import { BikersBottomSheet } from "@/entities/bikers/ui/BikersBottomSheet";
-import { useLiveBikers } from "@/features/bikers";
+import {
+  useEnsureDirectChatRoomMutation,
+  useLiveBikers,
+} from "@/features/bikers";
 import { useCurrentLocation } from "@/features/location/hooks";
 import { MapCanvasWebView } from "@/features/map/ui/MapCanvasWebView";
 import { useSession } from "@/features/session/model";
@@ -18,6 +21,9 @@ export default function BikersScreen() {
   const isAuthenticated = status === "authenticated";
   const isVerified = user?.isVerified === true;
   const canUseLiveBikers = isAuthenticated && isVerified;
+  const [pendingChatUserId, setPendingChatUserId] = useState<string | null>(
+    null
+  );
   const { currentLocation, errorMessage, isLoading } =
     useCurrentLocation(canUseLiveBikers);
   const {
@@ -30,6 +36,7 @@ export default function BikersScreen() {
     currentLocation,
     enabled: canUseLiveBikers,
   });
+  const ensureDirectChatRoomMutation = useEnsureDirectChatRoomMutation();
   const isLocationServiceDisabled =
     errorMessage ===
     "기기의 위치 서비스가 꺼져 있어 현재 위치를 가져올 수 없습니다.";
@@ -125,6 +132,32 @@ export default function BikersScreen() {
     );
   }
 
+  async function handlePressChat(targetUserId: string) {
+    setPendingChatUserId(targetUserId);
+
+    try {
+      const response = await ensureDirectChatRoomMutation.mutateAsync({
+        targetUserId,
+      });
+
+      router.push({
+        pathname: MOBILE_PATHS.bikers.chat,
+        params: {
+          chatId: response.data.room.id,
+        },
+      } as unknown as Href);
+    } catch (error) {
+      Alert.alert(
+        "채팅방을 열 수 없습니다",
+        error instanceof Error ? error.message : "잠시 후 다시 시도해 주세요."
+      );
+    } finally {
+      setPendingChatUserId((currentValue) =>
+        currentValue === targetUserId ? null : currentValue
+      );
+    }
+  }
+
   return (
     <View className="bg-bg flex-1">
       <MapCanvasWebView
@@ -191,6 +224,7 @@ export default function BikersScreen() {
       </SafeAreaView>
       <BikersBottomSheet
         bikers={nearbyBikers.map((biker) => ({
+          userId: biker.userId,
           nickname: biker.nickname,
           bikeBrand: biker.bikeBrand ?? "바이크 정보 없음",
           bikeModel: biker.bikeModel ?? "모델 정보 없음",
@@ -202,6 +236,10 @@ export default function BikersScreen() {
           ),
           proficiency: "미정",
         }))}
+        onPressChat={(biker) => {
+          void handlePressChat(biker.userId);
+        }}
+        pendingChatUserId={pendingChatUserId}
       />
     </View>
   );
