@@ -13,6 +13,7 @@ import {
   deleteAuthUser,
   hasLocalSupabaseEnv,
   listDirectChatRoomIdsForUsers,
+  markAuthUserVerified,
 } from "./support/supabase-local";
 
 test.describe("모바일 direct room API 계약", () => {
@@ -55,6 +56,11 @@ test.describe("모바일 direct room API 계약", () => {
 
       expect(riderAUserId).toEqual(expect.any(String));
       expect(riderBUserId).toEqual(expect.any(String));
+
+      await Promise.all([
+        markAuthUserVerified(riderAUserId ?? ""),
+        markAuthUserVerified(riderBUserId ?? ""),
+      ]);
 
       const [createFromAResponse, createFromBResponse] = await Promise.all([
         request.post(API_PATHS.bikers.ensureDirectChatRoom, {

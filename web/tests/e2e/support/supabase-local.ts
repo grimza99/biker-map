@@ -60,6 +60,23 @@ export async function markAuthUserProfileDeleted(userId: string) {
   }
 }
 
+export async function markAuthUserVerified(userId: string) {
+  const supabase = createLocalSupabaseAdminClient();
+  const now = new Date();
+  const { error } = await supabase.from("sms_verifications").insert({
+    user_id: userId,
+    phone_number: "01000000000",
+    otp_code: "e2e-verified",
+    expires_at: new Date(now.getTime() + 5 * 60 * 1000).toISOString(),
+    is_verified: true,
+    verified_at: now.toISOString(),
+  });
+
+  if (error) {
+    throw new Error(`테스트 사용자 본인인증 상태 변경 실패: ${error.message}`);
+  }
+}
+
 export async function listDirectChatRoomIdsForUsers(
   userIds: [string, string]
 ) {
