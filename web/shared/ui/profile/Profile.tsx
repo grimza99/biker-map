@@ -1,37 +1,56 @@
 "use client";
 
-import Link from "next/link";
-
+import { PATHS } from "@package-shared/constants";
 import { cn } from "@shared/lib";
+import Link from "next/link";
 import { ProfileImgChip } from "./ProfileImgChip";
 
+interface IProfileProps {
+  name: string;
+  avatarUrl?: string | null;
+  className?: string;
+  imgClassName?: string;
+  canGoMePage?: boolean;
+}
 export function Profile({
   name,
   avatarUrl,
-  href = "/me",
   className,
   imgClassName,
-}: {
-  name: string;
-  avatarUrl?: string | null;
-  href?: string;
-  className?: string;
-  imgClassName?: string;
-}) {
+  canGoMePage = true,
+}: IProfileProps) {
   return (
-    <Link
-      href={href}
-      className={cn(
-        "inline-flex max-w-40 w-full items-center justify-between rounded-3xl border border-border bg-panel-solid px-3 py-1.5 text-md font-medium text-text gap-2",
-        className
+    <>
+      {canGoMePage ? (
+        <Link
+          href={PATHS.me}
+          className={cn(
+            "inline-flex max-w-40 w-full items-center justify-between rounded-3xl border border-border bg-panel-solid px-3 py-1.5 text-md font-medium text-text gap-2",
+            className
+          )}
+        >
+          <ProfileImgChip
+            avatarUrl={avatarUrl ?? ""}
+            name={name}
+            className={imgClassName}
+          />
+          <span className="max-w-20 truncate mr-2">{name}</span>
+        </Link>
+      ) : (
+        <div
+          className={cn(
+            "inline-flex max-w-40 w-full items-center justify-between rounded-3xl border border-border bg-panel-solid px-3 py-1.5 text-md font-medium text-text gap-2",
+            className
+          )}
+        >
+          <ProfileImgChip
+            avatarUrl={avatarUrl ?? ""}
+            name={name}
+            className={imgClassName}
+          />
+          <span className="max-w-20 truncate mr-2">{name}</span>
+        </div>
       )}
-    >
-      <ProfileImgChip
-        avatarUrl={avatarUrl ?? ""}
-        name={name}
-        className={imgClassName}
-      />
-      <span className="max-w-20 truncate mr-2">{name}</span>
-    </Link>
+    </>
   );
 }

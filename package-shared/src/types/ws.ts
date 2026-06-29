@@ -1,5 +1,5 @@
 import type { TBikerPresenceItem } from "./biker";
-import type { TChatMessage } from "./chat";
+import type { TChatRealtimeEvent } from "./chat";
 
 export type RealtimeMode = "supabase-realtime" | "websocket";
 export type RealtimeFeature =
@@ -54,33 +54,6 @@ export type TNotificationRealtimeEvent = {
   type: "notification:new" | "notification:update";
   notificationId: string;
 };
-
-export type TChatMessageRealtimeEvent = {
-  type: "chat:message";
-  roomId: string;
-  message: TChatMessage;
-};
-
-export type TChatTypingRealtimeEvent = {
-  type: "chat:typing";
-  roomId: string;
-  userId: string;
-  isTyping: boolean;
-  sentAt?: string;
-};
-
-export type TChatPresenceRealtimeEvent = {
-  type: "chat:presence";
-  roomId: string;
-  userId: string;
-  status: "join" | "leave";
-  sentAt?: string;
-};
-
-export type TChatRealtimeEvent =
-  | TChatMessageRealtimeEvent
-  | TChatTypingRealtimeEvent
-  | TChatPresenceRealtimeEvent;
 
 export type TRealtimeConfigResponseData =
   | TNotificationRealtimeConfigResponseData

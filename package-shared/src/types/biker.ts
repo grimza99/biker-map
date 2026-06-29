@@ -1,10 +1,4 @@
-export interface IBiker {
-  nickname: string;
-  bikeBrand: string;
-  bikeModel: string;
-  distance: string;
-  proficiency: string;
-}
+import { Tproficiency } from "./me";
 
 export type TLocationCoordinate = {
   lat: number;
@@ -26,7 +20,6 @@ export type TUpdateMyBikerLocationBody = {
   location: TLocationCoordinate;
   accuracyMeters?: number | null;
   heading?: number | null;
-  observedAt?: string;
   speedKph?: number | null;
 };
 
@@ -41,6 +34,7 @@ export type TBikerPresenceItem = {
   nickname: string;
   bikeBrand?: string | null;
   bikeModel?: string | null;
+  proficiency: Tproficiency | null;
   isMe?: boolean;
   location: TLocationCoordinate;
   accuracyMeters?: number | null;

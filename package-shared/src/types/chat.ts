@@ -27,11 +27,41 @@ export type TChatMessage = TChatMessagePreview & {
   author: TChatParticipantProfile;
 };
 
+export type TChatMessageRealtimeEvent = {
+  type: "chat:message";
+  roomId: string;
+  message: TChatMessage;
+};
+
+export type TChatTypingRealtimeEvent = {
+  type: "chat:typing";
+  roomId: string;
+  userId: string;
+  isTyping: boolean;
+  sentAt?: string;
+};
+
+export type TChatPresenceRealtimeEvent = {
+  type: "chat:presence";
+  roomId: string;
+  userId: string;
+  status: "join" | "leave";
+  sentAt?: string;
+};
+
+export type TChatRealtimeEvent =
+  | TChatMessageRealtimeEvent
+  | TChatTypingRealtimeEvent
+  | TChatPresenceRealtimeEvent;
+
 export type TChatRoom = {
   id: string;
   kind: TChatRoomKind;
   participants: TChatParticipant[];
   lastMessage: TChatMessagePreview | null;
+  viewerLastReadMessageId?: string | null;
+  viewerLastReadAt?: string | null;
+  viewerUnreadCount: number;
   createdAt: string;
   updatedAt: string;
 };
@@ -66,4 +96,12 @@ export type TEnsureDirectChatRoomBody = {
 export type TEnsureDirectChatRoomResponseData = {
   room: TChatRoom;
   created: boolean;
+};
+
+export type TMarkChatReadBody = {
+  lastReadMessageId?: string | null;
+};
+
+export type TMarkChatReadResponseData = {
+  room: TChatRoom;
 };

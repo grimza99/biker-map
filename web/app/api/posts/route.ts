@@ -1,9 +1,9 @@
 import type {
+  Author,
   CommunityCategorySlug,
   CommunityPostsQuery,
   CreatePostBody,
 } from "@package-shared/types/community";
-import type { ReactionSummary } from "@package-shared/types/reaction";
 import {
   badRequest,
   communityCategories,
@@ -12,13 +12,12 @@ import {
   getNumberParam,
   getStringParam,
   internalServerError,
-  loadProfileNameMap,
-  loadReactionSummaryMap,
+  loadProfileMap,
   mapCommunityPostItem,
   ok,
   parseRequestBody,
 } from "@shared/api";
-import { getSupabaseAuthSession, requireApiSession } from "@shared/api/auth";
+import { requireApiSession } from "@shared/api/auth";
 import type { NextRequest } from "next/server";
 import { z } from "zod";
 
@@ -56,8 +55,6 @@ export async function GET(request: NextRequest) {
   };
 
   const supabase = createSupabaseApiClient(request);
-  const authSession = await getSupabaseAuthSession(request);
-  const viewerUserId = authSession?.user.id ?? null;
   let postsQuery = supabase
     .from("posts")
     .select(
@@ -92,9 +89,9 @@ export async function GET(request: NextRequest) {
     return internalServerError(error.message);
   }
 
-  let authorMap: Map<string, string>;
+  let authorMap: Map<string, Author>;
   try {
-    authorMap = await loadProfileNameMap(
+    authorMap = await loadProfileMap(
       supabase,
       (data ?? []).map((row) => String(row.author_id ?? ""))
     );
@@ -105,28 +102,11 @@ export async function GET(request: NextRequest) {
         : "게시글 작성자 정보를 불러오지 못했습니다."
     );
   }
-
-  let reactionMap = new Map<string, ReactionSummary>();
-  try {
-    reactionMap = await loadReactionSummaryMap(
-      "post",
-      (data ?? []).map((row) => String(row.id ?? "")),
-      viewerUserId
-    );
-  } catch (reactionError) {
-    return internalServerError(
-      reactionError instanceof Error
-        ? reactionError.message
-        : "게시글 반응 정보를 불러오지 못했습니다."
-    );
-  }
-
   const items = (data ?? [])
     .map((row) =>
       mapCommunityPostItem({
         ...row,
-        author_name: authorMap.get(String(row.author_id ?? "")) ?? "익명",
-        reactions: reactionMap.get(String(row.id ?? "")) ?? undefined,
+        author_name: authorMap.get(String(row.author_id ?? ""))?.name ?? "익명",
       })
     )
     .filter((item): item is NonNullable<typeof item> => Boolean(item));

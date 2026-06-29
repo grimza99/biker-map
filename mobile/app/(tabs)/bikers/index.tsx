@@ -1,31 +1,37 @@
+import { Href, useRouter } from "expo-router";
+import { useEffect, useState } from "react";
 import { Alert, Linking, StyleSheet, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
-import { useEffect, useState } from "react";
-
-import { AppText, Button } from "@/components/common";
+import { Button } from "@/components/common";
+import { AppScreen } from "@/components/shell";
+import { BikersBottomSheet } from "@/entities/bikers/ui/BikersBottomSheet";
+import { AuthVerifyDialog } from "@/features/auth/ui";
 import {
   useEnsureDirectChatRoomMutation,
   useLiveBikers,
 } from "@/features/bikers";
 import { useCurrentLocation } from "@/features/location/hooks";
 import { MapCanvasWebView } from "@/features/map/ui/MapCanvasWebView";
-import { MOBILE_PATHS, Toggle } from "@/shared";
-import { Href, Redirect, useRouter } from "expo-router";
-import { BikersBottomSheet } from "@/entities/bikers/ui/BikersBottomSheet";
 import { useSession } from "@/features/session/model";
+import { AppText, Indicator, MOBILE_PATHS, Toggle } from "@/shared";
+import { bikerMapTheme, proficiencyMap } from "@package-shared/index";
+
 export default function BikersScreen() {
-  const { status } = useSession();
+  const { status, user } = useSession();
   const isAuthenticated = status === "authenticated";
+  const isVerified = user?.isVerified === true;
+  const canUseLiveBikers = isAuthenticated && isVerified;
   const router = useRouter();
   const [pendingChatUserId, setPendingChatUserId] = useState<string | null>(
     null
   );
-  const {
-    currentLocation,
-    errorMessage,
-    isLoading,
-  } = useCurrentLocation(isAuthenticated);
+  const [isVerifyDialogOpen, setIsVerifyDialogOpen] = useState(false);
+  const [hasShownLoginAlert, setHasShownLoginAlert] = useState(false);
+  const [hasAutoOpenedVerifyDialog, setHasAutoOpenedVerifyDialog] =
+    useState(false);
+  const { currentLocation, errorMessage, isLoading } =
+    useCurrentLocation(canUseLiveBikers);
   const {
     canRetryRealtime,
     errorMessage: liveBikersErrorMessage,
@@ -38,7 +44,7 @@ export default function BikersScreen() {
     toggleSharing,
   } = useLiveBikers({
     currentLocation,
-    enabled: isAuthenticated,
+    enabled: canUseLiveBikers,
   });
   const ensureDirectChatRoomMutation = useEnsureDirectChatRoomMutation();
   const isLocationServiceDisabled =
@@ -46,7 +52,7 @@ export default function BikersScreen() {
     "기기의 위치 서비스가 꺼져 있어 현재 위치를 가져올 수 없습니다.";
 
   useEffect(() => {
-    if (!isLocationServiceDisabled) {
+    if (!canUseLiveBikers || !isLocationServiceDisabled) {
       return;
     }
 
@@ -66,11 +72,51 @@ export default function BikersScreen() {
         },
       ]
     );
-  }, [isLocationServiceDisabled]);
+  }, [canUseLiveBikers, isLocationServiceDisabled]);
 
-  if (!isAuthenticated) {
-    return <Redirect href={MOBILE_PATHS.auth} />;
-  }
+  useEffect(() => {
+    if (status !== "anonymous") {
+      setHasShownLoginAlert(false);
+      return;
+    }
+
+    if (hasShownLoginAlert) {
+      return;
+    }
+
+    setHasShownLoginAlert(true);
+
+    Alert.alert(
+      "로그인이 필요합니다",
+      "라이브 바이커는 로그인 후 이용할 수 있습니다.",
+      [
+        {
+          text: "취소",
+          style: "cancel",
+        },
+        {
+          text: "로그인",
+          onPress: () => {
+            router.push(MOBILE_PATHS.auth);
+          },
+        },
+      ]
+    );
+  }, [hasShownLoginAlert, router, status]);
+
+  useEffect(() => {
+    if (!isAuthenticated || isVerified) {
+      setHasAutoOpenedVerifyDialog(false);
+      return;
+    }
+
+    if (hasAutoOpenedVerifyDialog) {
+      return;
+    }
+
+    setHasAutoOpenedVerifyDialog(true);
+    setIsVerifyDialogOpen(true);
+  }, [hasAutoOpenedVerifyDialog, isAuthenticated, isVerified]);
 
   async function handlePressChat(targetUserId: string) {
     setPendingChatUserId(targetUserId);
@@ -89,9 +135,7 @@ export default function BikersScreen() {
     } catch (error) {
       Alert.alert(
         "채팅방을 열 수 없습니다",
-        error instanceof Error
-          ? error.message
-          : "잠시 후 다시 시도해 주세요."
+        error instanceof Error ? error.message : "잠시 후 다시 시도해 주세요."
       );
     } finally {
       setPendingChatUserId((currentValue) =>
@@ -100,6 +144,79 @@ export default function BikersScreen() {
     }
   }
 
+  if (status === "loading") {
+    return (
+      <SafeAreaView
+        className="flex-1 bg-bg px-4.5 py-6"
+        edges={["top", "bottom"]}
+      >
+        <View className="flex-1 justify-center rounded-[28px] border border-border bg-panel px-5 py-6">
+          <AppText className="text-center text-sm font-bold text-muted">
+            세션 정보를 확인하는 중입니다.
+          </AppText>
+        </View>
+      </SafeAreaView>
+    );
+  }
+
+  if (status === "anonymous") {
+    return (
+      <AppScreen>
+        <View className="flex-1 justify-center gap-4 rounded-[28px] border border-border bg-panel px-5 py-6">
+          <AppText className="text-2xl font-extrabold">
+            로그인 후 이용가능한 서비스 입니다
+          </AppText>
+          <AppText className="text-sm leading-5 text-muted">
+            주변 바이커 위치 공유와 실시간 연결은 로그인된 계정에서만
+            가능합니다.
+          </AppText>
+          <Button
+            fullWidth
+            onPress={() => {
+              router.push(MOBILE_PATHS.auth);
+            }}
+          >
+            로그인 하러 가기
+          </Button>
+        </View>
+      </AppScreen>
+    );
+  }
+
+  if (isAuthenticated && !isVerified) {
+    return (
+      <AppScreen>
+        <View className="flex-1 justify-center gap-4 rounded-[28px] border border-border bg-panel px-5 py-6">
+          <AppText className="text-[24px] font-extrabold text-text">
+            핸드폰 본인인증이 완료되어야 라이브 바이커를 사용할 수 있습니다.
+          </AppText>
+          <AppText className="text-sm leading-5 text-muted">
+            인증 전에는 지도, 위치 권한 요청, 실시간 연결, 주변 바이커 조회와
+            위치 공유가 모두 차단됩니다.
+          </AppText>
+          <Button
+            fullWidth
+            onPress={() => {
+              setIsVerifyDialogOpen(true);
+            }}
+          >
+            핸드폰 본인인증 하기
+          </Button>
+        </View>
+        <AuthVerifyDialog
+          open={isVerifyDialogOpen}
+          onOpenChange={() => {
+            setIsVerifyDialogOpen(false);
+          }}
+          onSuccess={() => {
+            setIsVerifyDialogOpen(false);
+          }}
+        />
+      </AppScreen>
+    );
+  }
+
+  const isReLoad = isLoading || isSyncing || isRealtimeRetrying;
   return (
     <View className="bg-bg flex-1">
       <MapCanvasWebView
@@ -115,82 +232,34 @@ export default function BikersScreen() {
         edges={["top"]}
         style={styles.overlay}
       >
-        <Toggle
-          value={isSharingEnabled}
-          onValueChange={(nextValue) => {
-            void toggleSharing(nextValue);
-          }}
-          label={isSharingEnabled ? "위치 공유중" : "위치 공유 끔"}
-          size="lg"
-        />
-        <View className="gap-3 rounded-[28px] border border-border bg-[rgba(17,19,21,0.9)] px-4.5 py-4">
-          {currentLocation ? (
-            <AppText className="text-xs font-bold text-text">
-              LAT {currentLocation.lat.toFixed(5)} / LNG
-              {currentLocation.lng.toFixed(5)}
-            </AppText>
-          ) : null}
-
-          {isLoading ? (
-            <AppText className="text-xs font-bold text-muted">
-              현재 위치를 확인하는 중입니다
-            </AppText>
-          ) : null}
-
-          {isSyncing ? (
-            <AppText className="text-xs font-bold text-muted">
-              주변 바이커 정보를 동기화하는 중입니다
-            </AppText>
-          ) : null}
-
-          {errorMessage ? (
-            <View className="gap-2">
-              <AppText className="text-xs font-bold text-warning">
-                {errorMessage}
-              </AppText>
-            </View>
-          ) : null}
-
-          {liveBikersErrorMessage ? (
-            <View className="gap-2">
-              <AppText className="text-xs font-bold text-warning">
-                {liveBikersErrorMessage}
-              </AppText>
-            </View>
-          ) : null}
-
-          {isRealtimeRetrying ? (
-            <AppText className="text-xs font-bold text-warning">
-              실시간 연결을 다시 시도하고 있습니다.
-            </AppText>
-          ) : null}
-
-          {realtimeErrorMessage ? (
-            <View className="gap-2">
-              <AppText className="text-xs font-bold text-warning">
-                {realtimeErrorMessage}
-              </AppText>
-
-              {canRetryRealtime ? (
-                <Button
-                  size="sm"
-                  variant="secondary"
-                  onPress={() => {
-                    retryRealtime();
-                  }}
-                  style={styles.retryButton}
-                  textStyle={styles.retryButtonLabel}
-                >
-                  다시 연결
-                </Button>
-              ) : null}
-            </View>
-          ) : null}
-
-          <AppText className="text-xs font-bold text-text">
-            주변 바이커 {nearbyBikers.length}명
-          </AppText>
+        <View className="flex flex-row gap-2">
+          {isReLoad && <Indicator color={bikerMapTheme.colors.active} />}
+          <Toggle
+            value={isSharingEnabled}
+            onValueChange={(nextValue) => {
+              void toggleSharing(nextValue);
+            }}
+            label={isSharingEnabled ? "위치 공유중" : "위치 공유 끔"}
+            size="lg"
+          />
         </View>
+        {realtimeErrorMessage ? (
+          <View className="gap-2">
+            {canRetryRealtime && (
+              <Button
+                size="sm"
+                variant="secondary"
+                onPress={() => {
+                  retryRealtime();
+                }}
+                style={styles.retryButton}
+                textStyle={styles.retryButtonLabel}
+              >
+                다시 연결
+              </Button>
+            )}
+          </View>
+        ) : null}
       </SafeAreaView>
       <BikersBottomSheet
         bikers={nearbyBikers.map((biker) => ({
@@ -204,7 +273,9 @@ export default function BikersScreen() {
             biker.location.lat,
             biker.location.lng
           ),
-          proficiency: "미정",
+          proficiency: biker.proficiency
+            ? proficiencyMap[biker.proficiency]
+            : "숙련도 정보 없음",
         }))}
         onPressChat={(biker) => {
           void handlePressChat(biker.userId);
@@ -225,7 +296,12 @@ function formatDistanceKm(
     return "-";
   }
 
-  const distanceMeters = calculateDistanceMeters(fromLat, fromLng, toLat, toLng);
+  const distanceMeters = calculateDistanceMeters(
+    fromLat,
+    fromLng,
+    toLat,
+    toLng
+  );
   return (distanceMeters / 1000).toFixed(distanceMeters >= 1000 ? 1 : 2);
 }
 
@@ -259,9 +335,8 @@ function degreesToRadians(value: number) {
 const styles = StyleSheet.create({
   overlay: {
     position: "absolute",
-    top: 0,
-    right: 0,
-    left: 0,
+    bottom: 50,
+    right: 10,
     zIndex: 10,
   },
   retryButton: {

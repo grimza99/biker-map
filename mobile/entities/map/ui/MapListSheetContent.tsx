@@ -1,13 +1,17 @@
 import { ActivityIndicator, ScrollView, View } from "react-native";
 
-import { type PlacesQuery, bikerMapTheme } from "@package-shared/index";
+import {
+  bikerMapTheme,
+  type MapCategoryFilter,
+  type PlacesQuery,
+} from "@package-shared/index";
 import { usePlaceList } from "@/entities/place";
 import { RouteCard, useRouteListQuery } from "@/entities/route";
 import { PlaceCard } from "@/entities/place/ui/PlaceCard";
 import { AppText } from "@/components/common";
 
 type MapListSheetContentProps = {
-  activeCategory: PlacesQuery["category"];
+  activeCategory: MapCategoryFilter;
 };
 
 const SHEET_PAGE_SIZE = 8;
@@ -15,16 +19,25 @@ const SHEET_PAGE_SIZE = 8;
 export function MapListSheetContent({
   activeCategory,
 }: MapListSheetContentProps) {
+  const placeCategory: PlacesQuery["category"] =
+    activeCategory === "route" ? undefined : activeCategory;
+  const shouldShowPlaces = activeCategory !== "route";
+  const shouldShowRoutes = activeCategory === "all" || activeCategory === "route";
+
   const placesQuery = usePlaceList({
-    category: activeCategory,
+    category: placeCategory,
     limit: SHEET_PAGE_SIZE,
   });
   const routesQuery = useRouteListQuery({
     limit: SHEET_PAGE_SIZE,
   });
 
-  const isInitialLoading = placesQuery.isLoading || routesQuery.isLoading;
-  const errorMessage = placesQuery.error?.message ?? routesQuery.error?.message;
+  const isInitialLoading =
+    (shouldShowPlaces && placesQuery.isLoading) ||
+    (shouldShowRoutes && routesQuery.isLoading);
+  const errorMessage =
+    (shouldShowPlaces ? placesQuery.error?.message : undefined) ??
+    (shouldShowRoutes ? routesQuery.error?.message : undefined);
 
   if (isInitialLoading) {
     return (
@@ -54,7 +67,8 @@ export function MapListSheetContent({
   const places = placesQuery.data ?? [];
   const routes = routesQuery.data?.data.items ?? [];
   const hasContent =
-    places.length > 0 || (routesQuery.data?.meta?.total || 0) > 0;
+    (shouldShowPlaces && places.length > 0) ||
+    (shouldShowRoutes && (routesQuery.data?.meta?.total || 0) > 0);
 
   return (
     <View className="h-full gap-3">
@@ -66,16 +80,20 @@ export function MapListSheetContent({
         <View className="gap-4 pb-4">
           {hasContent ? (
             <>
-              <View className="gap-2.5">
-                {places.map((place) => (
-                  <PlaceCard key={place.id} place={place} />
-                ))}
-              </View>
-              <View className="gap-2.5">
-                {routes.map((route) => (
-                  <RouteCard key={route.id} route={route} />
-                ))}
-              </View>
+              {shouldShowPlaces ? (
+                <View className="gap-2.5">
+                  {places.map((place) => (
+                    <PlaceCard key={place.id} place={place} />
+                  ))}
+                </View>
+              ) : null}
+              {shouldShowRoutes ? (
+                <View className="gap-2.5">
+                  {routes.map((route) => (
+                    <RouteCard key={route.id} route={route} />
+                  ))}
+                </View>
+              ) : null}
             </>
           ) : (
             <View className="rounded-2xl border border-border bg-panel-solid p-4">

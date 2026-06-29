@@ -13,6 +13,8 @@ export const PATHS = {
   auth: "/auth" as const,
   community: {
     entry: "/posts" as const,
+    createPost: "/posts/new" as const,
+    detailPost: (postId: string) => `/posts/${postId}` as const,
   },
   route: {
     list: "/routes",

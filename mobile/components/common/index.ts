@@ -42,4 +42,4 @@ export type {
 } from "./GlobalFloatingMenu";
 export { MetaCounts } from "./MetaCounts";
 export { Pagination } from "./Pagination";
-export { AppText } from "@/shared/ui";
+export { AppText } from "../../shared/ui/AppText";

@@ -1,10 +1,11 @@
 "use client";
-
-import { CommunityPostCard } from "@/entities/community";
-import { useMyPosts } from "@features/me/model/use-my-posts";
-import { categoryLabelMap } from "@package-shared/model";
-import { EmptyState, ErrorState, LoadingState, Pagination } from "@shared/ui";
 import { startTransition, useEffect, useState } from "react";
+
+import { categoryLabelMap } from "@package-shared/model";
+
+import { PostCard } from "@/entities/community";
+import { useMyPosts } from "@features/me/model/use-my-posts";
+import { EmptyState, ErrorState, LoadingState, Pagination } from "@shared/ui";
 
 export function MyPostsSection() {
   const [page, setPage] = useState(1);
@@ -50,7 +51,7 @@ export function MyPostsSection() {
   return (
     <div className="grid gap-4">
       {posts.map((post) => (
-        <CommunityPostCard
+        <PostCard
           key={post.id}
           post={post}
           categoryLabel={categoryLabelMap[post.category]}

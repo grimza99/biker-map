@@ -25,8 +25,10 @@ type UseSupabaseBroadcastRealtimeOptions = {
 };
 
 type UseSupabaseBroadcastRealtimeResult = {
+  broadcast: (event: string, payload: unknown) => Promise<void>;
   canRetry: boolean;
   errorMessage: string | null;
+  isConnected: boolean;
   isRetrying: boolean;
   retry: () => void;
 };
@@ -46,10 +48,12 @@ export function useSupabaseBroadcastRealtime({
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [isRetrying, setIsRetrying] = useState(false);
   const [canRetry, setCanRetry] = useState(false);
+  const [isConnected, setIsConnected] = useState(false);
   const [retryNonce, setRetryNonce] = useState(0);
 
   const retryCountRef = useRef(0);
   const retryTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const channelRef = useRef<RealtimeChannel | null>(null);
   const latestOptionsRef = useRef({
     accessToken,
     authMissingMessage,
@@ -71,6 +75,8 @@ export function useSupabaseBroadcastRealtime({
   useEffect(() => {
     if (!enabled) {
       clearRetryState();
+      setIsConnected(false);
+      channelRef.current = null;
       return;
     }
 
@@ -78,6 +84,8 @@ export function useSupabaseBroadcastRealtime({
       clearRetryTimer();
       setIsRetrying(false);
       setCanRetry(false);
+      setIsConnected(false);
+      channelRef.current = null;
       setErrorMessage(authMissingMessage);
       return;
     }
@@ -94,11 +102,13 @@ export function useSupabaseBroadcastRealtime({
         return;
       }
 
-      isChannelCleanup = true;
-      await supabase.removeChannel(channel);
-      channel = null;
-      cleanup = null;
-    }
+        isChannelCleanup = true;
+        await supabase.removeChannel(channel);
+        setIsConnected(false);
+        channelRef.current = null;
+        channel = null;
+        cleanup = null;
+      }
 
     function scheduleRetry(message: string) {
       clearRetryTimer();
@@ -159,6 +169,7 @@ export function useSupabaseBroadcastRealtime({
             private: config.privateChannel ?? false,
           },
         });
+        channelRef.current = channel;
 
         for (const binding of latestOptionsRef.current.bindings) {
           channel = channel.on(
@@ -208,12 +219,15 @@ export function useSupabaseBroadcastRealtime({
           }
 
           await supabase.removeChannel(channel);
+          setIsConnected(false);
+          channelRef.current = null;
           channel = null;
         };
 
         retryCountRef.current = 0;
         setIsRetrying(false);
         setCanRetry(false);
+        setIsConnected(true);
         setErrorMessage(null);
       } catch (error) {
         if (cancelled) {
@@ -243,6 +257,8 @@ export function useSupabaseBroadcastRealtime({
       if (channel && supabase) {
         isChannelCleanup = true;
         void supabase.removeChannel(channel);
+        setIsConnected(false);
+        channelRef.current = null;
         channel = null;
       }
     };
@@ -274,9 +290,29 @@ export function useSupabaseBroadcastRealtime({
     retryTimerRef.current = null;
   }
 
+  async function broadcast(event: string, payload: unknown) {
+    const channel = channelRef.current;
+
+    if (!channel) {
+      throw new Error("실시간 채널이 아직 연결되지 않았습니다.");
+    }
+
+    const result = await channel.send({
+      type: "broadcast",
+      event,
+      payload,
+    });
+
+    if (result !== "ok") {
+      throw new Error(`broadcast send failed: ${result}`);
+    }
+  }
+
   return {
+    broadcast,
     canRetry,
     errorMessage,
+    isConnected,
     isRetrying,
     retry,
   };

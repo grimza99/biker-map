@@ -7,3 +7,4 @@ export { ScreenState } from "./ScreenState";
 export * from "./SkeletonBlock";
 export { Indicator } from "./Indicator";
 export { AppText } from "./AppText";
+export { BouncingDots } from "./BouncingDots";

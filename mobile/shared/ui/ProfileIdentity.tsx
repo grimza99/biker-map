@@ -10,26 +10,22 @@ interface IProfileIdentityProps {
 }
 export function ProfileIdentity({ avatarUrl, name }: IProfileIdentityProps) {
   return (
-    <View className="bg-transparent flex-row gap-3.5 items-center">
+    <View className="bg-transparent flex flex-row gap-3.5 items-center">
       {avatarUrl ? (
         <Image
           source={{ uri: avatarUrl || undefined }}
           style={{ width: 28 }}
-          className="rounded-full border-3 border-accent aspect-square"
+          className="rounded-full border-2 border-border aspect-square"
         />
       ) : (
-        <View className="rounded-full border-3 border-border w-fit flex">
-          <Feather
-            name="user"
-            size={20}
-            color={bikerMapTheme.colors.muted}
-            className="w-7 aspect-square text-center"
-          />
-        </View>
+        <Feather
+          name="user"
+          size={20}
+          color={bikerMapTheme.colors.muted}
+          className="w-7 aspect-square text-center rounded-full border-2 border-border"
+        />
       )}
-      <View className="gap-1">
-        <AppText className="font-bold">{name}</AppText>
-      </View>
+      <AppText className="font-bold">{name}</AppText>
     </View>
   );
 }

@@ -9,11 +9,20 @@ import {
 
 import { apiFetch } from "@/shared";
 
-export function useChatRoom(chatId: string) {
+type UseChatRoomOptions = {
+  enabled?: boolean;
+  refetchIntervalMs?: number;
+};
+
+export function useChatRoom(
+  chatId: string,
+  { enabled = true, refetchIntervalMs }: UseChatRoomOptions = {}
+) {
   return useQuery<ApiResponse<TChatRoomResponseData>>({
     queryKey: queryKeys.bikerChatRoom(chatId),
     queryFn: () =>
       apiFetch.get<TChatRoomResponseData>(API_PATHS.bikers.chatRoom(chatId)),
-    enabled: Boolean(chatId),
+    enabled: enabled && Boolean(chatId),
+    refetchInterval: refetchIntervalMs,
   });
 }

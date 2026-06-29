@@ -3,7 +3,6 @@ import {
   CommunityPost,
   CommunityPostDetail,
 } from "@package-shared/types/community";
-import { ReactionSummary } from "@package-shared/types/reaction";
 import {
   getRecordBoolean,
   getRecordNumber,
@@ -47,25 +46,6 @@ function toAuthorId(row: SupabaseRecord) {
   );
 }
 
-function toReactionSummary(row: SupabaseRecord): ReactionSummary {
-  return {
-    likeCount: getRecordNumber(row, ["like_count", "likeCount", "reactions.likeCount"], 0),
-    dislikeCount: getRecordNumber(
-      row,
-      ["dislike_count", "dislikeCount", "reactions.dislikeCount"],
-      0
-    ),
-    myReaction: (() => {
-      const reaction = getRecordString(
-        row,
-        ["my_reaction", "myReaction", "reactions.myReaction"],
-        ""
-      );
-
-      return reaction === "like" || reaction === "dislike" ? reaction : null;
-    })(),
-  };
-}
 /**
  * @description Supabase 레코드에서 커뮤니티 게시글 정보를 추출하여 CommunityPost 객체로 매핑합니다. 필수 필드(id, category, title, content)가 유효하지 않은 경우 null을 반환합니다.
  * @param row Supabase 레코드 객체
@@ -78,7 +58,8 @@ export function mapCommunityPostItem(
   const category = toCommunityCategory(getRecordString(row, ["category"]));
   const title = getRecordString(row, ["title"]);
   const content = getRecordString(row, ["content", "body", "excerpt"]);
-  const author = toAuthorName(row);
+  const authorName = toAuthorName(row);
+  const authorAvatarUrl = getRecordString(row, ["avatar_url"]);
 
   if (!id || !category || !title || !content) {
     return null;
@@ -89,7 +70,7 @@ export function mapCommunityPostItem(
     category,
     title,
     excerpt: getRecordString(row, ["excerpt"], "") || content.slice(0, 80),
-    author,
+    author: { name: authorName, avatarUrl: authorAvatarUrl },
     timeLabel: getRecordRelativeLabel(
       row,
       ["created_at", "createdAt", "time_label", "timeLabel"],
@@ -97,7 +78,6 @@ export function mapCommunityPostItem(
     ),
     commentCount: getRecordNumber(row, ["comment_count", "commentCount"], 0),
     viewCount: getRecordNumber(row, ["view_count", "viewCount"], 0),
-    reactions: toReactionSummary(row),
     pinned: getRecordBoolean(row, ["pinned"], false) || undefined,
     favoriteId:
       getRecordString(row, ["favorite_id", "favoriteId"], "") || undefined,
@@ -122,12 +102,12 @@ export function mapCommunityPostDetail(
     content: getRecordString(row, ["content", "body"], item.excerpt),
     author: {
       id: authorId || undefined,
-      name: item.author,
+      name: item.author.name,
+      avatarUrl: item.author.avatarUrl,
     },
     timeLabel: item.timeLabel,
     commentCount: item.commentCount,
     viewCount: item.viewCount,
-    reactions: item.reactions,
     pinned: item.pinned,
     images: getRecordStringArray(row, ["images"]),
     favoriteId: item.favoriteId,

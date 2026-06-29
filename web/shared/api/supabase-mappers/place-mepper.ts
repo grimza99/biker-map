@@ -15,7 +15,6 @@ export const placeCategories = new Set<PlaceCategory>([
   "repair",
   "cafe",
   "shop",
-  "rest",
 ]);
 function toPlaceCategory(value: string) {
   return placeCategories.has(value as PlaceCategory)

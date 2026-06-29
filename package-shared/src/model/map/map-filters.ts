@@ -9,7 +9,6 @@ export const placeCategoryOptions: {
   { label: "정비소", value: "repair" },
   { label: "카페", value: "cafe" },
   { label: "샵", value: "shop" },
-  { label: "휴게/쉼터", value: "rest" },
 ];
 
 export const placeCrudCategoryOptions: {
@@ -25,4 +24,4 @@ export type MapCategoryFilter = AllPlaceCategory | "route";
 export const mapCategoryOptions: Array<{
   label: string;
   value: MapCategoryFilter;
-}> = [...placeCategoryOptions, { label: "라이딩 경로", value: "route" }];
+}> = [...placeCategoryOptions, { label: "경로", value: "route" }];

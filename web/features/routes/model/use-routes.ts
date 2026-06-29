@@ -11,7 +11,11 @@ import { useQuery } from "@tanstack/react-query";
 import { apiFetch } from "@shared/api/http";
 import { queryKeys } from "@shared/config/query-keys";
 
-export function useRoutes(query: RoutesQuery) {
+type UseRoutesOptions = {
+  enabled?: boolean;
+};
+
+export function useRoutes(query: RoutesQuery, options?: UseRoutesOptions) {
   const routeQuery = buildRouteQuery(query);
   const paramsForKey: RoutesQuery = {
     search: query.search,
@@ -29,6 +33,7 @@ export function useRoutes(query: RoutesQuery) {
 
       return apiFetch<RoutesListResponseData>(endpoint);
     },
+    enabled: options?.enabled,
     placeholderData: (previousData) => previousData,
   });
 }

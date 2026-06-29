@@ -2,14 +2,15 @@ import type { NextRequest } from "next/server";
 import { z } from "zod";
 
 import {
-  TMyBikerLocationResponseData,
-  TBikerPresenceItem,
-  TUpdateMyBikerLocationBody,
-  TUpdateMyBikerLocationResponseData,
-  DEFAULT_BIKER_REALTIME_CHANNEL,
   BIKER_LOCATION_SHARING_STATUSES,
   BIKER_PRESENCE_STALE_TIMEOUT_SECONDS,
+  DEFAULT_BIKER_REALTIME_CHANNEL,
+  TBikerPresenceItem,
   TBikerPresenceSyncEvent,
+  TMyBikerLocationResponseData,
+  Tproficiency,
+  TUpdateMyBikerLocationBody,
+  TUpdateMyBikerLocationResponseData,
 } from "@package-shared/index";
 import {
   badRequest,
@@ -50,6 +51,7 @@ type BikerProfileRow = {
   name: string | null;
   bike_brand: string | null;
   bike_model: string | null;
+  proficiency: Tproficiency | null;
 };
 
 type BikerSharingSessionRow = {
@@ -118,14 +120,8 @@ export async function POST(request: NextRequest) {
     return badRequest("위치 공유 payload가 올바르지 않습니다.");
   }
 
-  const observedAt = payload.observedAt
-    ? new Date(payload.observedAt)
-    : new Date();
+  const observedAt = new Date();
   const now = new Date();
-
-  if (Number.isNaN(observedAt.getTime())) {
-    return badRequest("observedAt 형식이 올바르지 않습니다.");
-  }
 
   if (
     now.getTime() - observedAt.getTime() >
@@ -165,7 +161,9 @@ export async function POST(request: NextRequest) {
   }
 
   if (sharingSession.status !== "active" || sharingSession.ended_at) {
-    return badRequest("종료된 위치 공유 세션으로는 위치를 업로드할 수 없습니다.");
+    return badRequest(
+      "종료된 위치 공유 세션으로는 위치를 업로드할 수 없습니다."
+    );
   }
 
   let profile: BikerProfileRow | null;
@@ -227,6 +225,7 @@ function mapPresenceRow(
     nickname: profile?.name?.trim() || "알 수 없는 라이더",
     bikeBrand: profile?.bike_brand ?? null,
     bikeModel: profile?.bike_model ?? null,
+    proficiency: profile?.proficiency ?? null,
     isMe,
     location: {
       lat: row.lat,
@@ -247,7 +246,7 @@ async function loadBikerProfile(
 ) {
   const { data, error } = await supabase
     .from("profiles")
-    .select("id, name, bike_brand, bike_model")
+    .select("id, name, bike_brand, bike_model ,proficiency")
     .eq("id", userId)
     .maybeSingle<BikerProfileRow>();
 

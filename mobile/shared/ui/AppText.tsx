@@ -1,7 +1,6 @@
 import { ComponentProps } from "react";
 import { Text } from "react-native";
-
-import { cn } from "@/shared";
+import { cn } from "../lib";
 
 type AppTextTone = "default" | "muted" | "subtle" | "danger";
 
