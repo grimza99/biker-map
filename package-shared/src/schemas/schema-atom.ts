@@ -34,7 +34,6 @@ export const SCHEMA_ATOM = {
       "repair",
       "cafe",
       "shop",
-      "rest",
     ]) satisfies z.ZodType<PlaceCategory>,
     placeName: z.string().trim().min(1, "장소명을 입력해주세요."),
   },
