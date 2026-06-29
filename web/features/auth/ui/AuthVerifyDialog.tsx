@@ -1,4 +1,12 @@
 "use client";
+import { useEffect } from "react";
+import { useForm, useWatch } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+
+import {
+  SendVerificationCodeFormValues,
+  VerifyCodeFormValues,
+} from "@package-shared/schemas";
 
 import {
   Button,
@@ -9,8 +17,8 @@ import {
   Input,
 } from "@/shared";
 import { useRemainingTime } from "@/shared/hooks";
-import { ChangeEvent, useState } from "react";
 
+import { sendVerificationCodeFormSchema, verifyCodeFormSchema } from "../model";
 import {
   useSendSMSVerificationCodeMutation,
   useVerifyMuation,
@@ -25,35 +33,67 @@ export function AuthVerifyDialog({
   open,
   onOpenChange,
 }: IAuthVerifyDialogProps) {
-  const [phone, setPhone] = useState("");
-  const [code, setCode] = useState("");
-
-  const { mutateAsync: sendSMSMutation, data } =
-    useSendSMSVerificationCodeMutation({
-      phone,
-    });
-  const { mutateAsync: checkCodeMutation } = useVerifyMuation({
-    phone,
-    code,
+  const phoneForm = useForm<SendVerificationCodeFormValues>({
+    resolver: zodResolver(sendVerificationCodeFormSchema),
+    mode: "onChange",
+    defaultValues: {
+      phone: "",
+    },
   });
+  const verifyForm = useForm<VerifyCodeFormValues>({
+    resolver: zodResolver(verifyCodeFormSchema),
+    mode: "onChange",
+    defaultValues: {
+      phone: "",
+      code: "",
+    },
+  });
+  const phone =
+    useWatch({
+      control: phoneForm.control,
+      name: "phone",
+    }) ?? "";
+  const code =
+    useWatch({
+      control: verifyForm.control,
+      name: "code",
+    }) ?? "";
+
+  const {
+    mutateAsync: sendSMSMutation,
+    data,
+    isPending: isSendPending,
+  } = useSendSMSVerificationCodeMutation({
+    phone,
+  });
+  const { mutateAsync: checkCodeMutation, isPending: isVerifyPending } =
+    useVerifyMuation({
+      phone,
+      code,
+    });
   const { timerText, remainingSeconds } = useRemainingTime(
     data?.data.expiresAt
   );
 
-  const handleChangePhoneNumber = (
-    e: ChangeEvent<HTMLInputElement, HTMLInputElement>
-  ) => {
-    const value = e.target.value;
-    setPhone(value.replace(/\D/g, "").trim());
-  };
+  useEffect(() => {
+    verifyForm.setValue("phone", phone, {
+      shouldDirty: false,
+      shouldValidate: false,
+    });
+  }, [phone, verifyForm]);
 
-  const handleSMSSendSubmit = async () => {
+  const submitSendCode = phoneForm.handleSubmit(async () => {
     await sendSMSMutation();
-  };
+  });
 
-  const handleVerifyCodeSubmit = async () => {
+  const submitVerifyCode = verifyForm.handleSubmit(async () => {
+    const isPhoneValid = await phoneForm.trigger("phone");
+    if (!isPhoneValid) {
+      return;
+    }
+
     await checkCodeMutation();
-  };
+  });
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -63,29 +103,56 @@ export function AuthVerifyDialog({
           <div className="flex flex-col gap-4">
             <form
               className="flex items-end justify-between gap-3"
-              action={handleSMSSendSubmit}
+              onSubmit={(event) => {
+                event.preventDefault();
+                void submitSendCode();
+              }}
+              noValidate
             >
               <Input
                 label="핸드폰 번호"
                 className="flex-1"
-                value={phone}
-                onChange={handleChangePhoneNumber}
+                inputMode="numeric"
+                errorText={phoneForm.formState.errors.phone?.message}
+                {...phoneForm.register("phone", {
+                  setValueAs: (value) =>
+                    String(value ?? "")
+                      .replace(/\D/g, "")
+                      .trim(),
+                })}
               />
-              <Button type="submit" disabled={phone.length < 1}>
+              <Button
+                type="submit"
+                loading={isSendPending}
+                disabled={!phoneForm.formState.isValid || isSendPending}
+              >
                 {remainingSeconds > 0 ? "재발송" : "발송"}
               </Button>
             </form>
             <form
               className="flex items-center justify-between gap-3"
-              action={handleVerifyCodeSubmit}
+              onSubmit={(event) => {
+                event.preventDefault();
+                void submitVerifyCode();
+              }}
+              noValidate
             >
               <div className="flex-1">
                 <Input
                   label="코드 확인"
                   className="flex-1"
                   disabled={remainingSeconds < 1}
-                  value={code}
-                  onChange={(e) => setCode(e.target.value.trim())}
+                  inputMode="numeric"
+                  errorText={
+                    verifyForm.formState.errors.code?.message ??
+                    phoneForm.formState.errors.phone?.message
+                  }
+                  {...verifyForm.register("code", {
+                    setValueAs: (value) =>
+                      String(value ?? "")
+                        .replace(/\D/g, "")
+                        .trim(),
+                  })}
                 />
                 {remainingSeconds > 0 && (
                   <div className="ml-2 flex gap-2">
@@ -96,7 +163,15 @@ export function AuthVerifyDialog({
                   </div>
                 )}
               </div>
-              <Button disabled={remainingSeconds < 1} type="submit">
+              <Button
+                disabled={
+                  remainingSeconds < 1 ||
+                  !verifyForm.formState.isValid ||
+                  isVerifyPending
+                }
+                loading={isVerifyPending}
+                type="submit"
+              >
                 확인
               </Button>
             </form>

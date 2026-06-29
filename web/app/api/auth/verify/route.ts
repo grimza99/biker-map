@@ -1,21 +1,20 @@
 import {
+  IVerificationCodeCheckBody,
+  verifyCodeSchema,
+} from "@package-shared/index";
+
+import {
   badRequest,
-  createSupabaseApiClient,
   internalServerError,
   mapMe,
   ok,
   parseRequestBody,
   unauthorized,
-} from "@shared/api";
+} from "@/shared";
 import { getSupabaseAuthSession } from "@/shared/api/auth";
 import { getProfileStatus } from "@/shared/api/supabase-profiles";
-import { IVerificationCodeCheckBody } from "@package-shared/index";
-import z from "zod";
-
-const checkCodeSchema = z.object({
-  phone: z.string().min(8),
-  code: z.string().min(1),
-});
+import { isVerificationCodeMatched } from "@/shared/lib/sms";
+import { createSupabaseServiceClient } from "@/shared/lib/supabase";
 /**----------------------------- verification code check ------------------------ */
 export async function POST(request: Request) {
   const session = await getSupabaseAuthSession(request);
@@ -24,17 +23,20 @@ export async function POST(request: Request) {
   }
   let payload: IVerificationCodeCheckBody;
   try {
-    payload = await parseRequestBody(request, checkCodeSchema);
+    payload = await parseRequestBody(request, verifyCodeSchema);
   } catch {
     return badRequest("인증코드가 일치하는지 확인하세요");
   }
-  const supabase = createSupabaseApiClient(request);
+
+  const { phone } = payload;
+  const supabase = createSupabaseServiceClient();
 
   const { data, error } = await supabase
     .from("sms_verifications")
-    .select("id, otp_code, expires_at,phone_number,created_at")
+    .select("id, otp_code, expires_at, phone_number, created_at")
     .eq("user_id", session.user.id)
-    .eq("phone_number", payload.phone)
+    .eq("phone_number", phone)
+    .eq("is_verified", false)
     .order("created_at", { ascending: false })
     .limit(1)
     .maybeSingle();
@@ -43,10 +45,30 @@ export async function POST(request: Request) {
     return internalServerError(error.message);
   }
 
-  if (new Date(data?.expires_at).getTime() < Date.now()) {
+  if (!data) {
+    return badRequest("먼저 인증번호를 요청해 주세요.");
+  }
+
+  if (new Date(data.expires_at).getTime() < Date.now()) {
     return badRequest("인증코드가 만료되었습니다");
   }
-  if (data?.otp_code !== payload.code) {
+
+  let isMatched = false;
+  try {
+    isMatched = isVerificationCodeMatched({
+      userId: session.user.id,
+      phone,
+      code: payload.code,
+      hashedCode: data.otp_code,
+    });
+  } catch (error) {
+    console.error("SMS verification hash check failed", error);
+    return internalServerError(
+      "SMS 인증 설정이 올바르지 않습니다. 관리자에게 문의해 주세요."
+    );
+  }
+
+  if (!isMatched) {
     return badRequest("인증코드가 일치하는지 확인하세요");
   }
 
@@ -63,9 +85,9 @@ export async function POST(request: Request) {
 
   const { data: verifiedData, error: verifiedError } = await supabase
     .from("sms_verifications")
-    .update({ is_verified: true })
+    .update({ is_verified: true, verified_at: new Date().toISOString() })
     .eq("id", data.id)
-    .eq("phone_number", payload.phone)
+    .eq("phone_number", phone)
     .select("is_verified")
     .single();
 

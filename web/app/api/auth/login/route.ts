@@ -1,10 +1,12 @@
-import { AuthResponseData, type LoginBody } from "@package-shared/types/auth";
+import { NextResponse } from "next/server";
+
 import {
-  badRequest,
-  forbidden,
-  ok,
-  parseRequestBody,
-} from "@shared/api";
+  AuthResponseData,
+  type LoginBody,
+  loginSchema,
+} from "@package-shared/index";
+
+import { badRequest, forbidden, ok, parseRequestBody } from "@shared/api";
 import {
   clearRefreshTokenCookie,
   setRefreshTokenCookie,
@@ -15,13 +17,6 @@ import {
   createSupabaseAuthClient,
   mapSupabaseSession,
 } from "@shared/lib/supabase";
-import { NextResponse } from "next/server";
-import { z } from "zod";
-
-const loginSchema = z.object({
-  email: z.string().email(),
-  password: z.string().min(6),
-});
 
 /**--------------------------login------------------------------- */
 export async function POST(request: Request) {

@@ -6,7 +6,7 @@ import {
 } from "@package-shared/index";
 import { useQuery } from "@tanstack/react-query";
 
-import { useDebouncedValue } from "@/shared";
+import { useDebouncedValue } from "@/shared/hooks";
 import { apiFetch } from "@shared/api/http";
 
 export function usePlaceGeocode(address: string, enabled = true) {

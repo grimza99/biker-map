@@ -21,6 +21,8 @@
   - 모바일 앱이 웹 API proxy를 통해 인증할 때의 요청/응답 규칙
 - `web-app-change-log-template.md`
   - 웹 변경을 앱 팀에 전달할 때 사용하는 기록 템플릿
+- `web-app-change-logs/**`
+  - 웹 변경을 앱 팀에 전달할 때 사용하는 로그 디렉토리
 
 ## 갱신 트리거
 

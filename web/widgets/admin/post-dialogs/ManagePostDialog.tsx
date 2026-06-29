@@ -20,7 +20,7 @@ import {
   Input,
   Pagination,
 } from "@shared/ui";
-import { useDebouncedValue } from "@/shared";
+import { useDebouncedValue } from "@/shared/hooks";
 
 interface ManagePostDialogProps {
   openModalId: AdminModalId | null;
@@ -124,7 +124,9 @@ export function ManagePostDialog({
                 post={post}
                 onClickEdit={(id) => setEditingPostId(id)}
                 onClickDelete={handleDeletePost}
-                isMutating={deleteMutation.isPending && editingPostId === post.id}
+                isMutating={
+                  deleteMutation.isPending && editingPostId === post.id
+                }
               />
             ))}
             listFooter={
