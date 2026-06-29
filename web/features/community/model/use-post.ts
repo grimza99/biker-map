@@ -161,6 +161,11 @@ export function useIncrementCommunityPostView(postId: string) {
         { queryKey: ["me", "posts"] },
         (current) => updatePostListViewCount(current, postId, data.viewCount)
       );
+
+      void queryClient.invalidateQueries({
+        queryKey: queryKeys.post(postId),
+        exact: true,
+      });
     },
   });
 }
