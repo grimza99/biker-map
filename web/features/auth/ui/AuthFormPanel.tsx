@@ -109,7 +109,7 @@ export function AuthFormPanel({ defaultTab = "login" }: AuthFormPanelProps) {
             <Input
               label="비밀번호"
               type="password"
-              placeholder="8자 이상 입력"
+              placeholder="비밀번호 입력"
               errorText={loginForm.formState.errors.password?.message}
               {...loginForm.register("password")}
             />
