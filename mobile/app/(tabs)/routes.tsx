@@ -6,7 +6,7 @@ import {
   bikerMapTheme,
   distanceOptions,
   routeRegionOptions,
-  type RouteRegion,
+  type RouteRegionFilter,
   type RoutesQuery,
 } from "@package-shared/index";
 
@@ -42,9 +42,10 @@ type DistanceFilter = (typeof DISTANCE_OPTIONS)[number]["value"];
 
 export default function RoutesScreen() {
   const [searchQuery, setSearchQuery] = useState("");
-  const [departureRegion, setDepartureRegion] = useState<RouteRegion>("all");
+  const [departureRegion, setDepartureRegion] =
+    useState<RouteRegionFilter>("all");
   const [destinationRegion, setDestinationRegion] =
-    useState<RouteRegion>("all");
+    useState<RouteRegionFilter>("all");
   const [maxDistanceKm, setMaxDistanceKm] = useState<DistanceFilter>("all");
   const [currentPage, setCurrentPage] = useState(1);
 
@@ -129,7 +130,7 @@ export default function RoutesScreen() {
                 triggerStyle={FILTER_TRIGGER_STYLE}
                 value={departureRegion}
                 onValueChange={(value) => {
-                  setDepartureRegion(value as RouteRegion);
+                  setDepartureRegion(value as RouteRegionFilter);
                   resetToFirstPage();
                 }}
               />
@@ -141,7 +142,7 @@ export default function RoutesScreen() {
                 triggerStyle={FILTER_TRIGGER_STYLE}
                 value={destinationRegion}
                 onValueChange={(value) => {
-                  setDestinationRegion(value as RouteRegion);
+                  setDestinationRegion(value as RouteRegionFilter);
                   resetToFirstPage();
                 }}
               />
@@ -228,7 +229,7 @@ export default function RoutesScreen() {
   );
 }
 
-function getRegionLabel(region: RouteRegion) {
+function getRegionLabel(region: RouteRegionFilter) {
   return (
     routeRegionOptions.find((option) => option.value === region)?.label ?? ""
   );

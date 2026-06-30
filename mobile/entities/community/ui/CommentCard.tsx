@@ -16,9 +16,9 @@ type CommentCardProps = {
   isMutating?: boolean;
   item: CommunityComment | CommunityReply;
   disabled?: boolean;
-  onDelete?: () => Promise<void>;
+  onDelete?: () => Promise<unknown>;
   showReplyAction?: boolean;
-  onUpdate?: (content: string) => Promise<void>;
+  onUpdate?: (content: string) => Promise<unknown>;
   onReplyPress?: () => void;
   onReaction?: (reaction: ReactionType) => void;
 };

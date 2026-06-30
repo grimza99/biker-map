@@ -8,12 +8,12 @@ import {
 } from "@package-shared/index";
 
 import { ok } from "@shared/api";
-import { requireApiSession } from "@shared/api/auth";
+import { requireVerifiedApiSession } from "@shared/api/auth";
 
 /*------------------------------ get (biker realtime config) ---------------------------------------*/
 
 export async function GET(request: NextRequest) {
-  const session = await requireApiSession(request);
+  const session = await requireVerifiedApiSession(request);
   if (session instanceof Response) {
     return session;
   }
