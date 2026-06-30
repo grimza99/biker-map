@@ -16,7 +16,7 @@ export default async function AppLayout({
 }>) {
   return (
     <AppShell>
-      <main>{children}</main>
+      <main className="flex-1">{children}</main>
     </AppShell>
   );
 }
