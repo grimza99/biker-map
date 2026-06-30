@@ -10,7 +10,7 @@ export function MapPanelFrame({
   children: ReactNode;
 }) {
   return (
-    <aside className="pointer-events-auto absolute inset-y-0 right-0 z-100 flex w-[min(26rem,100vw)] flex-col border-l border-border bg-bg/95 shadow-[-18px_0_48px_rgba(5,6,7,0.28)] backdrop-blur-xl">
+    <aside className="pointer-events-auto absolute inset-y-0 top-0 right-0 z-100 flex w-[min(26rem,100vw)] bottom-0 flex-col border-l border-border bg-bg/95 shadow-[-18px_0_48px_rgba(5,6,7,0.28)] backdrop-blur-xl">
       <div className="flex items-center justify-between gap-3 border-b border-border px-5 py-4">
         <h2 className="m-0 text-lg font-semibold text-text">{title}</h2>
         <Link
