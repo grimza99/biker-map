@@ -25,7 +25,7 @@ export function AppShell({ children }: { children: ReactNode }) {
   }
 
   return (
-    <>
+    <div className="flex min-h-dvh flex-col">
       <header className="sticky top-0 z-20 border-b border-border bg-panel backdrop-blur-md">
         <div className="mx-auto flex w-[min(1280px,calc(100%-32px))] items-center justify-around gap-4 py-4">
           <Link
@@ -66,8 +66,8 @@ export function AppShell({ children }: { children: ReactNode }) {
           </div>
         </div>
       </header>
-      {children}
+      <div className="flex-1">{children}</div>
       <Footer />
-    </>
+    </div>
   );
 }
