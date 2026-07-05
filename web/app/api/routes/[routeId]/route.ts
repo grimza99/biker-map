@@ -1,4 +1,4 @@
-import type { UpdateRouteBody } from "@package-shared/types/route";
+import { UpdateRouteBody, updateRouteSchema } from "@package-shared/index";
 import {
   badRequest,
   calculateNaverRoutePath,
@@ -12,7 +12,6 @@ import {
   parseRequestBody,
 } from "@shared/api";
 import { getSupabaseAuthSession, requireApiSession } from "@shared/api/auth";
-import { z } from "zod";
 
 export async function GET(
   request: Request,
@@ -89,80 +88,6 @@ export async function GET(
 
 /**----------------------------------------update route ------------------------------------------- */
 
-const updateRouteSchema = z
-  .object({
-    title: z.string().min(1).optional(),
-    summary: z.string().min(1).optional(),
-    content: z.string().min(1).optional(),
-    departureRegion: z
-      .enum([
-        "seoul",
-        "busan",
-        "daegu",
-        "incheon",
-        "gwangju",
-        "daejeon",
-        "ulsan",
-        "sejong",
-        "jeju",
-      ])
-      .optional(),
-    destinationRegion: z
-      .enum([
-        "seoul",
-        "busan",
-        "daegu",
-        "incheon",
-        "gwangju",
-        "daejeon",
-        "ulsan",
-        "sejong",
-        "jeju",
-      ])
-      .optional(),
-    provider: z.enum(["naver", "etc"]).optional(),
-    externalMapUrl: z.string().url().optional(),
-    thumbnailUrl: z.string().url().nullable().optional(),
-    distanceKm: z.number().optional(),
-    estimatedDurationMinutes: z.number().int().optional(),
-    tags: z.array(z.string()).optional(),
-    sourceType: z.enum(["curated"]).optional(),
-    departureLat: z.number().optional(),
-    departureLng: z.number().optional(),
-    destinationLat: z.number().optional(),
-    destinationLng: z.number().optional(),
-    waypoints: z
-      .array(
-        z.object({
-          sequence: z.number().int().positive(),
-          lat: z.number(),
-          lng: z.number(),
-        })
-      )
-      .max(15)
-      .optional(),
-  })
-  .refine(
-    (value) =>
-      value.title !== undefined ||
-      value.summary !== undefined ||
-      value.content !== undefined ||
-      value.departureRegion !== undefined ||
-      value.destinationRegion !== undefined ||
-      value.provider !== undefined ||
-      value.externalMapUrl !== undefined ||
-      value.thumbnailUrl !== undefined ||
-      value.distanceKm !== undefined ||
-      value.estimatedDurationMinutes !== undefined ||
-      value.tags !== undefined ||
-      value.sourceType !== undefined ||
-      value.departureLat !== undefined ||
-      value.departureLng !== undefined ||
-      value.destinationLat !== undefined ||
-      value.destinationLng !== undefined ||
-      value.waypoints !== undefined,
-    { message: "수정할 항목이 필요합니다." }
-  );
 export async function PATCH(
   request: Request,
   { params }: { params: Promise<{ routeId: string }> }

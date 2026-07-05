@@ -48,7 +48,9 @@ export const SCHEMA_ATOM = {
       .string()
       .trim()
       .transform((value) => value || undefined),
+    string: z.string().min(1).optional(),
     phone: optionalPhoneSchema,
+    number: z.number().optional(),
   },
   coordinate: z
     .string()
@@ -88,6 +90,7 @@ export const SCHEMA_ATOM = {
     sourceType: z.enum(["curated"]) satisfies z.ZodType<RouteSourceType>,
   },
   requiredString: (msg: string) => z.string().trim().min(1, msg),
+
   number: z
     .string()
     .trim()
@@ -99,8 +102,7 @@ export const SCHEMA_ATOM = {
     .string()
     .trim()
     .refine(
-      (value) =>
-        value.length === 0 || Number.isInteger(Number(value)),
+      (value) => value.length === 0 || Number.isInteger(Number(value)),
       "정수만 입력해주세요."
     ),
 };
