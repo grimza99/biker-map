@@ -2,13 +2,13 @@ import { useMemo, useState } from "react";
 
 import { AdminModalId } from "@/app/admin/page";
 import { ManagePostItem } from "@/features/admin";
+import { CommunityPostForm } from "@/features/community";
 import { useCommunityPostDetail } from "@/features/community/model/use-community-post-detail";
 import { useCommunityPosts } from "@/features/community/model/use-community-posts";
 import {
   useDeleteCommunityPost,
   useUpdateCommunityPost,
 } from "@/features/community/model/use-post";
-import { CommunityPostForm } from "@/features/community/ui/community-post-form";
 import { useDebouncedValue } from "@/shared/hooks";
 import { ManageEntityDialogLayout } from "@/widgets/admin/manage-entity-dialog";
 import {

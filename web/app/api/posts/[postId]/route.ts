@@ -1,3 +1,4 @@
+import { updatePostSchema } from "@package-shared/schemas";
 import type {
   Author,
   CommunityCategorySlug,
@@ -16,25 +17,6 @@ import {
   parseRequestBody,
 } from "@shared/api";
 import { getSupabaseAuthSession, requireApiSession } from "@shared/api/auth";
-import { z } from "zod";
-
-const updatePostSchema = z
-  .object({
-    category: z.enum(["notice", "question", "info", "free"]).optional(),
-    title: z.string().min(1).optional(),
-    content: z.string().min(1).optional(),
-    images: z.array(z.string()).optional(),
-  })
-  .refine(
-    (value) =>
-      value.category !== undefined ||
-      value.title !== undefined ||
-      value.content !== undefined ||
-      value.images !== undefined,
-    {
-      message: "수정할 항목이 필요합니다.",
-    }
-  );
 
 /**-----------------------------post detail -------------------------------- */
 
@@ -99,7 +81,8 @@ export async function GET(
         ...currentPost,
         author_name:
           authorMap.get(String(currentPost.author_id ?? ""))?.name ?? "익명",
-        avatarUrl: authorMap.get(String(currentPost.author_id ?? ""))?.avatarUrl,
+        avatarUrl: authorMap.get(String(currentPost.author_id ?? ""))
+          ?.avatarUrl,
         favorite_id: favoriteState.favoriteId,
         favorited: favoriteState.favorited,
       })

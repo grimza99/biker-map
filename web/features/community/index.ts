@@ -1,1 +1,1 @@
-export { CommunityPostForm } from "./ui/community-post-form";
+export { CommunityPostForm } from "./ui/CommunityPostForm";

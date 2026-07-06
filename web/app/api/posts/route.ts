@@ -1,3 +1,4 @@
+import { communityPostFormSchema } from "@package-shared/schemas";
 import type {
   Author,
   CommunityCategorySlug,
@@ -19,15 +20,6 @@ import {
 } from "@shared/api";
 import { requireApiSession } from "@shared/api/auth";
 import type { NextRequest } from "next/server";
-import { z } from "zod";
-
-const createPostSchema = z.object({
-  category: z.enum(["notice", "question", "info", "free"]),
-  title: z.string().min(1),
-  content: z.string().min(1),
-  tags: z.array(z.string()).optional(),
-  images: z.array(z.string()).optional(),
-});
 
 /**----------------------------------------------post list------------------------------------------------- */
 export async function GET(request: NextRequest) {
@@ -126,7 +118,7 @@ export async function POST(request: Request) {
 
   let payload: CreatePostBody;
   try {
-    payload = await parseRequestBody(request, createPostSchema);
+    payload = await parseRequestBody(request, communityPostFormSchema);
   } catch {
     return badRequest("게시글 payload가 올바르지 않습니다.");
   }
