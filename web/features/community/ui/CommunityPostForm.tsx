@@ -13,7 +13,7 @@ import {
   type UpdatePostBody,
   type UpdatePostResponseData,
 } from "@package-shared/index";
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { Controller, useForm } from "react-hook-form";
 
 import { uploadImage } from "@/features/image";
@@ -57,27 +57,55 @@ export function CommunityPostForm({
       ),
     [allowedCategories]
   );
+  const normalizedInitialValues = useMemo(
+    () => ({
+      category: initialValues?.category,
+      title: initialValues?.title ?? "",
+      content: initialValues?.content ?? "",
+      images: initialValues?.images ?? [],
+    }),
+    [
+      initialValues?.category,
+      initialValues?.title,
+      initialValues?.content,
+      initialValues?.images,
+    ]
+  );
+  const defaultValues = useMemo(
+    () =>
+      createCommunityPostFormDefaultValues({
+        allowedCategories,
+        defaultCategory,
+        initialValues: normalizedInitialValues,
+      }),
+    [allowedCategories, defaultCategory, normalizedInitialValues]
+  );
+  const resetKey = useMemo(
+    () =>
+      JSON.stringify({
+        allowedCategories,
+        defaultCategory: defaultCategory ?? null,
+        initialValues: normalizedInitialValues,
+      }),
+    [allowedCategories, defaultCategory, normalizedInitialValues]
+  );
   const [isImageUploading, setIsImageUploading] = useState(false);
   const createPostMutation = useCreateCommunityPost();
   const form = useForm<CreatePostBody>({
     resolver: zodResolver(communityPostFormSchema),
     mode: "onChange",
-    defaultValues: createCommunityPostFormDefaultValues({
-      allowedCategories,
-      defaultCategory,
-      initialValues,
-    }),
+    defaultValues,
   });
+  const lastResetKeyRef = useRef(resetKey);
 
   useEffect(() => {
-    form.reset(
-      createCommunityPostFormDefaultValues({
-        allowedCategories,
-        defaultCategory,
-        initialValues,
-      })
-    );
-  }, [allowedCategories, defaultCategory, form, initialValues]);
+    if (lastResetKeyRef.current === resetKey) {
+      return;
+    }
+
+    lastResetKeyRef.current = resetKey;
+    form.reset(defaultValues);
+  }, [defaultValues, form, resetKey]);
 
   async function handleSubmit(values: CreatePostBody) {
     if (!allowedCategories.includes(values.category)) {

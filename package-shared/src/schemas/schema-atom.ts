@@ -47,7 +47,8 @@ export const SCHEMA_ATOM = {
     trimmedString: z
       .string()
       .trim()
-      .transform((value) => value || undefined),
+      .transform((value) => value || undefined)
+      .optional(),
     string: z.string().min(1).optional(),
     phone: optionalPhoneSchema,
     number: z.number().optional(),
