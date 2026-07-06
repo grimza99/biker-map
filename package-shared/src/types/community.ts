@@ -79,7 +79,7 @@ export type CreatePostBody = {
   category: CommunityCategorySlug;
   title: string;
   content: string;
-  images?: string[];
+  images: string[];
 };
 
 export type CreatePostResponseData = {
