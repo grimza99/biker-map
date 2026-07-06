@@ -1,6 +1,6 @@
-import { allowedCommunityCategoryOptions } from "src/model";
-import { CommunityCategorySlug, CreatePostBody } from "src/types";
 import { z } from "zod";
+import { allowedCommunityCategoryOptions } from "../model";
+import { CommunityCategorySlug, CreatePostBody } from "../types";
 import { SCHEMA_ATOM } from "./schema-atom";
 
 type CreateCommunityPostFormDefaultValuesParams = {
