@@ -43,7 +43,7 @@ const sortOptions = [
   { value: "views", label: "조회수순" },
 ];
 
-const pageSize = 12;
+const pageSize = 4;
 
 export default function CommunityPostsPage() {
   const { status } = useSession();
@@ -68,6 +68,7 @@ export default function CommunityPostsPage() {
   });
 
   const posts = postData?.data.items ?? [];
+  const pinnedPosts = page === 1 ? postData?.data.pinnedItems ?? [] : [];
   const total = postData?.meta?.total ?? 0;
   const totalPages = Math.max(Math.ceil(total / pageSize), 1);
   const categoryMeta = useMemo(
@@ -150,10 +151,15 @@ export default function CommunityPostsPage() {
           message={error instanceof Error ? error.message : undefined}
         />
       )}
-
-      {!isLoading && !isError && posts.length === 0 && (
-        <EmptyState title="카테고리에 글이 아직 없습니다." />
+      {!isLoading && !isError && pinnedPosts.length > 0 && (
+        <PostList posts={pinnedPosts} />
       )}
+      {!isLoading &&
+        !isError &&
+        posts.length === 0 &&
+        pinnedPosts.length === 0 && (
+          <EmptyState title="카테고리에 글이 아직 없습니다." />
+        )}
 
       {!isLoading && !isError && posts.length > 0 && <PostList posts={posts} />}
       <div className="w-full flex justify-center items-center mt-5 ">

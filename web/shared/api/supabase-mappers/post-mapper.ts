@@ -78,7 +78,7 @@ export function mapCommunityPostItem(
     ),
     commentCount: getRecordNumber(row, ["comment_count", "commentCount"], 0),
     viewCount: getRecordNumber(row, ["view_count", "viewCount"], 0),
-    pinned: getRecordBoolean(row, ["pinned"], false) || undefined,
+    pinned: getRecordBoolean(row, ["pinned"], false) || false,
     favoriteId:
       getRecordString(row, ["favorite_id", "favoriteId"], "") || undefined,
     favorited: getRecordBoolean(row, ["favorited"], false) || undefined,

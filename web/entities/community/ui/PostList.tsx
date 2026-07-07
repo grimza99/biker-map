@@ -8,7 +8,7 @@ export function getCommunityCategory(slug: string) {
 
 export default function PostList({ posts }: { posts: CommunityPost[] }) {
   return (
-    <div className="flex flex-col gap-4">
+    <section className="w-full flex flex-col gap-4">
       {posts.map((post) => {
         const categoryMeta = getCommunityCategory(post.category);
 
@@ -21,6 +21,6 @@ export default function PostList({ posts }: { posts: CommunityPost[] }) {
           />
         );
       })}
-    </div>
+    </section>
   );
 }

@@ -27,7 +27,7 @@ export async function GET(request: NextRequest) {
 
   const page = Math.max(getNumberParam(searchParams, "page") ?? 1, 1);
   const pageSize = Math.min(
-    Math.max(getNumberParam(searchParams, "pageSize") ?? 12, 1),
+    Math.max(getNumberParam(searchParams, "pageSize") ?? 8, 1),
     50
   );
   const sort = getStringParam(searchParams, "sort");
@@ -47,46 +47,58 @@ export async function GET(request: NextRequest) {
   };
 
   const supabase = createSupabaseApiClient(request);
-  let postsQuery = supabase
+  const from = (page - 1) * pageSize;
+  const to = from + pageSize - 1;
+
+  let normalPostsQuery = supabase
     .from("posts")
     .select(
       "id, author_id, category, title, content, excerpt, images, view_count, comment_count, pinned, created_at",
       { count: "exact" }
-    );
+    )
+    .eq("pinned", false);
 
   if (query.category) {
-    postsQuery = postsQuery.eq("category", query.category);
+    normalPostsQuery = normalPostsQuery.eq("category", query.category);
   }
 
   if (query.search) {
     const escapedKeyword = query.search.replace(/[%_,]/g, "");
-    postsQuery = postsQuery.or(
+    normalPostsQuery = normalPostsQuery.or(
       `title.ilike.%${escapedKeyword}%,excerpt.ilike.%${escapedKeyword}%,content.ilike.%${escapedKeyword}%`
     );
   }
 
-  postsQuery =
-    query.sort === "views"
-      ? postsQuery
-          .order("view_count", { ascending: false })
-          .order("created_at", { ascending: false })
-      : postsQuery.order("created_at", { ascending: false });
+  const pinnedPostsQuery =
+    page === 1 ? buildPinnedPostsQuery(supabase, query) : null;
 
-  const from = (page - 1) * pageSize;
-  const to = from + pageSize - 1;
+  const [normalPostsResult, pinnedPostsResult] = await Promise.all([
+    normalPostsQuery
+      .order(query.sort === "views" ? "view_count" : "created_at", {
+        ascending: false,
+      })
+      .order("created_at", { ascending: false })
+      .range(from, to),
+    pinnedPostsQuery,
+  ]);
 
-  const { data, count, error } = await postsQuery.range(from, to);
-
-  if (error) {
-    return internalServerError(error.message);
+  if (normalPostsResult.error) {
+    return internalServerError(normalPostsResult.error.message);
   }
+
+  if (pinnedPostsResult?.error) {
+    return internalServerError(pinnedPostsResult.error.message);
+  }
+
+  const normalRows = normalPostsResult.data ?? [];
+  const pinnedRows = pinnedPostsResult?.data ?? [];
+  const authorIds = [...normalRows, ...pinnedRows].map((row) =>
+    String(row.author_id ?? "")
+  );
 
   let authorMap: Map<string, Author>;
   try {
-    authorMap = await loadProfileMap(
-      supabase,
-      (data ?? []).map((row) => String(row.author_id ?? ""))
-    );
+    authorMap = await loadProfileMap(supabase, authorIds);
   } catch (profileError) {
     return internalServerError(
       profileError instanceof Error
@@ -94,7 +106,20 @@ export async function GET(request: NextRequest) {
         : "게시글 작성자 정보를 불러오지 못했습니다."
     );
   }
-  const items = (data ?? [])
+
+  const items = mapPostRows(normalRows, authorMap);
+  const pinnedItems = mapPostRows(pinnedRows, authorMap);
+
+  return ok({ items, pinnedItems }, undefined, {
+    total: normalPostsResult.count ?? items.length,
+  });
+}
+
+function mapPostRows(
+  rows: Array<Record<string, unknown>>,
+  authorMap: Map<string, Author>
+) {
+  return rows
     .map((row) =>
       mapCommunityPostItem({
         ...row,
@@ -102,13 +127,34 @@ export async function GET(request: NextRequest) {
       })
     )
     .filter((item): item is NonNullable<typeof item> => Boolean(item));
-
-  return ok({ items }, undefined, {
-    total: count ?? items.length,
-  });
 }
 
-/**-----------------------------create post-------------------------------- */
+function buildPinnedPostsQuery(
+  supabase: ReturnType<typeof createSupabaseApiClient>,
+  query: CommunityPostsQuery
+) {
+  let pinnedPostsQuery = supabase
+    .from("posts")
+    .select(
+      "id, author_id, category, title, content, excerpt, images, view_count, comment_count, pinned, created_at"
+    )
+    .eq("pinned", true);
+
+  if (query.category) {
+    pinnedPostsQuery = pinnedPostsQuery.eq("category", query.category);
+  }
+
+  if (query.search) {
+    const escapedKeyword = query.search.replace(/[%_,]/g, "");
+    pinnedPostsQuery = pinnedPostsQuery.or(
+      `title.ilike.%${escapedKeyword}%,excerpt.ilike.%${escapedKeyword}%,content.ilike.%${escapedKeyword}%`
+    );
+  }
+
+  return pinnedPostsQuery.order("created_at", { ascending: false });
+}
+
+/**----------------------------------------------create post------------------------------------------------- */
 
 export async function POST(request: Request) {
   const session = await requireApiSession(request);
@@ -149,6 +195,7 @@ export async function POST(request: Request) {
       content: payload.content,
       excerpt: payload.content.slice(0, 120),
       images: payload.images ?? [],
+      pinned: payload.category === "notice" ? true : false,
     })
     .select("id, created_at")
     .single();
