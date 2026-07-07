@@ -4,8 +4,8 @@ import { useQuery } from "@tanstack/react-query";
 import {
   API_PATHS,
   buildPostsQuery,
+  type CommunityPostListResponseData,
   type CommunityPostsQuery,
-  type PostsListResponseData,
 } from "@package-shared/index";
 
 import { apiFetch } from "@shared/api/http";
@@ -19,7 +19,7 @@ export function useCommunityPosts(query: CommunityPostsQuery) {
       const endpoint = postsQuery
         ? `${API_PATHS.community.posts}?${postsQuery}`
         : API_PATHS.community.posts;
-      const data = await apiFetch<PostsListResponseData>(endpoint);
+      const data = await apiFetch<CommunityPostListResponseData>(endpoint);
       return data;
     },
     placeholderData: (previousData) => previousData,

@@ -69,6 +69,10 @@ export type PostsListResponseData = {
   items: CommunityPost[];
 };
 
+export type CommunityPostListResponseData = PostsListResponseData & {
+  pinnedItems: CommunityPost[];
+};
+
 export type PostDetailResponseData = CommunityPostDetail;
 
 export type PostCommentsResponseData = {

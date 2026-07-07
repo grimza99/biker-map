@@ -1,7 +1,7 @@
 "use client";
+import { zodResolver } from "@hookform/resolvers/zod";
 import { useEffect } from "react";
 import { useForm, useWatch } from "react-hook-form";
-import { zodResolver } from "@hookform/resolvers/zod";
 
 import {
   SendVerificationCodeFormValues,
@@ -91,8 +91,8 @@ export function AuthVerifyDialog({
     if (!isPhoneValid) {
       return;
     }
-
     await checkCodeMutation();
+    onOpenChange();
   });
 
   return (

@@ -106,7 +106,8 @@ export async function GET(request: Request) {
         .map((row) =>
           mapCommunityPostItem({
             ...row,
-            author_name: authorMap.get(String(row.author_id ?? ""))?.name ?? "익명",
+            author_name:
+              authorMap.get(String(row.author_id ?? ""))?.name ?? "익명",
           })
         )
         .filter((item): item is CommunityPost => Boolean(item))
@@ -117,7 +118,7 @@ export async function GET(request: Request) {
       .map((targetId) => postMap.get(targetId))
       .filter((item): item is CommunityPost => Boolean(item));
 
-    return ok({ items } satisfies PostsListResponseData, undefined, {
+    return ok({ items } satisfies { items: CommunityPost[] }, undefined, {
       total: count ?? items.length,
     });
   }

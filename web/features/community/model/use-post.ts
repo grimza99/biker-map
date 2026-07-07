@@ -4,6 +4,7 @@ import { useMutation, useQueryClient } from "@tanstack/react-query";
 import {
   API_PATHS,
   type ApiResponse,
+  type CommunityPostListResponseData,
   CreatePostBody,
   CreatePostResponseData,
   DeletePostResponseData,
@@ -16,11 +17,13 @@ import {
 } from "@package-shared/index";
 import { apiFetch, queryKeys, useToast } from "@shared/index";
 
-function updatePostListViewCount(
-  current: ApiResponse<PostsListResponseData> | undefined,
+function updatePostListViewCount<
+  T extends PostsListResponseData | CommunityPostListResponseData
+>(
+  current: ApiResponse<T> | undefined,
   postId: string,
   viewCount: number
-) {
+): ApiResponse<T> | undefined {
   if (!Array.isArray(current?.data?.items)) {
     return current;
   }
@@ -32,6 +35,13 @@ function updatePostListViewCount(
       items: current.data.items.map((item) =>
         item.id === postId ? { ...item, viewCount } : item
       ),
+      ...("pinnedItems" in current.data
+        ? {
+            pinnedItems: current.data.pinnedItems.map((item) =>
+              item.id === postId ? { ...item, viewCount } : item
+            ),
+          }
+        : {}),
     },
   };
 }
@@ -131,9 +141,12 @@ export function useIncrementCommunityPostView(postId: string) {
 
   return useMutation({
     mutationFn: () =>
-      apiFetch<IncrementPostViewResponseData>(API_PATHS.community.view(postId), {
-        method: "POST",
-      }),
+      apiFetch<IncrementPostViewResponseData>(
+        API_PATHS.community.view(postId),
+        {
+          method: "POST",
+        }
+      ),
     onSuccess: ({ data }) => {
       queryClient.setQueryData<ApiResponse<PostDetailResponseData>>(
         queryKeys.post(postId),
@@ -152,7 +165,7 @@ export function useIncrementCommunityPostView(postId: string) {
         }
       );
 
-      queryClient.setQueriesData<ApiResponse<PostsListResponseData>>(
+      queryClient.setQueriesData<ApiResponse<CommunityPostListResponseData>>(
         { queryKey: queryKeys.postsRoot },
         (current) => updatePostListViewCount(current, postId, data.viewCount)
       );
