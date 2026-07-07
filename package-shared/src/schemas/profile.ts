@@ -16,6 +16,13 @@ export type ProfileFormInput = {
 
 export type ProfileFormValues = UpdateMeBody;
 
+const optionalTrimmedProfileText = (label: string) =>
+  z
+    .string()
+    .trim()
+    .max(40, `${label}은(는) 40자 이하로 입력해 주세요.`)
+    .transform((value) => value || null);
+
 export const profileFormSchema = z.object({
   name: z
     .string()
@@ -23,16 +30,8 @@ export const profileFormSchema = z.object({
     .min(1, "이름을 입력해 주세요.")
     .max(40, "이름은 40자 이하로 입력해 주세요."),
   avatarUrl: z.string().url().nullable(),
-  bikeBrand: z
-    .string()
-    .trim()
-    .max(40, "브랜드는 40자 이하로 입력해 주세요.")
-    .transform((value) => value || null),
-  bikeModel: z
-    .string()
-    .trim()
-    .max(40, "모델명은 40자 이하로 입력해 주세요.")
-    .transform((value) => value || null),
+  bikeBrand: optionalTrimmedProfileText("브랜드"),
+  bikeModel: optionalTrimmedProfileText("모델명"),
   proficiency: z
     .union([z.literal(""), z.enum(proficiencyValues)])
     .transform((value) => (value === "" ? null : value)),
@@ -53,8 +52,8 @@ export function createProfileFormDefaultValues(
 export const updateMeSchema = z.object({
   name: z.string().trim().min(1).max(40),
   avatarUrl: z.string().url().nullable(),
-  bikeBrand: z.string().nullable(),
-  bikeModel: z.string().nullable(),
+  bikeBrand: optionalTrimmedProfileText("브랜드"),
+  bikeModel: optionalTrimmedProfileText("모델명"),
   proficiency: z.enum(["beginner", "intermediate", "advanced"]).nullable(),
 });
 
