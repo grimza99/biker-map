@@ -1,7 +1,9 @@
 import {
   BUCKET_NAME,
   DeleteAccountResponseData,
+  TUpdateProfileSchema,
   UpdateMeResponseData,
+  updateMeSchema,
 } from "@biker-map/package-shared";
 
 import {
@@ -21,15 +23,6 @@ import { getProfileStatus } from "@shared/api/supabase-profiles";
 import { getSupabasePublicEnv } from "@shared/config";
 import { createSupabaseServiceClient } from "@shared/lib/supabase";
 import { NextResponse } from "next/server";
-import { z } from "zod";
-
-const updateMeSchema = z.object({
-  name: z.string().trim().min(1).max(40),
-  avatarUrl: z.string().url().nullable(),
-  bikeBrand: z.string().nullable(),
-  bikeModel: z.string().nullable(),
-  proficiency: z.enum(["beginner", "intermediate", "advanced"]).nullable(),
-});
 
 export async function GET(request: Request) {
   const session = await getSupabaseAuthSession(request);
@@ -68,7 +61,7 @@ export async function PATCH(request: Request) {
     return unauthorized();
   }
 
-  let payload: z.infer<typeof updateMeSchema>;
+  let payload: TUpdateProfileSchema;
   try {
     payload = await parseRequestBody(request, updateMeSchema);
   } catch {
