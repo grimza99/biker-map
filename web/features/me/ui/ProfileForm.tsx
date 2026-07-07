@@ -3,14 +3,13 @@
 import { zodResolver } from "@hookform/resolvers/zod";
 import { proficiencySelectOptions } from "@package-shared/model";
 import type { Tproficiency } from "@package-shared/types";
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { Controller, useForm } from "react-hook-form";
 
 import { uploadImage } from "@/features/image";
 import { useSession } from "@/features/session";
 import { Button, ImageInput, Input, SelectInput } from "@/shared";
 import {
-  createProfileFormDefaultValues,
   ProfileFormInput,
   profileFormSchema,
   ProfileFormValues,
@@ -19,17 +18,49 @@ import { useUpdateProfile } from "../model";
 
 export function ProfileForm() {
   const { session } = useSession();
+  const sessionName = session?.name ?? "";
+  const sessionAvatarUrl = session?.avatarUrl ?? null;
+  const sessionBikeBrand = session?.bikeBrand ?? "";
+  const sessionBikeModel = session?.bikeModel ?? "";
+  const sessionProficiency: ProfileFormInput["proficiency"] =
+    session?.proficiency ?? "";
+  const defaultValues = useMemo(
+    () => ({
+      name: sessionName,
+      avatarUrl: sessionAvatarUrl,
+      bikeBrand: sessionBikeBrand,
+      bikeModel: sessionBikeModel,
+      proficiency: sessionProficiency ?? "",
+    }),
+    [
+      sessionAvatarUrl,
+      sessionBikeBrand,
+      sessionBikeModel,
+      sessionName,
+      sessionProficiency,
+    ]
+  );
+  const resetKey = useMemo(
+    () => JSON.stringify(defaultValues),
+    [defaultValues]
+  );
   const [isImageUploading, setIsImageUploading] = useState(false);
   const { mutateAsync: updateProfile, isPending } = useUpdateProfile();
   const form = useForm<ProfileFormInput, unknown, ProfileFormValues>({
     resolver: zodResolver(profileFormSchema),
     mode: "onChange",
-    defaultValues: createProfileFormDefaultValues(session),
+    defaultValues,
   });
+  const lastResetKeyRef = useRef(resetKey);
 
   useEffect(() => {
-    form.reset(createProfileFormDefaultValues(session));
-  }, [form, session]);
+    if (lastResetKeyRef.current === resetKey) {
+      return;
+    }
+
+    lastResetKeyRef.current = resetKey;
+    form.reset(defaultValues);
+  }, [defaultValues, form, resetKey]);
 
   const handleSubmit = form.handleSubmit(async (values) => {
     if (isPending || isImageUploading) {
