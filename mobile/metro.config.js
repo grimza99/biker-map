@@ -6,10 +6,15 @@ const { getDefaultConfig } = require("expo/metro-config");
 const { withNativewind } = require("nativewind/metro");
 
 const projectRoot = __dirname;
+const workspaceRoot = path.resolve(projectRoot, "..");
 
 const config = getDefaultConfig(projectRoot);
 
-// package-shared 소스 변경을 감지하기 위해 해당 디렉토리만 watch
-config.watchFolders = [path.resolve(projectRoot, "../package-shared")];
-module.exports = withNativewind(config);
+// mobile 밖의 shared source를 번들링할 때도 mobile/node_modules 기준으로 해석되게 맞춘다.
+config.watchFolders = [workspaceRoot];
+config.resolver.nodeModulesPaths = [
+  path.resolve(projectRoot, "node_modules"),
+  path.resolve(workspaceRoot, "node_modules"),
+];
 
+module.exports = withNativewind(config);
