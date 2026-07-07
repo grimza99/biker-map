@@ -1,19 +1,19 @@
 import { Feather, Ionicons } from "@expo/vector-icons";
 import { type Href, useRouter } from "expo-router";
-import { ScrollView, View } from "react-native";
 import { useState } from "react";
+import { ScrollView, View } from "react-native";
 
 import {
+  bikerMapTheme,
   categoryLabelMap,
   communityCategoryOptions,
   type CommunityCategorySlug,
-  bikerMapTheme,
 } from "@package-shared/index";
 
 import { Button, Input, Pagination } from "@/components/common";
 import { AppScreen } from "@/components/shell";
+import { PostCard, usePostList } from "@/entities/community";
 import { AppText, MOBILE_PATHS, ScreenState } from "@/shared";
-import { usePostList, PostCard } from "@/entities/community";
 import { ListSkeleton } from "@/widgets/ui";
 
 const COMMUNITY_PAGE_SIZE = 5;
@@ -69,6 +69,7 @@ export default function CommunityScreen() {
     );
   }
 
+  const pinnedPostList = postListData.data.pinnedItems;
   const postList = postListData.data.items;
   const totalPost = postListData?.meta?.total ?? postListData.data.items.length;
   const totalPages = Math.max(1, Math.ceil(totalPost / COMMUNITY_PAGE_SIZE));
@@ -140,8 +141,15 @@ export default function CommunityScreen() {
           총 {totalPost}개의 글
         </AppText>
       </View>
-
       <View className="flex-col gap-2.5">
+        {pinnedPostList.length > 0 &&
+          pinnedPostList.map((post) => (
+            <PostCard
+              key={post.id}
+              post={post}
+              categoryLabel={categoryLabelMap[post.category]}
+            />
+          ))}
         {postList.length > 0 ? (
           postList.map((post) => (
             <PostCard
@@ -160,7 +168,6 @@ export default function CommunityScreen() {
           />
         )}
       </View>
-
       <Pagination
         currentPage={currentPage}
         totalPages={totalPages}
