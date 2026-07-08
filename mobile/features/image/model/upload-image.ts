@@ -1,7 +1,6 @@
 import { API_PATHS, type UploadImageResponseData } from "@package-shared/index";
 
-import { apiFetch } from "@/shared";
-import type { ImageInputAsset } from "@/components/common";
+import { apiFetch, ImageInputAsset } from "@/shared";
 
 type ReactNativeUploadFile = {
   uri: string;

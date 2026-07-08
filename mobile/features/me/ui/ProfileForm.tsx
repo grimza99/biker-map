@@ -1,12 +1,12 @@
-import { View } from "react-native";
 import { Controller } from "react-hook-form";
+import { View } from "react-native";
 
 import { AppSession, proficiencySelectOptions } from "@package-shared/index";
 
-import { Button, ImageInput, Input } from "@/components/common";
+import { Button } from "@/components/common";
 import { formBase } from "@/features/auth/form-style";
 import { useProfileForm } from "@/features/me";
-import { SelectInput } from "@/shared";
+import { ImageInput, Input, SelectInput } from "@/shared";
 
 interface IProfileFormProps {
   currenValue: AppSession | null;

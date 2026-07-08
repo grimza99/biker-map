@@ -12,8 +12,8 @@ import {
 import { bikerMapTheme } from "@package-shared/constants/theme";
 
 import { cn } from "@/shared";
-import { AppText } from "../../shared/ui/AppText";
-import { Button } from "./Button";
+import { Button } from "../../components/common/Button";
+import { AppText } from "./AppText";
 import { FieldShell, type FieldBaseProps, type FieldSize } from "./FieldShell";
 
 export type ImageInputSize = FieldSize;

@@ -1,15 +1,18 @@
 import { useLocalSearchParams } from "expo-router";
 
+import { Button, Chip } from "@/components/common";
 import {
   Message,
   useChatMessages,
-  useMarkChatReadMutation,
   useChatRealtime,
   useChatRoom,
+  useMarkChatReadMutation,
   useSendChatMessageMutation,
 } from "@/features/bikers";
-import { Button, Chip, Input } from "@/components/common";
 import { useSession } from "@/features/session/model";
+import { AppText, BouncingDots, cn, Input } from "@/shared";
+import dayjs from "@/shared/lib/day-js";
+import { Feather } from "@expo/vector-icons";
 import { bikerMapTheme, type TChatMessage } from "@package-shared/index";
 import { useEffect, useMemo, useState } from "react";
 import {
@@ -21,9 +24,6 @@ import {
   View,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
-import { Feather } from "@expo/vector-icons";
-import { AppText, BouncingDots, cn } from "@/shared";
-import dayjs from "@/shared/lib/day-js";
 
 export default function BikerChatScreen() {
   const { chatId } = useLocalSearchParams<{ chatId: string }>();

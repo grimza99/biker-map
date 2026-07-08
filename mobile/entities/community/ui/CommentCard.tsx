@@ -1,15 +1,15 @@
-import { useEffect, useState } from "react";
 import type {
   CommunityComment,
   CommunityReply,
   ReactionType,
 } from "@package-shared/index";
+import { useEffect, useState } from "react";
 import { Alert, View } from "react-native";
 
-import { AppText, Button, DefaultCardContainer, Input } from "@/components/common";
-import { ProfileIdentity } from "@/shared";
-import { CommentActionBar } from "./CommentActionBar";
+import { AppText, Button, DefaultCardContainer } from "@/components/common";
+import { Input, ProfileIdentity } from "@/shared";
 import { bikerMapTheme } from "@package-shared/index";
+import { CommentActionBar } from "./CommentActionBar";
 
 type CommentCardProps = {
   canManage?: boolean;
@@ -70,25 +70,21 @@ export function CommentCard({
       return;
     }
 
-    Alert.alert(
-      "댓글 삭제",
-      "삭제한 댓글은 복구할 수 없습니다.",
-      [
-        { text: "취소", style: "cancel" },
-        {
-          text: "삭제",
-          style: "destructive",
-          onPress: () => {
-            void onDelete().catch((error) => {
-              Alert.alert(
-                "댓글 삭제 실패",
-                error instanceof Error ? error.message : "오류가 발생했습니다."
-              );
-            });
-          },
+    Alert.alert("댓글 삭제", "삭제한 댓글은 복구할 수 없습니다.", [
+      { text: "취소", style: "cancel" },
+      {
+        text: "삭제",
+        style: "destructive",
+        onPress: () => {
+          void onDelete().catch((error) => {
+            Alert.alert(
+              "댓글 삭제 실패",
+              error instanceof Error ? error.message : "오류가 발생했습니다."
+            );
+          });
         },
-      ]
-    );
+      },
+    ]);
   }
 
   return (

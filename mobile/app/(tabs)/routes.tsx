@@ -10,17 +10,11 @@ import {
   type RoutesQuery,
 } from "@package-shared/index";
 
-import {
-  AppText,
-  Chip,
-  DropdownMenu,
-  Input,
-  Pagination,
-} from "@/components/common";
+import { AppText, Chip, DropdownMenu } from "@/components/common";
 import { RouteCard, useRouteListQuery } from "@/entities/route";
-import { ScreenState } from "@/shared";
+import { Input, ScreenState } from "@/shared";
 import { AppScreen } from "@/widgets";
-import { ListItemSkeleton } from "@/widgets/ui";
+import { ListItemSkeleton, Pagination } from "@/widgets/ui";
 
 const ROUTE_PAGE_SIZE = 5;
 const REGION_OPTIONS = routeRegionOptions.map((option) => ({

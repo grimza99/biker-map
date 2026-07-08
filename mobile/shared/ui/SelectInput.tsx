@@ -1,7 +1,7 @@
 import { AntDesign } from "@expo/vector-icons";
 import { type ReactNode } from "react";
-import { Pressable } from "react-native";
 import type { PressableProps, ViewStyle } from "react-native";
+import { Pressable } from "react-native";
 
 import { bikerMapTheme } from "@package-shared/constants/theme";
 
@@ -12,12 +12,12 @@ import {
   type DropdownMenuProps,
   type DropdownOption,
 } from "../../components/common/DropdownMenu";
+import { AppText } from "./AppText";
 import {
   FieldShell,
   fieldSizeStyleMap,
   type FieldBaseProps,
-} from "../../components/common/FieldShell";
-import { AppText } from "./AppText";
+} from "./FieldShell";
 
 export type SelectInputOption = DropdownOption;
 

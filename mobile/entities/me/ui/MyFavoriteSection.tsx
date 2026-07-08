@@ -1,11 +1,11 @@
-import { View } from "react-native";
 import { useEffect, useState } from "react";
+import { View } from "react-native";
 
-import { useMyFavorites } from "../model";
-import { Button, Pagination } from "@/components/common";
+import { Button } from "@/components/common";
 import { PostCard } from "@/entities/community";
 import { RouteCard } from "@/entities/route";
-import { ListItemSkeleton } from "@/widgets/ui";
+import { ListItemSkeleton, Pagination } from "@/widgets/ui";
+import { useMyFavorites } from "../model";
 
 type TFavoriteTab = "post" | "route";
 const MY_FAVORITE_SECTION_PAGE_SIZE = 5;

@@ -2,13 +2,14 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { Controller, useForm } from "react-hook-form";
 import { View } from "react-native";
 
+import { AppText, Button, CommonModal } from "@/components/common";
+import { Input } from "@/shared";
 import {
   phoneSchema,
   type SendVerificationCodeFormValues,
   type VerifyCodeFormValues,
   verifyCodeSchema,
 } from "@package-shared/index";
-import { AppText, Button, CommonModal, Input } from "@/components/common";
 import { useRemainingTime } from "../hook";
 import { useSendSMSVerificationCodeMutation, useVerifyMuation } from "../model";
 
@@ -37,8 +38,11 @@ export function AuthVerifyDialog({
       code: "",
     },
   });
-  const { mutateAsync: sendSMSMutation, data, isPending: isSending } =
-    useSendSMSVerificationCodeMutation();
+  const {
+    mutateAsync: sendSMSMutation,
+    data,
+    isPending: isSending,
+  } = useSendSMSVerificationCodeMutation();
   const { mutateAsync: checkCodeMutation, isPending: isVerifying } =
     useVerifyMuation();
   const { timerText, remainingSeconds } = useRemainingTime(

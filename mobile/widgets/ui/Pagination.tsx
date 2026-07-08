@@ -1,7 +1,7 @@
 import { Fragment } from "react";
 import { View } from "react-native";
 
-import { Button } from "./Button";
+import { Button } from "@/components/common";
 import { AppText } from "../../shared";
 
 type PaginationProps = {

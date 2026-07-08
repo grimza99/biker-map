@@ -10,11 +10,11 @@ import {
   type CommunityCategorySlug,
 } from "@package-shared/index";
 
-import { Button, Input, Pagination } from "@/components/common";
+import { Button } from "@/components/common";
 import { PostCard, usePostList } from "@/entities/community";
-import { AppText, MOBILE_PATHS, ScreenState } from "@/shared";
+import { AppText, Input, MOBILE_PATHS, ScreenState } from "@/shared";
 import { AppScreen } from "@/widgets";
-import { ListSkeleton } from "@/widgets/ui";
+import { ListSkeleton, Pagination } from "@/widgets/ui";
 
 const COMMUNITY_PAGE_SIZE = 5;
 type CommunityCategoryFilter = CommunityCategorySlug | "all";
