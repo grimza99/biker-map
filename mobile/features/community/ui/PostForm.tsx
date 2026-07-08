@@ -2,14 +2,15 @@ import { Alert, View } from "react-native";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Controller, useForm } from "react-hook-form";
-import { z } from "zod";
 
 import {
   allowedCommunityCategoryOptions,
   communityCategoryOptions,
+  communityPostDraftFormSchema,
   communityPostFormSchema,
   createCommunityPostFormDefaultValues,
   type ApiResponse,
+  type CommunityPostFormInput,
   type CommunityCategorySlug,
   type CreatePostBody,
   type CreatePostResponseData,
@@ -43,30 +44,6 @@ type IPostFormProps = {
   onSuccess?: (data: CreatePostResponseData | UpdatePostResponseData) => void;
   onCancel?: () => void;
 };
-
-type PostFormInput = Omit<CreatePostBody, "images"> & {
-  images: ImageInputAsset[];
-};
-
-const imageInputAssetSchema = z.object({
-  uri: z.string().trim().min(1, "이미지 경로가 올바르지 않습니다."),
-  id: z.string().nullable().optional(),
-  mimeType: z.string().nullable().optional(),
-  name: z.string().nullable().optional(),
-  type: z
-    .enum(["image", "video", "livePhoto", "pairedVideo"])
-    .nullable()
-    .optional(),
-  height: z.number().optional(),
-  size: z.number().optional(),
-  width: z.number().optional(),
-});
-
-const postFormSchema = communityPostFormSchema.extend({
-  images: z
-    .array(imageInputAssetSchema)
-    .max(5, "이미지는 최대 5장까지 업로드할 수 있습니다."),
-});
 
 const MAX_POST_IMAGES = 5;
 const ALLOWED_CATEGORIES = allowedCommunityCategoryOptions.map(
@@ -102,7 +79,7 @@ export function PostForm({
       initialValues?.title,
     ]
   );
-  const defaultValues = useMemo<PostFormInput>(
+  const defaultValues = useMemo<CommunityPostFormInput>(
     () => ({
       ...createCommunityPostFormDefaultValues({
         allowedCategories: ALLOWED_CATEGORIES,
@@ -122,8 +99,8 @@ export function PostForm({
     [defaultCategory, normalizedInitialValues]
   );
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const form = useForm<PostFormInput>({
-    resolver: zodResolver(postFormSchema),
+  const form = useForm<CommunityPostFormInput>({
+    resolver: zodResolver(communityPostDraftFormSchema),
     mode: "onChange",
     defaultValues,
   });

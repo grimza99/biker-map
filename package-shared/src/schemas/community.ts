@@ -1,6 +1,6 @@
 import { z } from "zod";
 import { allowedCommunityCategoryOptions } from "../model";
-import { CommunityCategorySlug, CreatePostBody } from "../types";
+import { CommunityCategorySlug, CreatePostBody, UploadImageDraft } from "../types";
 import { SCHEMA_ATOM } from "./schema-atom";
 
 type CreateCommunityPostFormDefaultValuesParams = {
@@ -17,6 +17,30 @@ export const communityPostFormSchema = z.object({
     .array(z.string().trim().min(1))
     .max(5, "이미지는 최대 5장까지 업로드할 수 있습니다."),
 }) satisfies z.ZodType<CreatePostBody>;
+
+export const uploadImageDraftSchema = z.object({
+  uri: z.string().trim().min(1, "이미지 경로가 올바르지 않습니다."),
+  id: z.string().nullable().optional(),
+  mimeType: z.string().nullable().optional(),
+  name: z.string().nullable().optional(),
+  type: z
+    .enum(["image", "video", "livePhoto", "pairedVideo"])
+    .nullable()
+    .optional(),
+  height: z.number().optional(),
+  size: z.number().optional(),
+  width: z.number().optional(),
+}) satisfies z.ZodType<UploadImageDraft>;
+
+export type CommunityPostFormInput = Omit<CreatePostBody, "images"> & {
+  images: UploadImageDraft[];
+};
+
+export const communityPostDraftFormSchema = communityPostFormSchema.extend({
+  images: z
+    .array(uploadImageDraftSchema)
+    .max(5, "이미지는 최대 5장까지 업로드할 수 있습니다."),
+}) satisfies z.ZodType<CommunityPostFormInput>;
 
 export function createCommunityPostFormDefaultValues({
   allowedCategories = allowedCommunityCategoryOptions.map(
