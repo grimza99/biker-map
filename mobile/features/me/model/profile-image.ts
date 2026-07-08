@@ -1,5 +1,5 @@
-import type { ImageInputAsset } from "@/components/common";
 import { uploadImage } from "@/features/image";
+import { ImageInputAsset } from "@/shared";
 
 export async function resolveAvatarUrl(avatarAsset: ImageInputAsset[]) {
   const selectedAsset = avatarAsset[0];

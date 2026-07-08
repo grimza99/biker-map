@@ -1,7 +1,7 @@
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useEffect, useMemo, useRef, useState } from "react";
-import { Alert } from "react-native";
 import { useForm } from "react-hook-form";
+import { Alert } from "react-native";
 
 import {
   createProfileFormDefaultValues,
@@ -11,8 +11,7 @@ import {
   type ProfileFormValues,
 } from "@package-shared/index";
 
-import type { ImageInputAsset } from "@/components/common";
-
+import { ImageInputAsset } from "@/shared";
 import {
   hasLocalAvatarAsset,
   mapInitialAvatarAsset,
@@ -29,7 +28,10 @@ export function useProfileForm({ currentValue }: UseProfileFormParams) {
     () => createProfileFormDefaultValues(currentValue),
     [currentValue]
   );
-  const resetKey = useMemo(() => JSON.stringify(defaultValues), [defaultValues]);
+  const resetKey = useMemo(
+    () => JSON.stringify(defaultValues),
+    [defaultValues]
+  );
   const [avatarAsset, setAvatarAsset] = useState<ImageInputAsset[]>(
     mapInitialAvatarAsset(defaultValues.avatarUrl)
   );
