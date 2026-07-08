@@ -1,4 +1,5 @@
 import { View } from "react-native";
+import { Controller } from "react-hook-form";
 
 import { AppSession, proficiencySelectOptions } from "@package-shared/index";
 
@@ -14,26 +15,32 @@ interface IProfileFormProps {
 export function ProfileForm({ currenValue }: IProfileFormProps) {
   const {
     avatarAsset,
+    form,
     handleAvatarChange,
-    handleChangeInput,
-    handleChangeProficiency,
     handleSubmit,
     isDirty,
     isSubmitting,
-    profile,
   } = useProfileForm({
     currentValue: currenValue,
   });
 
   return (
     <View className={formBase.formContainer}>
-      <Input
-        autoCapitalize="none"
-        autoCorrect={false}
-        editable={!isSubmitting}
-        onChangeText={(v) => handleChangeInput("name", v)}
-        placeholder="이름을 입력해주세요"
-        value={profile.name}
+      <Controller
+        control={form.control}
+        name="name"
+        render={({ field, fieldState }) => (
+          <Input
+            autoCapitalize="none"
+            autoCorrect={false}
+            editable={!isSubmitting}
+            onBlur={field.onBlur}
+            onChangeText={field.onChange}
+            placeholder="이름을 입력해주세요"
+            value={field.value}
+            errorText={fieldState.error?.message}
+          />
+        )}
       />
       <ImageInput
         label="프로필 이미지"
@@ -41,31 +48,55 @@ export function ProfileForm({ currenValue }: IProfileFormProps) {
         maxImages={1}
         disabled={isSubmitting}
         onValueChange={handleAvatarChange}
+        errorText={form.formState.errors.avatarUrl?.message}
       />
-      <Input
-        autoCapitalize="none"
-        autoCorrect={false}
-        editable={!isSubmitting}
-        onChangeText={(v) => handleChangeInput("bikeBrand", v)}
-        placeholder="브랜드"
-        value={profile.bikeBrand || ""}
+      <Controller
+        control={form.control}
+        name="bikeBrand"
+        render={({ field, fieldState }) => (
+          <Input
+            autoCapitalize="none"
+            autoCorrect={false}
+            editable={!isSubmitting}
+            onBlur={field.onBlur}
+            onChangeText={field.onChange}
+            placeholder="브랜드"
+            value={field.value}
+            errorText={fieldState.error?.message}
+          />
+        )}
       />
-      <Input
-        autoCapitalize="none"
-        autoCorrect={false}
-        editable={!isSubmitting}
-        onChangeText={(v) => handleChangeInput("bikeModel", v)}
-        placeholder="모델명"
-        value={profile.bikeModel || ""}
+      <Controller
+        control={form.control}
+        name="bikeModel"
+        render={({ field, fieldState }) => (
+          <Input
+            autoCapitalize="none"
+            autoCorrect={false}
+            editable={!isSubmitting}
+            onBlur={field.onBlur}
+            onChangeText={field.onChange}
+            placeholder="모델명"
+            value={field.value}
+            errorText={fieldState.error?.message}
+          />
+        )}
       />
-      <SelectInput
-        options={proficiencySelectOptions}
-        placeholder="라이딩 숙련도"
-        value={profile.proficiency ?? ""}
-        onValueChange={handleChangeProficiency}
+      <Controller
+        control={form.control}
+        name="proficiency"
+        render={({ field, fieldState }) => (
+          <SelectInput
+            options={proficiencySelectOptions}
+            placeholder="라이딩 숙련도"
+            value={field.value ?? ""}
+            onValueChange={field.onChange}
+            errorText={fieldState.error?.message}
+          />
+        )}
       />
       <Button
-        disabled={!profile.name.trim() || !isDirty || isSubmitting}
+        disabled={!form.formState.isValid || !isDirty || isSubmitting}
         loading={isSubmitting}
         onPress={() => {
           void handleSubmit();

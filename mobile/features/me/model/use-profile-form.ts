@@ -1,7 +1,15 @@
-import { useEffect, useMemo, useState } from "react";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { Alert } from "react-native";
+import { useForm } from "react-hook-form";
 
-import type { AppSession, UpdateMeBody } from "@package-shared/index";
+import {
+  createProfileFormDefaultValues,
+  profileFormSchema,
+  type AppSession,
+  type ProfileFormInput,
+  type ProfileFormValues,
+} from "@package-shared/index";
 
 import type { ImageInputAsset } from "@/components/common";
 
@@ -17,52 +25,47 @@ interface UseProfileFormParams {
 }
 
 export function useProfileForm({ currentValue }: UseProfileFormParams) {
-  const [profile, setProfile] = useState<UpdateMeBody>(
-    createProfileState(currentValue)
+  const defaultValues = useMemo(
+    () => createProfileFormDefaultValues(currentValue),
+    [currentValue]
   );
+  const resetKey = useMemo(() => JSON.stringify(defaultValues), [defaultValues]);
   const [avatarAsset, setAvatarAsset] = useState<ImageInputAsset[]>(
-    mapInitialAvatarAsset(currentValue?.avatarUrl)
+    mapInitialAvatarAsset(defaultValues.avatarUrl)
   );
   const [isUploadingImage, setIsUploadingImage] = useState(false);
   const { mutateAsync: editProfileMutation, isPending } = useUpdateMeMutation();
+  const form = useForm<ProfileFormInput, unknown, ProfileFormValues>({
+    resolver: zodResolver(profileFormSchema),
+    mode: "onChange",
+    defaultValues,
+  });
+  const lastResetKeyRef = useRef(resetKey);
 
   const isSubmitting = isPending || isUploadingImage;
-  const isDirty = useMemo(
-    () =>
-      profile.name !== (currentValue?.name || "") ||
-      profile.avatarUrl !== (currentValue?.avatarUrl || null) ||
-      profile.bikeBrand !== (currentValue?.bikeBrand || "") ||
-      profile.bikeModel !== (currentValue?.bikeModel || "") ||
-      profile.proficiency !== (currentValue?.proficiency || null),
-    [profile, currentValue]
-  );
+  const profile = form.watch();
+  const isDirty = form.formState.isDirty;
 
   useEffect(() => {
-    setProfile(createProfileState(currentValue));
-    setAvatarAsset(mapInitialAvatarAsset(currentValue?.avatarUrl));
-  }, [currentValue]);
+    if (lastResetKeyRef.current === resetKey) {
+      return;
+    }
 
-  const handleChangeInput = (key: keyof UpdateMeBody, value: string) => {
-    setProfile((prev) => ({ ...prev, [key]: value }));
-  };
+    lastResetKeyRef.current = resetKey;
+    form.reset(defaultValues);
+    setAvatarAsset(mapInitialAvatarAsset(defaultValues.avatarUrl));
+  }, [defaultValues, form, resetKey]);
 
   const handleAvatarChange = (value: ImageInputAsset[] | null) => {
     const nextAssets = value ?? [];
     setAvatarAsset(nextAssets);
-    setProfile((prev) => ({
-      ...prev,
-      avatarUrl: nextAssets[0]?.uri ?? null,
-    }));
+    form.setValue("avatarUrl", nextAssets[0]?.uri ?? null, {
+      shouldDirty: true,
+      shouldValidate: true,
+    });
   };
 
-  const handleChangeProficiency = (value: string) => {
-    setProfile((prev) => ({
-      ...prev,
-      proficiency: value ? (value as UpdateMeBody["proficiency"]) : null,
-    }));
-  };
-
-  async function handleSubmit() {
+  const handleSubmit = form.handleSubmit(async (values) => {
     let nextAvatarUrl: string | null;
 
     try {
@@ -82,33 +85,21 @@ export function useProfileForm({ currentValue }: UseProfileFormParams) {
 
     try {
       await editProfileMutation({
-        ...profile,
-        name: profile.name.trim(),
+        ...values,
         avatarUrl: nextAvatarUrl,
       });
     } finally {
       setIsUploadingImage(false);
     }
-  }
+  });
 
   return {
     avatarAsset,
+    form,
     handleAvatarChange,
-    handleChangeInput,
-    handleChangeProficiency,
     handleSubmit,
     isDirty,
     isSubmitting,
     profile,
-  };
-}
-
-function createProfileState(currentValue: AppSession | null): UpdateMeBody {
-  return {
-    name: currentValue?.name || "",
-    avatarUrl: currentValue?.avatarUrl || null,
-    bikeBrand: currentValue?.bikeBrand || "",
-    bikeModel: currentValue?.bikeModel || "",
-    proficiency: currentValue?.proficiency || null,
   };
 }

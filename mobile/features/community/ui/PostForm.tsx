@@ -1,10 +1,16 @@
 import { Alert, View } from "react-native";
-import { useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { Controller, useForm } from "react-hook-form";
 
 import {
   allowedCommunityCategoryOptions,
   communityCategoryOptions,
+  communityPostDraftFormSchema,
+  communityPostFormSchema,
+  createCommunityPostFormDefaultValues,
   type ApiResponse,
+  type CommunityPostFormInput,
   type CommunityCategorySlug,
   type CreatePostBody,
   type CreatePostResponseData,
@@ -39,7 +45,7 @@ type IPostFormProps = {
   onCancel?: () => void;
 };
 
-const MAX_POST_IMAGES = 2;
+const MAX_POST_IMAGES = 5;
 const ALLOWED_CATEGORIES = allowedCommunityCategoryOptions.map(
   (option) => option.value
 );
@@ -59,40 +65,61 @@ export function PostForm({
   onCancel,
 }: IPostFormProps) {
   const createPostMutation = useCreateCommunityPost();
-  const [category, setCategory] = useState<CommunityCategorySlug>(
-    initialValues?.category ??
-      defaultCategory ??
-      OPTIONS[0]?.value ??
-      "question"
+  const normalizedInitialValues = useMemo(
+    () => ({
+      category: initialValues?.category,
+      title: initialValues?.title ?? "",
+      content: initialValues?.content ?? "",
+      images: initialValues?.images ?? [],
+    }),
+    [
+      initialValues?.category,
+      initialValues?.content,
+      initialValues?.images,
+      initialValues?.title,
+    ]
   );
-  const [title, setTitle] = useState(initialValues?.title ?? "");
-  const [content, setContent] = useState(initialValues?.content ?? "");
-  const [images, setImages] = useState<ImageInputAsset[]>(
-    mapInitialImageUrls(initialValues?.images)
+  const defaultValues = useMemo<CommunityPostFormInput>(
+    () => ({
+      ...createCommunityPostFormDefaultValues({
+        allowedCategories: ALLOWED_CATEGORIES,
+        defaultCategory,
+        initialValues: normalizedInitialValues,
+      }),
+      images: mapInitialImageUrls(normalizedInitialValues.images),
+    }),
+    [defaultCategory, normalizedInitialValues]
+  );
+  const resetKey = useMemo(
+    () =>
+      JSON.stringify({
+        defaultCategory: defaultCategory ?? null,
+        initialValues: normalizedInitialValues,
+      }),
+    [defaultCategory, normalizedInitialValues]
   );
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [titleError, setTitleError] = useState<string>();
-  const [contentError, setContentError] = useState<string>();
+  const form = useForm<CommunityPostFormInput>({
+    resolver: zodResolver(communityPostDraftFormSchema),
+    mode: "onChange",
+    defaultValues,
+  });
+  const lastResetKeyRef = useRef(resetKey);
 
-  async function handleSubmit() {
-    const trimmedTitle = title.trim();
-    const trimmedContent = content.trim();
-    const nextTitleError = trimmedTitle ? undefined : "제목을 입력해주세요.";
-    const nextContentError = trimmedContent
-      ? undefined
-      : "본문을 1자 이상 입력해주세요.";
-
-    setTitleError(nextTitleError);
-    setContentError(nextContentError);
-
-    if (nextTitleError || nextContentError) {
+  useEffect(() => {
+    if (lastResetKeyRef.current === resetKey) {
       return;
     }
 
+    lastResetKeyRef.current = resetKey;
+    form.reset(defaultValues);
+  }, [defaultValues, form, resetKey]);
+
+  const handleSubmit = form.handleSubmit(async (values) => {
     try {
       setIsSubmitting(true);
       const uploadedImageUrls = await Promise.all(
-        images.map(async (asset) => {
+        values.images.map(async (asset) => {
           if (isRemoteImageUri(asset.uri)) {
             return asset.uri;
           }
@@ -102,12 +129,12 @@ export function PostForm({
         })
       );
 
-      const payload: CreatePostBody | UpdatePostBody = {
-        category,
-        title: trimmedTitle,
-        content: trimmedContent,
+      const payload = communityPostFormSchema.parse({
+        category: values.category,
+        title: values.title,
+        content: values.content,
         images: uploadedImageUrls,
-      };
+      }) as CreatePostBody | UpdatePostBody;
 
       const response = onSubmit
         ? await onSubmit(payload)
@@ -117,10 +144,13 @@ export function PostForm({
       onSuccess?.(resolved);
 
       if (!onSubmit) {
-        setTitle("");
-        setContent("");
-        setImages([]);
-        setCategory(defaultCategory ?? OPTIONS[0]?.value ?? "question");
+        form.reset({
+          ...createCommunityPostFormDefaultValues({
+            allowedCategories: ALLOWED_CATEGORIES,
+            defaultCategory,
+          }),
+          images: [],
+        });
       }
     } catch (error) {
       Alert.alert(
@@ -130,59 +160,77 @@ export function PostForm({
     } finally {
       setIsSubmitting(false);
     }
-  }
+  });
 
   const isPending = isSubmitting || createPostMutation.isPending;
 
   return (
     <View className="gap-4">
-      <SelectInput
-        label="카테고리"
-        options={OPTIONS}
-        value={category}
-        onValueChange={(nextValue) =>
-          setCategory(nextValue as CommunityCategorySlug)
-        }
+      <Controller
+        control={form.control}
+        name="category"
+        render={({ field, fieldState }) => (
+          <SelectInput
+            label="카테고리"
+            options={OPTIONS}
+            value={field.value}
+            onValueChange={(nextValue) =>
+              field.onChange(nextValue as CommunityCategorySlug)
+            }
+            errorText={fieldState.error?.message}
+          />
+        )}
       />
 
-      <Input
-        label="제목"
-        placeholder="게시글 제목을 입력하세요"
-        value={title}
-        onChangeText={(value) => {
-          setTitle(value);
-          if (titleError && value.trim()) {
-            setTitleError(undefined);
-          }
-        }}
-        errorText={titleError}
-        editable={!isPending}
+      <Controller
+        control={form.control}
+        name="title"
+        render={({ field, fieldState }) => (
+          <Input
+            label="제목"
+            placeholder="게시글 제목을 입력하세요"
+            value={field.value}
+            onBlur={field.onBlur}
+            onChangeText={field.onChange}
+            errorText={fieldState.error?.message}
+            editable={!isPending}
+          />
+        )}
       />
 
-      <Input
-        label="본문"
-        placeholder="내용을 입력하세요"
-        value={content}
-        onChangeText={(value) => {
-          setContent(value);
-          if (contentError && value.trim()) {
-            setContentError(undefined);
-          }
-        }}
-        errorText={contentError}
-        helperText="게시글 본문은 최소 1자 이상 입력해야 합니다."
-        editable={!isPending}
-        multiline
-        numberOfLines={10}
+      <Controller
+        control={form.control}
+        name="content"
+        render={({ field, fieldState }) => (
+          <Input
+            label="본문"
+            placeholder="내용을 입력하세요"
+            value={field.value}
+            onBlur={field.onBlur}
+            onChangeText={field.onChange}
+            errorText={fieldState.error?.message}
+            helperText="게시글 본문은 최소 1자 이상 입력해야 합니다."
+            editable={!isPending}
+            multiline
+            numberOfLines={10}
+          />
+        )}
       />
 
-      <ImageInput
-        label="이미지 업로드"
-        value={images}
-        onValueChange={(value) => setImages(value ?? [])}
-        maxImages={MAX_POST_IMAGES}
-        disabled={isPending}
-        helperText={`최대 ${MAX_POST_IMAGES}장까지 업로드할 수 있습니다.`}
+      <Controller
+        control={form.control}
+        name="images"
+        render={({ field, fieldState }) => (
+          <ImageInput
+            label="이미지 업로드"
+            value={field.value}
+            onValueChange={(value) => field.onChange(value ?? [])}
+            maxImages={MAX_POST_IMAGES}
+            disabled={isPending}
+            errorText={fieldState.error?.message}
+            helperText={`최대 ${MAX_POST_IMAGES}장까지 업로드할 수 있습니다.`}
+          />
+        )}
       />
 
       <View className="flex-row items-center justify-end gap-2">
@@ -199,6 +247,7 @@ export function PostForm({
 
         <Button
           onPress={() => void handleSubmit()}
+          disabled={!form.formState.isValid || isPending}
           loading={isPending}
           size="md"
         >

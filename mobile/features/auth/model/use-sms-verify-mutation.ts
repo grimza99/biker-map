@@ -14,10 +14,9 @@ import { useSession } from "@/features/session/model";
 
 /**--------------------------------verification code 문자 보내기 -------------------- */
 export function useSendSMSVerificationCodeMutation(
-  payload: ISendVerificationCodeBody
 ) {
   return useMutation({
-    mutationFn: () =>
+    mutationFn: (payload: ISendVerificationCodeBody) =>
       apiFetch<ISendVerificationCodeResponseData>(
         API_PATHS.auth.sendVerificationCode,
         {
@@ -32,11 +31,11 @@ export function useSendSMSVerificationCodeMutation(
 }
 
 /**--------------------------------인증 code 일치 확인 ------------------------------- */
-export function useVerifyMuation(payload: IVerificationCodeCheckBody) {
+export function useVerifyMuation() {
   const queryClient = useQueryClient();
   const { setSession } = useSession();
   return useMutation({
-    mutationFn: () =>
+    mutationFn: (payload: IVerificationCodeCheckBody) =>
       apiFetch<AuthVerifyResponseData>(API_PATHS.auth.verify, {
         method: "POST",
         body: JSON.stringify(payload),
