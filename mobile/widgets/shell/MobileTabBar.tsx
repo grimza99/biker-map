@@ -4,15 +4,15 @@ import {
   MaterialCommunityIcons,
 } from "@expo/vector-icons";
 import { Link, type Href } from "expo-router";
+import { ReactNode } from "react";
 import { Pressable, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
-import { ReactNode } from "react";
 
 import { bikerMapTheme } from "@package-shared/constants/theme";
 
 import { cn } from "@/shared";
 import { MOBILE_PATHS } from "@/shared/constants/paths";
-import { AppText } from "../common";
+import { AppText } from "../../components/common";
 
 type TabRoute = {
   key: string;
