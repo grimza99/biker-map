@@ -1,10 +1,9 @@
-import { View } from "react-native";
 import { useState } from "react";
+import { View } from "react-native";
 
-import { useMyPosts } from "../model";
-import { Pagination } from "@/components/common";
 import { PostCard } from "@/entities/community";
-import { ListItemSkeleton } from "@/widgets/ui";
+import { ListItemSkeleton, Pagination } from "@/widgets/ui";
+import { useMyPosts } from "../model";
 
 const MY_POST_SECTION_PAGE_SIZE = 5;
 export function MyPostSection() {

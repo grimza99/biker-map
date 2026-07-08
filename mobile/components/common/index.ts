@@ -32,4 +32,3 @@ export type {
   GlobalFloatingMenuProps,
 } from "./GlobalFloatingMenu";
 export { MetaCounts } from "./MetaCounts";
-export { Pagination } from "./Pagination";
