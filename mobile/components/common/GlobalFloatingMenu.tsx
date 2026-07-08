@@ -3,9 +3,8 @@ import { type ReactNode, useState } from "react";
 import { Pressable, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
-import { cn } from "@/shared";
+import { Button, cn } from "@/shared";
 
-import { Button } from "./Button";
 import { AppText } from "../../shared/ui/AppText";
 
 export type GlobalFloatingMenuOption<T> = {

@@ -1,3 +1,4 @@
+export { Button } from "../../shared";
 export {
   BottomSheet,
   BottomSheetClose,
@@ -10,8 +11,6 @@ export type {
   BottomSheetProps,
   BottomSheetTriggerProps,
 } from "./BottomSheet";
-export { Button } from "./Button";
-export type { ButtonProps, ButtonSize, ButtonVariant } from "./Button";
 export { CommonModal } from "./CommonModal";
 export type { CommonModalProps, CommonModalVariant } from "./CommonModal";
 export { DropdownMenu as Dropdown, DropdownMenu } from "./DropdownMenu";
