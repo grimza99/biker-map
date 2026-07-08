@@ -1,17 +1,14 @@
-import {
-  AppText,
-  Button,
-  Chip,
-  DefaultCardContainer,
-} from "@/components/common";
-import { Divider, openExternalUrl } from "@/shared";
 import { Feather, Ionicons } from "@expo/vector-icons";
+import { Image, View } from "react-native";
+
 import {
   bikerMapTheme,
   placeCategoryOptions,
   type PlaceDetail,
 } from "@package-shared/index";
-import { Image, View } from "react-native";
+
+import { DefaultCardContainer } from "@/components/common";
+import { AppText, Button, Chip, Divider, openExternalUrl } from "@/shared";
 
 export function PlaceDetailContent({ place }: { place: PlaceDetail }) {
   const label = placeCategoryOptions.find(

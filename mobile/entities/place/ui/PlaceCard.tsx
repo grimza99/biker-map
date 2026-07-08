@@ -8,9 +8,9 @@ import {
   PlaceListItem,
 } from "@package-shared/index";
 
-import { Button, Chip, DefaultCardContainer } from "@/components/common";
+import { DefaultCardContainer } from "@/components/common";
 
-import { AppText, MOBILE_PATHS, openExternalUrl } from "@/shared";
+import { AppText, Button, Chip, MOBILE_PATHS, openExternalUrl } from "@/shared";
 
 type PlaceCardProps = {
   place: PlaceListItem;

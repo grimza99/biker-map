@@ -24,7 +24,6 @@ export type {
 
 export { AppText } from "../../shared/ui/AppText";
 export * from "./card";
-export { Chip } from "./Chip";
 export { GlobalFloatingMenu } from "./GlobalFloatingMenu";
 export type {
   GlobalFloatingMenuOption,

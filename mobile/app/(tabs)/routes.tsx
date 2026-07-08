@@ -10,9 +10,9 @@ import {
   type RoutesQuery,
 } from "@package-shared/index";
 
-import { AppText, Chip, DropdownMenu } from "@/components/common";
+import { DropdownMenu } from "@/components/common";
 import { RouteCard, useRouteListQuery } from "@/entities/route";
-import { Input, ScreenState } from "@/shared";
+import { AppText, Chip, Input, ScreenState } from "@/shared";
 import { AppScreen } from "@/widgets";
 import { ListItemSkeleton, Pagination } from "@/widgets/ui";
 
