@@ -1,10 +1,10 @@
 import { type Href, Redirect, useRouter } from "expo-router";
 
-import { AppScreen } from "@/components/shell";
 import { DefaultCardContainer } from "@/components/common";
+import { PostForm } from "@/features/community";
 import { useSession } from "@/features/session/model";
 import { MOBILE_PATHS } from "@/shared";
-import { PostForm } from "@/features/community";
+import { AppScreen } from "@/widgets";
 
 export default function CommunityNewPostScreen() {
   const router = useRouter();

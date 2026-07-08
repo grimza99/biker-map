@@ -1,16 +1,16 @@
 import { Redirect, useRouter } from "expo-router";
-import { View } from "react-native";
 import { useState } from "react";
+import { View } from "react-native";
 
 import { LoginBody, SignUpBody } from "@package-shared/index";
 
-import { AppScreen } from "../../components/shell";
-import { useSession } from "../../features/session/model";
 import { Button } from "@/components/common";
-import SignUpForm from "@/features/auth/SignUpForm";
 import LogInForm from "@/features/auth/LogInForm";
-import { MOBILE_PATHS } from "@/shared/constants/paths";
+import SignUpForm from "@/features/auth/SignUpForm";
 import { AppText } from "@/shared";
+import { MOBILE_PATHS } from "@/shared/constants/paths";
+import { AppScreen } from "@/widgets";
+import { useSession } from "../../features/session/model";
 
 type AuthTab = "logIn" | "signUp";
 

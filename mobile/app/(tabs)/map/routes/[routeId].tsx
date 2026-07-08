@@ -2,14 +2,14 @@ import { useLocalSearchParams } from "expo-router";
 import { ScrollView, View } from "react-native";
 
 import { AppText, Button, Chip } from "@/components/common";
-import { AppScreen } from "@/components/shell";
 import { RouteMetaRow, useRouteDetailQuery } from "@/entities/route";
-import { MarkdownContentNative } from "@/shared/lib/markdown";
-import { openExternalUrl, ScreenState } from "@/shared";
 import { FavoriteActionButton, useToggleFavorite } from "@/features/favorite";
-import { regionLabel } from "@package-shared/model";
-import { RouteRegion } from "@package-shared/index";
+import { openExternalUrl, ScreenState } from "@/shared";
+import { MarkdownContentNative } from "@/shared/lib/markdown";
+import { AppScreen } from "@/widgets";
 import { DetailContentSkeleton } from "@/widgets/ui";
+import { RouteRegion } from "@package-shared/index";
+import { regionLabel } from "@package-shared/model";
 
 export default function RouteDetailPlaceholderScreen() {
   const { routeId } = useLocalSearchParams<{ routeId: string }>();

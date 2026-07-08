@@ -18,9 +18,9 @@ import {
   Pagination,
 } from "@/components/common";
 import { RouteCard, useRouteListQuery } from "@/entities/route";
-import { AppScreen } from "../../components/shell";
-import { ListItemSkeleton } from "@/widgets/ui";
 import { ScreenState } from "@/shared";
+import { AppScreen } from "@/widgets";
+import { ListItemSkeleton } from "@/widgets/ui";
 
 const ROUTE_PAGE_SIZE = 5;
 const REGION_OPTIONS = routeRegionOptions.map((option) => ({
@@ -176,18 +176,18 @@ export default function RoutesScreen() {
       )}
 
       {!routesQuery.isLoading &&
-      !isWaitingForPage &&
-      !routesQuery.isError &&
-      visibleRoutes.length === 0 && (
-        <ScreenState
-          variant="not-found"
-          title=""
-          description="조건에 맞는 경로가 없습니다."
-          refetch={() => {
-            void routesQuery.refetch();
-          }}
-        />
-      )}
+        !isWaitingForPage &&
+        !routesQuery.isError &&
+        visibleRoutes.length === 0 && (
+          <ScreenState
+            variant="not-found"
+            title=""
+            description="조건에 맞는 경로가 없습니다."
+            refetch={() => {
+              void routesQuery.refetch();
+            }}
+          />
+        )}
 
       {/* applied filter */}
       {!routesQuery.isLoading &&
