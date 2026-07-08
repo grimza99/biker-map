@@ -9,13 +9,7 @@ import {
   CHIP_COLOR,
 } from "@package-shared/index";
 
-import {
-  AppText,
-  Button,
-  Chip,
-  DefaultCardContainer,
-  MetaCounts,
-} from "@/components/common";
+import { DefaultCardContainer, MetaCounts } from "@/components/common";
 import {
   CommentThread,
   usePostComments,
@@ -25,6 +19,9 @@ import { useCreatePostComment } from "@/features/community";
 import { FavoriteActionButton, useToggleFavorite } from "@/features/favorite";
 import { useSession } from "@/features/session/model";
 import {
+  AppText,
+  Button,
+  Chip,
   formatRelative,
   Indicator,
   Input,

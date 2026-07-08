@@ -11,8 +11,7 @@ import {
 
 import { bikerMapTheme } from "@package-shared/constants/theme";
 
-import { cn } from "@/shared";
-import { Button } from "../../components/common/Button";
+import { Button, cn } from "@/shared";
 import { AppText } from "./AppText";
 import { FieldShell, type FieldBaseProps, type FieldSize } from "./FieldShell";
 

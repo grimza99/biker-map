@@ -2,7 +2,8 @@ import { Image, View } from "react-native";
 
 import { proficiencyClassNameMap, proficiencyMap } from "@package-shared/model";
 
-import { AppText, Chip } from "@/components/common";
+import { AppText, Chip } from "@/shared";
+
 import { useSession } from "@/features/session/model";
 
 export function Profile() {
