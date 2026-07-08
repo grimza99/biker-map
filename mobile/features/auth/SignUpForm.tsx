@@ -1,12 +1,12 @@
 import { zodResolver } from "@hookform/resolvers/zod";
-import { ScrollView, View } from "react-native";
 import { Controller, useForm } from "react-hook-form";
+import { ScrollView, View } from "react-native";
 
 import { SignUpBody, signUpSchema } from "@package-shared/index";
 
-import { Button, Input } from "@/components/common";
+import { Button } from "@/components/common";
+import { containerBase, Input } from "@/shared";
 import { formBase } from "./form-style";
-import { containerBase } from "@/shared";
 
 interface ISignUpForm {
   isSubmitting?: boolean;

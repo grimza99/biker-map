@@ -1,7 +1,7 @@
-import { Alert, View } from "react-native";
-import { useEffect, useMemo, useRef, useState } from "react";
 import { zodResolver } from "@hookform/resolvers/zod";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { Controller, useForm } from "react-hook-form";
+import { Alert, View } from "react-native";
 
 import {
   allowedCommunityCategoryOptions,
@@ -10,23 +10,17 @@ import {
   communityPostFormSchema,
   createCommunityPostFormDefaultValues,
   type ApiResponse,
-  type CommunityPostFormInput,
   type CommunityCategorySlug,
+  type CommunityPostFormInput,
   type CreatePostBody,
   type CreatePostResponseData,
   type UpdatePostBody,
   type UpdatePostResponseData,
 } from "@package-shared/index";
 
-import {
-  AppText,
-  Button,
-  ImageInput,
-  type ImageInputAsset,
-  Input,
-} from "@/components/common";
-import { SelectInput } from "@/shared";
+import { AppText, Button } from "@/components/common";
 import { uploadImage } from "@/features/image";
+import { ImageInput, ImageInputAsset, Input, SelectInput } from "@/shared";
 import { useCreateCommunityPost } from "../model";
 
 type IPostFormProps = {

@@ -1,6 +1,6 @@
-import { forwardRef, type ReactNode, useState } from "react";
-import { StyleSheet, TextInput, View } from "react-native";
+import { forwardRef, useState, type ReactNode } from "react";
 import type { TextInputProps } from "react-native";
+import { StyleSheet, TextInput, View } from "react-native";
 
 import { bikerMapTheme } from "@package-shared/constants/theme";
 
