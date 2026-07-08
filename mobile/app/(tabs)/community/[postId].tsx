@@ -1,19 +1,14 @@
 import { Feather } from "@expo/vector-icons";
 import { useLocalSearchParams } from "expo-router";
-import { Alert, Image, Pressable, View } from "react-native";
 import { useState } from "react";
+import { Alert, Image, Pressable, View } from "react-native";
 
 import {
-  CHIP_COLOR,
   bikerMapTheme,
   categoryLabelMap,
+  CHIP_COLOR,
 } from "@package-shared/index";
 
-import {
-  CommentThread,
-  usePostComments,
-  usePostDetail,
-} from "@/entities/community";
 import {
   AppText,
   Button,
@@ -22,7 +17,13 @@ import {
   Input,
   MetaCounts,
 } from "@/components/common";
-import { AppScreen } from "@/components/shell";
+import {
+  CommentThread,
+  usePostComments,
+  usePostDetail,
+} from "@/entities/community";
+import { useCreatePostComment } from "@/features/community";
+import { FavoriteActionButton, useToggleFavorite } from "@/features/favorite";
 import { useSession } from "@/features/session/model";
 import {
   formatRelative,
@@ -30,9 +31,8 @@ import {
   openExternalUrl,
   ScreenState,
 } from "@/shared";
-import { FavoriteActionButton, useToggleFavorite } from "@/features/favorite";
-import { useCreatePostComment } from "@/features/community";
 
+import { AppScreen } from "@/widgets";
 import { DetailContentSkeleton } from "@/widgets/ui";
 
 export default function PostDetailScreen() {

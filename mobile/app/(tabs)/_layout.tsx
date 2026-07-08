@@ -1,6 +1,6 @@
 import { Tabs } from "expo-router";
 
-import { MobileTabBar } from "../../components/shell";
+import { MobileTabBar } from "@/widgets";
 import { useSession } from "../../features/session/model";
 
 export default function TabsLayout() {

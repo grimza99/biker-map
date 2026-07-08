@@ -2,10 +2,10 @@ import { useLocalSearchParams } from "expo-router";
 import { ActivityIndicator } from "react-native";
 
 import { AppText, DefaultCardContainer } from "@/components/common";
-import { AppScreen } from "@/components/shell";
 import { PlaceDetailContent, usePlaceDetail } from "@/entities/place";
 import { bikerMapTheme } from "@package-shared/index";
 import { ScreenState } from "@/shared/ui/ScreenState";
+import { AppScreen } from "@/widgets";
 
 export default function PlaceDetailScreen() {
   const { placeId } = useLocalSearchParams<{ placeId: string }>();

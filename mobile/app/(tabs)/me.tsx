@@ -1,19 +1,19 @@
 import { Feather, FontAwesome5, Ionicons } from "@expo/vector-icons";
+import { Redirect } from "expo-router";
 import { type ReactNode, useState } from "react";
 import { View } from "react-native";
-import { Redirect } from "expo-router";
 
-import { bikerMapTheme } from "@package-shared/index";
 import { AppText, GlobalFloatingMenu } from "@/components/common";
-import { AppScreen } from "../../components/shell";
-import { useSession } from "../../features/session/model";
 import {
   MyFavoriteSection,
-  ProfileSection,
   MyPostSection,
+  ProfileSection,
   SummaryProfile,
 } from "@/entities/me";
 import { DeleteAccountModal } from "@/features/me";
+import { AppScreen } from "@/widgets";
+import { bikerMapTheme } from "@package-shared/index";
+import { useSession } from "../../features/session/model";
 
 type FloatingMenuOptionId =
   | "favorite"

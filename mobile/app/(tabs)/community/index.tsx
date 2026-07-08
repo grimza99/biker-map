@@ -11,9 +11,9 @@ import {
 } from "@package-shared/index";
 
 import { Button, Input, Pagination } from "@/components/common";
-import { AppScreen } from "@/components/shell";
 import { PostCard, usePostList } from "@/entities/community";
 import { AppText, MOBILE_PATHS, ScreenState } from "@/shared";
+import { AppScreen } from "@/widgets";
 import { ListSkeleton } from "@/widgets/ui";
 
 const COMMUNITY_PAGE_SIZE = 5;
