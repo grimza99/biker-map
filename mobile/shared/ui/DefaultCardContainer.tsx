@@ -3,13 +3,13 @@ import { View } from "react-native";
 
 import { cn } from "@/shared";
 
-interface IDefaultCardProps {
+type IDefaultCardProps = {
   containerStyle?: string;
   footerStyle?: string;
 
   children: ReactNode;
   footer?: ReactNode;
-}
+};
 export function DefaultCardContainer({
   containerStyle,
   footerStyle,

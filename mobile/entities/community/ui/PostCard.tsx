@@ -2,8 +2,14 @@ import { type CommunityPost, CHIP_COLOR } from "@package-shared/index";
 import { type Href, useRouter } from "expo-router";
 import { Pressable, View } from "react-native";
 
-import { DefaultCardContainer, MetaCounts } from "@/components/common";
-import { AppText, Chip, formatRelative, MOBILE_PATHS } from "@/shared";
+import { MetaCounts } from "@/components/common";
+import {
+  AppText,
+  Chip,
+  DefaultCardContainer,
+  formatRelative,
+  MOBILE_PATHS,
+} from "@/shared";
 
 type PostCardProps = {
   post: CommunityPost;

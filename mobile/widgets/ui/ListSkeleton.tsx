@@ -1,5 +1,4 @@
-import { DefaultCardContainer } from "@/components/common";
-import { SkeletonBlock } from "@/shared";
+import { DefaultCardContainer, SkeletonBlock } from "@/shared";
 import { View } from "react-native";
 
 export function ListSkeleton() {

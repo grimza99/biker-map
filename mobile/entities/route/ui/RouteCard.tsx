@@ -8,8 +8,7 @@ import {
   RouteListItem,
 } from "@package-shared/index";
 
-import { DefaultCardContainer } from "@/components/common";
-import { AppText, Button, Chip } from "@/shared";
+import { AppText, Button, Chip, DefaultCardContainer } from "@/shared";
 import { RouteMetaRow } from "./RouteMetaRow";
 
 export function RouteCard({ route }: { route: RouteListItem }) {

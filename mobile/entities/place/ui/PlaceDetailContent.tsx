@@ -7,8 +7,14 @@ import {
   type PlaceDetail,
 } from "@package-shared/index";
 
-import { DefaultCardContainer } from "@/components/common";
-import { AppText, Button, Chip, Divider, openExternalUrl } from "@/shared";
+import {
+  AppText,
+  Button,
+  Chip,
+  DefaultCardContainer,
+  Divider,
+  openExternalUrl,
+} from "@/shared";
 
 export function PlaceDetailContent({ place }: { place: PlaceDetail }) {
   const label = placeCategoryOptions.find(

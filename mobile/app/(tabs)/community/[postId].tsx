@@ -9,7 +9,7 @@ import {
   CHIP_COLOR,
 } from "@package-shared/index";
 
-import { DefaultCardContainer, MetaCounts } from "@/components/common";
+import { MetaCounts } from "@/components/common";
 import {
   CommentThread,
   usePostComments,
@@ -22,6 +22,7 @@ import {
   AppText,
   Button,
   Chip,
+  DefaultCardContainer,
   formatRelative,
   Indicator,
   Input,

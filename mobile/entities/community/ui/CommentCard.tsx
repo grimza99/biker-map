@@ -6,8 +6,13 @@ import type {
 import { useEffect, useState } from "react";
 import { Alert, View } from "react-native";
 
-import { AppText, Button, DefaultCardContainer } from "@/components/common";
-import { Input, ProfileIdentity } from "@/shared";
+import {
+  AppText,
+  Button,
+  DefaultCardContainer,
+  Input,
+  ProfileIdentity,
+} from "@/shared";
 import { bikerMapTheme } from "@package-shared/index";
 import { CommentActionBar } from "./CommentActionBar";
 

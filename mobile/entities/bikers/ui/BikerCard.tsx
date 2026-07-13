@@ -1,9 +1,7 @@
 import type { TBikerPresenceItem } from "@package-shared/index";
 import { View } from "react-native";
 
-import { DefaultCardContainer } from "@/components/common";
-
-import { AppText, Button, Chip } from "@/shared";
+import { AppText, Button, Chip, DefaultCardContainer } from "@/shared";
 
 export type TBikerCardItem = Pick<
   TBikerPresenceItem,
