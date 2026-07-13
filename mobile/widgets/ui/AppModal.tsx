@@ -10,13 +10,13 @@ import {
 } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
-import { bikerMapTheme } from "@package-shared/constants/theme";
 import { cn } from "@/shared";
+import { bikerMapTheme } from "@package-shared/constants/theme";
 import { AppText } from "../../shared/ui/AppText";
 
-export type CommonModalVariant = "sheet" | "dialog";
+export type AppModalVariant = "sheet" | "dialog";
 
-export type CommonModalProps = PropsWithChildren<{
+export type AppModalProps = PropsWithChildren<{
   visible: boolean;
   onClose: () => void;
   title: string;
@@ -24,7 +24,7 @@ export type CommonModalProps = PropsWithChildren<{
   icon?: ReactNode;
   headerAction?: ReactNode;
   footer?: ReactNode;
-  variant?: CommonModalVariant;
+  variant?: AppModalVariant;
   animationType?: ModalProps["animationType"];
   showHandle?: boolean;
   closeOnBackdropPress?: boolean;
@@ -36,7 +36,7 @@ export type CommonModalProps = PropsWithChildren<{
   visibleCloseButton?: boolean;
 }>;
 
-export function CommonModal({
+export function AppModal({
   visible,
   onClose,
   title,
@@ -55,7 +55,7 @@ export function CommonModal({
   testID,
   children,
   visibleCloseButton = true,
-}: CommonModalProps) {
+}: AppModalProps) {
   const insets = useSafeAreaInsets();
   const resolvedAnimationType =
     animationType ?? (variant === "sheet" ? "slide" : "fade");

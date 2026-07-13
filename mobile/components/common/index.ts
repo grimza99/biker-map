@@ -11,8 +11,6 @@ export type {
   BottomSheetProps,
   BottomSheetTriggerProps,
 } from "./BottomSheet";
-export { CommonModal } from "./CommonModal";
-export type { CommonModalProps, CommonModalVariant } from "./CommonModal";
 export { DropdownMenu as Dropdown, DropdownMenu } from "./DropdownMenu";
 export type {
   DropdownMenuProps,

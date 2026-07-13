@@ -1,8 +1,11 @@
-import { AppText, Button, CommonModal } from "@/components/common";
-import { useDeleteAccount } from "@/features/auth";
 import { Ionicons } from "@expo/vector-icons";
-import { bikerMapTheme } from "@package-shared/constants";
 import { View } from "react-native";
+
+import { bikerMapTheme } from "@package-shared/constants";
+
+import { useDeleteAccount } from "@/features/auth";
+import { AppText, Button } from "@/shared";
+import { AppModal } from "@/widgets/ui";
 
 interface IDeleteAccountModalProps {
   isOpen: boolean;
@@ -18,7 +21,7 @@ export function DeleteAccountModal({
     await deleteAccount();
   };
   return (
-    <CommonModal
+    <AppModal
       icon={
         <View className="border-danger border rounded-2xl py-3.5 px-3.5 bg-danger/25">
           <Ionicons
