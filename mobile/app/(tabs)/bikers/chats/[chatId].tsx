@@ -1,6 +1,5 @@
 import { useLocalSearchParams } from "expo-router";
 
-import { Button, Chip } from "@/components/common";
 import {
   Message,
   useChatMessages,
@@ -10,7 +9,7 @@ import {
   useSendChatMessageMutation,
 } from "@/features/bikers";
 import { useSession } from "@/features/session/model";
-import { AppText, BouncingDots, cn, Input } from "@/shared";
+import { AppText, BouncingDots, Button, Chip, cn, Input } from "@/shared";
 import dayjs from "@/shared/lib/day-js";
 import { Feather } from "@expo/vector-icons";
 import { bikerMapTheme, type TChatMessage } from "@package-shared/index";

@@ -34,7 +34,6 @@ export default function BikersScreen() {
     useCurrentLocation(canUseLiveBikers);
   const {
     canRetryRealtime,
-    errorMessage: liveBikersErrorMessage,
     isSharingEnabled,
     isRealtimeRetrying,
     isSyncing,

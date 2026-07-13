@@ -1,12 +1,9 @@
+import type { TBikerPresenceItem } from "@package-shared/index";
 import { View } from "react-native";
 
-import {
-  AppText,
-  Button,
-  Chip,
-  DefaultCardContainer,
-} from "@/components/common";
-import type { TBikerPresenceItem } from "@package-shared/index";
+import { DefaultCardContainer } from "@/components/common";
+
+import { AppText, Button, Chip } from "@/shared";
 
 export type TBikerCardItem = Pick<
   TBikerPresenceItem,
@@ -27,7 +24,6 @@ export function BikerCard({
   isChatStarting = false,
   onPressChat,
 }: BikerCardProps) {
-
   return (
     <DefaultCardContainer containerStyle="flex flex-row gap-2">
       <View accessibilityRole="button" className="gap-2 flex-1">
