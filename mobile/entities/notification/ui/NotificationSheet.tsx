@@ -1,9 +1,9 @@
 import { Ionicons } from "@expo/vector-icons";
 import { Pressable, ScrollView, View } from "react-native";
 
-import { bikerMapTheme } from "@package-shared/constants/theme";
 import { cn } from "@/shared";
-import { AppText, CommonModal } from "../common";
+import { bikerMapTheme } from "@package-shared/constants/theme";
+import { AppText, CommonModal } from "../../../components/common";
 
 export type NotificationItem = {
   id: string;

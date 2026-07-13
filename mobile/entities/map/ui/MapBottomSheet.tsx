@@ -1,16 +1,16 @@
 import { Ionicons } from "@expo/vector-icons";
-import { View } from "react-native";
 import { ReactNode } from "react";
+import { View } from "react-native";
 
+import { cn } from "@/shared";
 import { bikerMapTheme } from "@package-shared/constants/theme";
 import {
   BottomSheet,
   BottomSheetContent,
   BottomSheetTrigger,
-} from "../../common";
-import { cn } from "@/shared";
+} from "../../../components/common";
 
-type FloatingMapSheetProps = {
+type TMapBottomSheetProps = {
   defaultOpen?: boolean;
   onOpenChange?: (open: boolean) => void;
   open?: boolean;
@@ -20,7 +20,7 @@ type FloatingMapSheetProps = {
   contentContainerClassName?: string;
 };
 
-export function FloatingMapSheet({
+export function MapBottomSheet({
   defaultOpen,
   onOpenChange,
   open,
@@ -28,7 +28,7 @@ export function FloatingMapSheet({
   sheetTitle,
   sheetIcon,
   contentContainerClassName,
-}: FloatingMapSheetProps) {
+}: TMapBottomSheetProps) {
   return (
     <BottomSheet
       defaultOpen={defaultOpen}
