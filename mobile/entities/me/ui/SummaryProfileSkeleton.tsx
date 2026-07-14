@@ -1,5 +1,4 @@
-import { DefaultCardContainer } from "@/components/common";
-import { SkeletonBlock } from "@/shared";
+import { DefaultCardContainer, SkeletonBlock } from "@/shared";
 import { ProfileIdentitySkeleton } from "@/widgets/ui";
 import { View } from "react-native";
 

@@ -1,19 +1,20 @@
 import { Ionicons } from "@expo/vector-icons";
-import { useState } from "react";
-import { ActivityIndicator, ScrollView, StyleSheet, View } from "react-native";
-import { SafeAreaView } from "react-native-safe-area-context";
 import {
   bikerMapTheme,
-  mapCategoryOptions,
   MapCategoryFilter,
+  mapCategoryOptions,
   PlaceListItem,
   PlacesQuery,
   RouteListItem,
   RouteMapPathItem,
 } from "@package-shared/index";
+import { useState } from "react";
+import { ActivityIndicator, ScrollView, StyleSheet, View } from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
 
 import { AppText, Button } from "@/components/common";
 import {
+  MapBottomSheet,
   MapListSheetContent,
   MapMarkerClickSheetContent,
 } from "@/entities/map";
@@ -22,7 +23,6 @@ import { cn } from "@/shared";
 
 import { useRouteMapPathsQuery } from "@/entities/route";
 import { MapCanvasWebView } from "@/features/map/ui/MapCanvasWebView";
-import { FloatingMapSheet } from "@/components/shell";
 
 export default function MapScreen() {
   const [activeCategory, setActiveCategory] =
@@ -136,7 +136,7 @@ export default function MapScreen() {
         ) : null}
       </SafeAreaView>
 
-      <FloatingMapSheet
+      <MapBottomSheet
         onOpenChange={setIsSheetOpen}
         open={isSheetOpen}
         sheetTitle={detailSheetItem ? undefined : "지도 목록"}

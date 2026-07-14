@@ -2,14 +2,15 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { Controller, useForm } from "react-hook-form";
 import { View } from "react-native";
 
-import { AppText, Button, CommonModal } from "@/components/common";
-import { Input } from "@/shared";
 import {
   phoneSchema,
   type SendVerificationCodeFormValues,
   type VerifyCodeFormValues,
   verifyCodeSchema,
 } from "@package-shared/index";
+
+import { AppText, Button, Input } from "@/shared";
+import { AppModal } from "@/widgets/ui";
 import { useRemainingTime } from "../hook";
 import { useSendSMSVerificationCodeMutation, useVerifyMuation } from "../model";
 
@@ -94,7 +95,7 @@ export function AuthVerifyDialog({
   });
 
   return (
-    <CommonModal
+    <AppModal
       visible={open}
       onClose={onOpenChange}
       title="핸드폰 본인 인증"
@@ -173,6 +174,6 @@ export function AuthVerifyDialog({
           </View>
         )}
       </View>
-    </CommonModal>
+    </AppModal>
   );
 }

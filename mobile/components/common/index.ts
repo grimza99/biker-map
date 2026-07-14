@@ -11,8 +11,6 @@ export type {
   BottomSheetProps,
   BottomSheetTriggerProps,
 } from "./BottomSheet";
-export { CommonModal } from "./CommonModal";
-export type { CommonModalProps, CommonModalVariant } from "./CommonModal";
 export { DropdownMenu as Dropdown, DropdownMenu } from "./DropdownMenu";
 export type {
   DropdownMenuProps,
@@ -23,7 +21,6 @@ export type {
 } from "./DropdownMenu";
 
 export { AppText } from "../../shared/ui/AppText";
-export * from "./card";
 export { GlobalFloatingMenu } from "./GlobalFloatingMenu";
 export type {
   GlobalFloatingMenuOption,

@@ -2,6 +2,7 @@ export { AppText } from "./AppText";
 export { BouncingDots } from "./BouncingDots";
 export { Button } from "./Button";
 export { Chip } from "./Chip";
+export { DefaultCardContainer } from "./DefaultCardContainer";
 export * from "./Divider";
 export * from "./ImageInput";
 export { Indicator } from "./Indicator";

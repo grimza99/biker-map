@@ -2,8 +2,9 @@ import { Ionicons } from "@expo/vector-icons";
 import { Pressable, ScrollView, View } from "react-native";
 
 import { bikerMapTheme } from "@package-shared/constants/theme";
-import { cn } from "@/shared";
-import { AppText, CommonModal } from "../common";
+
+import { AppText, cn } from "@/shared";
+import { AppModal } from "@/widgets/ui";
 
 export type NotificationItem = {
   id: string;
@@ -29,7 +30,7 @@ export function NotificationSheet({
   const unreadCount = notifications.filter((item) => item.unread).length;
 
   return (
-    <CommonModal
+    <AppModal
       visible={visible}
       title="알림"
       description={
@@ -99,6 +100,6 @@ export function NotificationSheet({
           </View>
         ))}
       </ScrollView>
-    </CommonModal>
+    </AppModal>
   );
 }
