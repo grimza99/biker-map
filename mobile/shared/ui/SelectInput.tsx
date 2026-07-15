@@ -7,12 +7,12 @@ import { bikerMapTheme } from "@package-shared/constants/theme";
 
 import { cn, resolvePressableStyle } from "@/shared";
 
+import { AppText } from "./AppText";
 import {
   DropdownMenu,
   type DropdownMenuProps,
   type DropdownOption,
-} from "../../components/common/DropdownMenu";
-import { AppText } from "./AppText";
+} from "./DropdownMenu";
 import {
   FieldShell,
   fieldSizeStyleMap,

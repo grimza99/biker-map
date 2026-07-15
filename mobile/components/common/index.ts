@@ -1,4 +1,5 @@
 export { Button } from "../../shared";
+export { AppText } from "../../shared/ui/AppText";
 export {
   BottomSheet,
   BottomSheetClose,
@@ -11,16 +12,6 @@ export type {
   BottomSheetProps,
   BottomSheetTriggerProps,
 } from "./BottomSheet";
-export { DropdownMenu as Dropdown, DropdownMenu } from "./DropdownMenu";
-export type {
-  DropdownMenuProps,
-  DropdownMenuRenderTriggerProps,
-  DropdownOption,
-  DropdownOptionTone,
-  DropdownMenuProps as DropdownProps,
-} from "./DropdownMenu";
-
-export { AppText } from "../../shared/ui/AppText";
 export { GlobalFloatingMenu } from "./GlobalFloatingMenu";
 export type {
   GlobalFloatingMenuOption,

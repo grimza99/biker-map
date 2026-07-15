@@ -1,13 +1,13 @@
-import { type ReactNode, useMemo, useState } from "react";
-import { Modal, Pressable, ScrollView, View } from "react-native";
-import type { PressableProps, ViewStyle } from "react-native";
-import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { AntDesign } from "@expo/vector-icons";
+import { type ReactNode, useMemo, useState } from "react";
+import type { PressableProps, ViewStyle } from "react-native";
+import { Modal, Pressable, ScrollView, View } from "react-native";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 import { bikerMapTheme } from "@package-shared/constants/theme";
 
 import { cn, resolvePressableStyle } from "@/shared";
-import { AppText } from "../../shared/ui/AppText";
+import { AppText } from "./AppText";
 
 export type DropdownOptionTone = "default" | "danger";
 
