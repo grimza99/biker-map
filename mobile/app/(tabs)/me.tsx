@@ -3,7 +3,8 @@ import { Redirect } from "expo-router";
 import { type ReactNode, useState } from "react";
 import { View } from "react-native";
 
-import { AppText, GlobalFloatingMenu } from "@/components/common";
+import { bikerMapTheme } from "@package-shared/index";
+
 import {
   MyFavoriteSection,
   MyPostSection,
@@ -11,8 +12,8 @@ import {
   SummaryProfile,
 } from "@/entities/me";
 import { DeleteAccountModal } from "@/features/me";
+import { AppText, GlobalFloatingMenu } from "@/shared";
 import { AppScreen } from "@/widgets";
-import { bikerMapTheme } from "@package-shared/index";
 import { useSession } from "../../features/session/model";
 
 type FloatingMenuOptionId =

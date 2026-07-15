@@ -12,8 +12,3 @@ export type {
   BottomSheetProps,
   BottomSheetTriggerProps,
 } from "./BottomSheet";
-export { GlobalFloatingMenu } from "./GlobalFloatingMenu";
-export type {
-  GlobalFloatingMenuOption,
-  GlobalFloatingMenuProps,
-} from "./GlobalFloatingMenu";

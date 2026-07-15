@@ -5,6 +5,7 @@ export { Chip } from "./Chip";
 export { DefaultCardContainer } from "./DefaultCardContainer";
 export { Divider } from "./Divider";
 export { DropdownMenu } from "./DropdownMenu";
+export { GlobalFloatingMenu } from "./GlobalFloatingMenu";
 export * from "./ImageInput";
 export { Indicator } from "./Indicator";
 export * from "./Input";
