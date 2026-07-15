@@ -1,13 +1,14 @@
-import { type CommunityPost, CHIP_COLOR } from "@package-shared/index";
 import { type Href, useRouter } from "expo-router";
 import { Pressable, View } from "react-native";
 
-import { MetaCounts } from "@/components/common";
+import { type CommunityPost, CHIP_COLOR } from "@package-shared/index";
+
 import {
   AppText,
   Chip,
   DefaultCardContainer,
   formatRelative,
+  MetaCounts,
   MOBILE_PATHS,
 } from "@/shared";
 

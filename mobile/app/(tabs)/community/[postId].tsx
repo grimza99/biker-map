@@ -9,7 +9,6 @@ import {
   CHIP_COLOR,
 } from "@package-shared/index";
 
-import { MetaCounts } from "@/components/common";
 import {
   CommentThread,
   usePostComments,
@@ -26,6 +25,7 @@ import {
   formatRelative,
   Indicator,
   Input,
+  MetaCounts,
   openExternalUrl,
   ScreenState,
 } from "@/shared";

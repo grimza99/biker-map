@@ -17,4 +17,3 @@ export type {
   GlobalFloatingMenuOption,
   GlobalFloatingMenuProps,
 } from "./GlobalFloatingMenu";
-export { MetaCounts } from "./MetaCounts";

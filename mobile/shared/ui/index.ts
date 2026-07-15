@@ -8,6 +8,7 @@ export { DropdownMenu } from "./DropdownMenu";
 export * from "./ImageInput";
 export { Indicator } from "./Indicator";
 export * from "./Input";
+export { MetaCounts } from "./MetaCounts";
 export { Profile } from "./Profile";
 export { ProfileIdentity } from "./ProfileIdentity";
 export { ScreenState } from "./ScreenState";
