@@ -1,9 +1,9 @@
 import { useEffect, useState } from "react";
 import { View } from "react-native";
 
-import { Button } from "@/components/common";
 import { PostCard } from "@/entities/community";
 import { RouteCard } from "@/entities/route";
+import { Button } from "@/shared";
 import { ListItemSkeleton, Pagination } from "@/widgets/ui";
 import { useMyFavorites } from "../model";
 

@@ -1,14 +1,14 @@
 import { ActivityIndicator, ScrollView, View } from "react-native";
 
+import { usePlaceList } from "@/entities/place";
+import { PlaceCard } from "@/entities/place/ui/PlaceCard";
+import { RouteCard, useRouteListQuery } from "@/entities/route";
+import { AppText } from "@/shared";
 import {
   bikerMapTheme,
   type MapCategoryFilter,
   type PlacesQuery,
 } from "@package-shared/index";
-import { usePlaceList } from "@/entities/place";
-import { RouteCard, useRouteListQuery } from "@/entities/route";
-import { PlaceCard } from "@/entities/place/ui/PlaceCard";
-import { AppText } from "@/components/common";
 
 type MapListSheetContentProps = {
   activeCategory: MapCategoryFilter;
@@ -22,7 +22,8 @@ export function MapListSheetContent({
   const placeCategory: PlacesQuery["category"] =
     activeCategory === "route" ? undefined : activeCategory;
   const shouldShowPlaces = activeCategory !== "route";
-  const shouldShowRoutes = activeCategory === "all" || activeCategory === "route";
+  const shouldShowRoutes =
+    activeCategory === "all" || activeCategory === "route";
 
   const placesQuery = usePlaceList({
     category: placeCategory,

@@ -2,6 +2,7 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import { ActivityIndicator, View, type ViewStyle } from "react-native";
 import { WebView, type WebViewMessageEvent } from "react-native-webview";
 
+import { AppText } from "@/shared";
 import {
   PlaceListItem,
   RouteMapPathItem,
@@ -9,8 +10,6 @@ import {
   TLocationCoordinate,
   bikerMapTheme,
 } from "@package-shared/index";
-
-import { AppText } from "@/components/common";
 
 type MapCanvasWebViewProps = {
   activeFilter: string;

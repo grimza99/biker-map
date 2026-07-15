@@ -6,7 +6,6 @@ import {
 import { useState } from "react";
 import { Alert, View } from "react-native";
 
-import { Button } from "@/components/common";
 import {
   useCreateCommentReply,
   useDeleteComment,
@@ -16,7 +15,7 @@ import {
   useUpdateCommentReply,
 } from "@/features/community";
 import { useSession } from "@/features/session/model";
-import { Input } from "@/shared";
+import { Button, Input } from "@/shared";
 import { Feather } from "@expo/vector-icons";
 import { CommentCard } from "./CommentCard";
 

@@ -4,10 +4,9 @@ import { View } from "react-native";
 
 import { LoginBody, SignUpBody } from "@package-shared/index";
 
-import { Button } from "@/components/common";
 import LogInForm from "@/features/auth/LogInForm";
 import SignUpForm from "@/features/auth/SignUpForm";
-import { AppText } from "@/shared";
+import { AppText, Button } from "@/shared";
 import { MOBILE_PATHS } from "@/shared/constants/paths";
 import { AppScreen } from "@/widgets";
 import { useSession } from "../../features/session/model";

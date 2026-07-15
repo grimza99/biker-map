@@ -2,13 +2,14 @@ import { FontAwesome5, Ionicons } from "@expo/vector-icons";
 import { View } from "react-native";
 
 import { bikerMapTheme } from "@package-shared/constants/theme";
-import { cn } from "@/shared";
+
 import {
   AppText,
   BottomSheet,
   BottomSheetContent,
   BottomSheetTrigger,
-} from "@/components/common";
+  cn,
+} from "@/shared";
 import { BikerCard, type TBikerCardItem } from "./BikerCard";
 
 interface IBikersBottomSheetProps {

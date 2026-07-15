@@ -5,7 +5,7 @@ import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 import { Button, cn } from "@/shared";
 
-import { AppText } from "../../shared/ui/AppText";
+import { AppText } from "./AppText";
 
 export type GlobalFloatingMenuOption<T> = {
   accessibilityLabel?: string;
