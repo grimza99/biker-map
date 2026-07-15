@@ -1,4 +1,9 @@
 export { AppText } from "./AppText";
+export {
+  BottomSheet,
+  BottomSheetContent,
+  BottomSheetTrigger,
+} from "./BottomSheet";
 export { BouncingDots } from "./BouncingDots";
 export { Button } from "./Button";
 export { Chip } from "./Chip";

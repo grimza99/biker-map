@@ -2,13 +2,13 @@ import { Ionicons } from "@expo/vector-icons";
 import { ReactNode } from "react";
 import { View } from "react-native";
 
-import { cn } from "@/shared";
-import { bikerMapTheme } from "@package-shared/constants/theme";
 import {
   BottomSheet,
   BottomSheetContent,
   BottomSheetTrigger,
-} from "../../../components/common";
+  cn,
+} from "@/shared";
+import { bikerMapTheme } from "@package-shared/constants/theme";
 
 type TMapBottomSheetProps = {
   defaultOpen?: boolean;
