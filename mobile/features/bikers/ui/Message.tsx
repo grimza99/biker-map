@@ -1,8 +1,7 @@
-import { AppText } from "@/components/common";
-import { cn, ProfileIdentity } from "@/shared";
+import { AppText, cn, ProfileIdentity } from "@/shared";
+import dayjs from "@/shared/lib/day-js";
 import { TChatParticipantProfile } from "@package-shared/index";
 import { StyleSheet, View } from "react-native";
-import dayjs from "@/shared/lib/day-js";
 
 interface IMessageProps {
   id: string;

@@ -1,7 +1,8 @@
 import { FontAwesome } from "@expo/vector-icons";
+
 import { bikerMapTheme } from "@package-shared/index";
 
-import { Button } from "@/components/common";
+import { Button } from "@/shared";
 
 type FavoriteActionButtonProps = {
   selected?: boolean;

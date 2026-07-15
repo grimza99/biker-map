@@ -1,10 +1,13 @@
-import { View } from "react-native";
-import { cn } from "../lib";
-import { ReactNode } from "react";
 import { Feather, Ionicons } from "@expo/vector-icons";
-import { bikerMapTheme } from "@package-shared/constants";
-import { AppText, Button } from "@/components/common";
 import { useRouter } from "expo-router";
+import { ReactNode } from "react";
+import { View } from "react-native";
+
+import { bikerMapTheme } from "@package-shared/constants";
+
+import { cn } from "../lib";
+import { AppText } from "./AppText";
+import { Button } from "./Button";
 
 type TStatevariant = "error" | "not-found";
 

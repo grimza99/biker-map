@@ -3,8 +3,7 @@ import { View } from "react-native";
 
 import { bikerMapTheme } from "@package-shared/constants";
 
-import { AppText } from "@/components/common";
-import { cn } from "@/shared";
+import { AppText, cn } from "@/shared";
 
 export function RouteMetaRow({
   icon,
@@ -17,8 +16,7 @@ export function RouteMetaRow({
   value: string | undefined | null | number;
   TextClassName?: string;
 }) {
-  const formatedValue =
-    value == null || value === "" ? "정보 없음" : value;
+  const formatedValue = value == null || value === "" ? "정보 없음" : value;
   return (
     <View className="flex-row items-center gap-2 flex-1">
       <MaterialCommunityIcons

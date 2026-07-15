@@ -12,14 +12,13 @@ import { useState } from "react";
 import { ActivityIndicator, ScrollView, StyleSheet, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
-import { AppText, Button } from "@/components/common";
 import {
   MapBottomSheet,
   MapListSheetContent,
   MapMarkerClickSheetContent,
 } from "@/entities/map";
 import { usePlaceList } from "@/entities/place";
-import { cn } from "@/shared";
+import { AppText, Button, cn } from "@/shared";
 
 import { useRouteMapPathsQuery } from "@/entities/route";
 import { MapCanvasWebView } from "@/features/map/ui/MapCanvasWebView";

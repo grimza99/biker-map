@@ -3,7 +3,6 @@ import { useEffect, useState } from "react";
 import { Alert, Linking, StyleSheet, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
-import { Button } from "@/components/common";
 import { BikersBottomSheet } from "@/entities/bikers/ui/BikersBottomSheet";
 import { AuthVerifyDialog } from "@/features/auth/ui";
 import {
@@ -13,7 +12,7 @@ import {
 import { useCurrentLocation } from "@/features/location/hooks";
 import { MapCanvasWebView } from "@/features/map/ui/MapCanvasWebView";
 import { useSession } from "@/features/session/model";
-import { AppText, Indicator, MOBILE_PATHS, Toggle } from "@/shared";
+import { AppText, Button, Indicator, MOBILE_PATHS, Toggle } from "@/shared";
 import { AppScreen } from "@/widgets";
 import { bikerMapTheme, proficiencyMap } from "@package-shared/index";
 

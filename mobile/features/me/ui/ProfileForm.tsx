@@ -3,10 +3,9 @@ import { View } from "react-native";
 
 import { AppSession, proficiencySelectOptions } from "@package-shared/index";
 
-import { Button } from "@/components/common";
 import { formBase } from "@/features/auth/form-style";
 import { useProfileForm } from "@/features/me";
-import { ImageInput, Input, SelectInput } from "@/shared";
+import { Button, ImageInput, Input, SelectInput } from "@/shared";
 
 interface IProfileFormProps {
   currenValue: AppSession | null;

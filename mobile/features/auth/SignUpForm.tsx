@@ -4,8 +4,7 @@ import { ScrollView, View } from "react-native";
 
 import { SignUpBody, signUpSchema } from "@package-shared/index";
 
-import { Button } from "@/components/common";
-import { containerBase, Input } from "@/shared";
+import { Button, containerBase, Input } from "@/shared";
 import { formBase } from "./form-style";
 
 interface ISignUpForm {

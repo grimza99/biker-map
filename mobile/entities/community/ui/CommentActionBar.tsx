@@ -1,12 +1,12 @@
 import { Feather } from "@expo/vector-icons";
-import { View } from "react-native";
 import type {
   CommunityComment,
   CommunityReply,
   ReactionType,
 } from "@package-shared/index";
+import { View } from "react-native";
 
-import { AppText, Button } from "@/components/common";
+import { AppText, Button } from "@/shared";
 import { bikerMapTheme } from "@package-shared/index";
 import { ReactionActionGroup } from "../../../widgets/ui/ReactionActionGroup";
 

@@ -18,9 +18,15 @@ import {
   type UpdatePostResponseData,
 } from "@package-shared/index";
 
-import { AppText, Button } from "@/components/common";
 import { uploadImage } from "@/features/image";
-import { ImageInput, ImageInputAsset, Input, SelectInput } from "@/shared";
+import {
+  AppText,
+  Button,
+  ImageInput,
+  ImageInputAsset,
+  Input,
+  SelectInput,
+} from "@/shared";
 import { useCreateCommunityPost } from "../model";
 
 type IPostFormProps = {

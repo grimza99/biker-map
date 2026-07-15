@@ -1,8 +1,9 @@
+import { Feather } from "@expo/vector-icons";
 import { Image, View } from "react-native";
 
-import { AppText } from "@/components/common";
-import { Feather } from "@expo/vector-icons";
 import { bikerMapTheme } from "@package-shared/constants";
+
+import { AppText } from "./AppText";
 
 interface IProfileIdentityProps {
   avatarUrl: string | null;

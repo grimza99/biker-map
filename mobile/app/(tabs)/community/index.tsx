@@ -10,9 +10,8 @@ import {
   type CommunityCategorySlug,
 } from "@package-shared/index";
 
-import { Button } from "@/components/common";
 import { PostCard, usePostList } from "@/entities/community";
-import { AppText, Input, MOBILE_PATHS, ScreenState } from "@/shared";
+import { AppText, Button, Input, MOBILE_PATHS, ScreenState } from "@/shared";
 import { AppScreen } from "@/widgets";
 import { ListSkeleton, Pagination } from "@/widgets/ui";
 

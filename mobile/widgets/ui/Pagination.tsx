@@ -1,8 +1,7 @@
 import { Fragment } from "react";
 import { View } from "react-native";
 
-import { Button } from "@/components/common";
-import { AppText } from "../../shared";
+import { AppText, Button } from "../../shared";
 
 type PaginationProps = {
   currentPage: number;

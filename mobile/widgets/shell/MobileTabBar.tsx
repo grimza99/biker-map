@@ -10,9 +10,8 @@ import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 import { bikerMapTheme } from "@package-shared/constants/theme";
 
-import { cn } from "@/shared";
+import { AppText, cn } from "@/shared";
 import { MOBILE_PATHS } from "@/shared/constants/paths";
-import { AppText } from "../../components/common";
 
 type TabRoute = {
   key: string;

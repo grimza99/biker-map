@@ -1,12 +1,13 @@
 import { Feather } from "@expo/vector-icons";
+import { View } from "react-native";
+
 import {
   bikerMapTheme,
   type ReactionSummary,
   type ReactionType,
 } from "@package-shared/index";
-import { View } from "react-native";
 
-import { Button } from "@/components/common";
+import { Button } from "@/shared";
 
 type ReactionActionGroupProps = {
   reactions: ReactionSummary;

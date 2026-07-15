@@ -1,8 +1,6 @@
 import { View } from "react-native";
 
-import { AppText } from "@/components/common";
-import { cn } from "@/shared";
-import { Profile } from "@/shared/ui";
+import { AppText, cn, Profile } from "@/shared";
 import { useMyFavorites, useMyPosts, useReceivedFavoriteCount } from "../model";
 import { SummaryProfileSkeleton } from "./SummaryProfileSkeleton";
 

@@ -1,11 +1,12 @@
+import { useState } from "react";
 import { View } from "react-native";
+
 import { proficiencyMap } from "@package-shared/model";
 
-import { AppText, Button } from "@/components/common";
-import { useSession } from "@/features/session/model";
-import { ProfileForm } from "@/features/me";
 import { AuthVerifyDialog } from "@/features/auth/ui/AuthVerifyDialog";
-import { useState } from "react";
+import { ProfileForm } from "@/features/me";
+import { useSession } from "@/features/session/model";
+import { AppText, Button } from "@/shared";
 
 interface IProfileSection {
   isEdit?: boolean;
