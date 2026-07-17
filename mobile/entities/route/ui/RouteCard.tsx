@@ -8,7 +8,13 @@ import {
   RouteListItem,
 } from "@package-shared/index";
 
-import { AppText, Button, Chip, DefaultCardContainer } from "@/shared";
+import {
+  AppText,
+  Button,
+  Chip,
+  DefaultCardContainer,
+  MOBILE_PATHS,
+} from "@/shared";
 import { RouteMetaRow } from "./RouteMetaRow";
 
 export function RouteCard({ route }: { route: RouteListItem }) {
@@ -16,7 +22,7 @@ export function RouteCard({ route }: { route: RouteListItem }) {
 
   const handlePressDetail = () => {
     router.push({
-      pathname: "/(tabs)/map/routes/[routeId]",
+      pathname: MOBILE_PATHS.routes.detail,
       params: { routeId: route.id },
     } as unknown as Href);
   };

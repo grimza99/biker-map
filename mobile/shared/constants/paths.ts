@@ -20,4 +20,11 @@ export const MOBILE_PATHS = {
     detail: `${TABS}/community/[postId]` as const,
     new: `${TABS}/community/new` as const,
   },
+  routes: {
+    entry: `${TABS}/routes` as const,
+    detail: `${TABS}/map/routes/[routeId]` as const,
+  },
+  me: {
+    entry: `${TABS}/me` as const,
+  },
 };

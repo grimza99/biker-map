@@ -23,7 +23,7 @@ type TabRoute = {
 const TAB_ROUTES: TabRoute[] = [
   {
     key: "map",
-    href: "/(tabs)/map",
+    href: MOBILE_PATHS.map,
     label: "지도",
     icon: ({ size, color }) => (
       <Ionicons name="map" size={size} color={color} />
@@ -31,7 +31,7 @@ const TAB_ROUTES: TabRoute[] = [
   },
   {
     key: "bikers",
-    href: "/(tabs)/bikers",
+    href: MOBILE_PATHS.bikers.entry,
     label: "바이커",
     icon: ({ size, color }) => (
       <MaterialCommunityIcons name="motorbike" size={size} color={color} />
@@ -47,7 +47,7 @@ const TAB_ROUTES: TabRoute[] = [
   },
   {
     key: "routes",
-    href: "/(tabs)/routes",
+    href: MOBILE_PATHS.routes.entry,
     label: "경로",
     icon: ({ size, color }) => (
       <FontAwesome5 name="route" size={size} color={color} />
@@ -55,7 +55,7 @@ const TAB_ROUTES: TabRoute[] = [
   },
   {
     key: "me",
-    href: "/(tabs)/me",
+    href: MOBILE_PATHS.me.entry,
     label: "내 정보",
     icon: ({ size, color }) => (
       <Ionicons name="person" size={size} color={color} />

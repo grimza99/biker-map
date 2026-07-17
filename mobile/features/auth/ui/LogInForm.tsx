@@ -5,16 +5,13 @@ import { ScrollView, View } from "react-native";
 import { LoginBody, loginSchema } from "@package-shared/index";
 
 import { Button, containerBase, Input } from "@/shared";
-import { formBase } from "./form-style";
+import { formBase } from "../form-style";
 
 interface ILogInForm {
   isSubmitting?: boolean;
   onSubmit: (body: LoginBody) => Promise<void>;
 }
-export default function LogInForm({
-  isSubmitting = false,
-  onSubmit,
-}: ILogInForm) {
+export function LoginForm({ isSubmitting = false, onSubmit }: ILogInForm) {
   const form = useForm<LoginBody>({
     resolver: zodResolver(loginSchema),
     mode: "onChange",
