@@ -4,19 +4,18 @@ import { View } from "react-native";
 
 import { LoginBody, SignUpBody } from "@package-shared/index";
 
-import SignUpForm from "@/features/auth/SignUpForm";
-import LogInForm from "@/features/auth/ui/LogInForm";
+import { LoginForm, SignupForm } from "@/features/auth/ui";
 import { AppText, Button } from "@/shared";
 import { MOBILE_PATHS } from "@/shared/constants/paths";
 import { AppScreen } from "@/widgets";
 import { useSession } from "../../features/session/model";
 
-type AuthTab = "logIn" | "signUp";
+type AuthTab = "login" | "signup";
 
 export default function AuthScreen() {
   const router = useRouter();
   const { status, login, signUp } = useSession();
-  const [tab, setTab] = useState<AuthTab>("logIn");
+  const [tab, setTab] = useState<AuthTab>("login");
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
@@ -28,7 +27,7 @@ export default function AuthScreen() {
     return <Redirect href={MOBILE_PATHS.map} />;
   }
 
-  async function handleSignIn(body: LoginBody) {
+  async function handleLogin(body: LoginBody) {
     setIsSubmitting(true);
     setErrorMessage(null);
 
@@ -70,10 +69,10 @@ export default function AuthScreen() {
       <View className="w-full flex-row items-center justify-evenly gap-2.5 rounded-[20px] border border-border bg-panel-solid p-4.5">
         <Button
           onPress={() => {
-            handleSelectTab("logIn");
+            handleSelectTab("login");
           }}
           disabled={isSubmitting}
-          selected={tab === "logIn"}
+          selected={tab === "login"}
           variant="secondary"
           className="w-37.5"
         >
@@ -81,10 +80,10 @@ export default function AuthScreen() {
         </Button>
         <Button
           onPress={() => {
-            handleSelectTab("signUp");
+            handleSelectTab("signup");
           }}
           disabled={isSubmitting}
-          selected={tab === "signUp"}
+          selected={tab === "signup"}
           variant="secondary"
           className="w-37.5"
         >
@@ -96,10 +95,10 @@ export default function AuthScreen() {
           {errorMessage}
         </AppText>
       )}
-      {tab === "logIn" ? (
-        <LogInForm isSubmitting={isSubmitting} onSubmit={handleSignIn} />
+      {tab === "login" ? (
+        <LoginForm isSubmitting={isSubmitting} onSubmit={handleLogin} />
       ) : (
-        <SignUpForm isSubmitting={isSubmitting} onSubmit={handleSignUp} />
+        <SignupForm isSubmitting={isSubmitting} onSubmit={handleSignUp} />
       )}
     </AppScreen>
   );
