@@ -5,16 +5,13 @@ import { ScrollView, View } from "react-native";
 import { SignUpBody, signUpSchema } from "@package-shared/index";
 
 import { Button, containerBase, Input } from "@/shared";
-import { formBase } from "./form-style";
+import { formBase } from "../form-style";
 
 interface ISignUpForm {
   isSubmitting?: boolean;
   onSubmit: (body: SignUpBody) => Promise<void>;
 }
-export default function SignUpForm({
-  isSubmitting = false,
-  onSubmit,
-}: ISignUpForm) {
+export function SignupForm({ isSubmitting = false, onSubmit }: ISignUpForm) {
   const form = useForm<SignUpBody>({
     resolver: zodResolver(signUpSchema),
     mode: "onChange",
