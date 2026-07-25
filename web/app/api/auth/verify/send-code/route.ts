@@ -6,10 +6,8 @@ import {
   mapVerification,
   ok,
   parseRequestBody,
-  unauthorized,
 } from "@/shared";
-import { getSupabaseAuthSession } from "@/shared/api/auth";
-import { getProfileStatus } from "@/shared/api/supabase-profiles";
+import { requireActiveApiSession } from "@/shared/api/auth";
 import { createSupabaseServiceClient } from "@/shared/lib/supabase";
 import {
   createVerificationCode,
@@ -18,10 +16,12 @@ import {
 } from "@/shared/lib/sms";
 
 export async function POST(request: Request) {
-  const session = await getSupabaseAuthSession(request);
-  if (!session) {
-    return unauthorized();
+  const activeSession = await requireActiveApiSession(request);
+  if (activeSession instanceof Response) {
+    return activeSession;
   }
+
+  const session = activeSession.authSession;
 
   let payload: ISendVerificationCodeBody;
   try {
@@ -33,17 +33,6 @@ export async function POST(request: Request) {
   const expiresAt = new Date(Date.now() + 3 * 60 * 1000).toISOString();
 
   const supabase = createSupabaseServiceClient();
-
-  let profileStatus = null;
-  try {
-    profileStatus = await getProfileStatus(session.user.id);
-  } catch {
-    return unauthorized();
-  }
-
-  if (profileStatus?.deletedAt) {
-    return unauthorized("탈퇴 처리된 계정입니다.");
-  }
 
   const { data: latestVerification, error: latestVerificationError } =
     await supabase

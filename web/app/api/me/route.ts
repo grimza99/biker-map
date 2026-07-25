@@ -10,56 +10,39 @@ import {
   badRequest,
   createSupabaseApiClient,
   internalServerError,
-  mapMe,
   ok,
   parseRequestBody,
   unauthorized,
 } from "@shared/api";
 import {
   clearRefreshTokenCookie,
-  getSupabaseAuthSession,
+  requireActiveApiSession,
+  resolveActiveAppSession,
 } from "@shared/api/auth";
-import { getProfileStatus } from "@shared/api/supabase-profiles";
 import { getSupabasePublicEnv } from "@shared/config";
 import { createSupabaseServiceClient } from "@shared/lib/supabase";
 import { NextResponse } from "next/server";
 
 export async function GET(request: Request) {
-  const session = await getSupabaseAuthSession(request);
-  if (!session) {
-    return unauthorized();
+  const activeSession = await requireActiveApiSession(request);
+  if (activeSession instanceof Response) {
+    return activeSession;
   }
 
-  let profileStatus = null;
-  try {
-    profileStatus = await getProfileStatus(session.user.id);
-  } catch {
-    return unauthorized();
-  }
-
-  if (profileStatus?.deletedAt) {
-    return unauthorized("탈퇴 처리된 계정입니다.");
-  }
-
-  return ok(
-    mapMe(
-      session,
-      profileStatus?.role || "member",
-      profileStatus?.bikeBrand || null,
-      profileStatus?.bikeModel || null,
-      profileStatus?.phone || "",
-      profileStatus?.isVerified || false,
-      profileStatus?.proficiency || null
-    )
-  );
+  return ok({
+    authenticated: true,
+    session: activeSession.appSession,
+  });
 }
 
 /**---------------------------------name, email, bikeBrand, bikeModel edit ---------------------- */
 export async function PATCH(request: Request) {
-  const session = await getSupabaseAuthSession(request);
-  if (!session) {
-    return unauthorized();
+  const activeSession = await requireActiveApiSession(request);
+  if (activeSession instanceof Response) {
+    return activeSession;
   }
+
+  const session = activeSession.authSession;
 
   let payload: TUpdateProfileSchema;
   try {
@@ -103,8 +86,6 @@ export async function PATCH(request: Request) {
     return internalServerError(profileError.message);
   }
 
-  const profileStatus = await getProfileStatus(session.user.id);
-
   const updatedSession = {
     ...session,
     user: authData.user ?? {
@@ -116,6 +97,14 @@ export async function PATCH(request: Request) {
       },
     },
   };
+
+  const updatedActiveSession = await resolveActiveAppSession(updatedSession);
+  if (updatedActiveSession.status === "error") {
+    return internalServerError("수정된 세션 정보를 다시 확인하지 못했습니다.");
+  }
+  if (updatedActiveSession.status !== "ok") {
+    return unauthorized("수정된 세션을 확인할 수 없습니다.");
+  }
 
   const previousAvatarPath = extractPublicBucketPath(previousAvatarUrl);
   if (previousAvatarPath && previousAvatarUrl !== payload.avatarUrl) {
@@ -129,15 +118,7 @@ export async function PATCH(request: Request) {
   }
 
   return ok<UpdateMeResponseData>({
-    session: mapMe(
-      updatedSession,
-      profileStatus?.role || "member",
-      profileStatus?.bikeBrand || null,
-      profileStatus?.bikeModel || null,
-      profileStatus?.phone || "",
-      profileStatus?.isVerified || false,
-      profileStatus?.proficiency || null
-    ).session,
+    session: updatedActiveSession.appSession,
   });
 }
 
@@ -173,11 +154,12 @@ function extractPublicBucketPath(avatarUrl: string | null) {
 /**---------------------------------draw user---------------------------------- */
 
 export async function DELETE(request: Request) {
-  const session = await getSupabaseAuthSession(request);
-  if (!session) {
-    return unauthorized();
+  const activeSession = await requireActiveApiSession(request);
+  if (activeSession instanceof Response) {
+    return activeSession;
   }
 
+  const session = activeSession.authSession;
   const supabase = createSupabaseApiClient(request);
   const deletedAt = new Date().toISOString();
   const purgeAfter = new Date(

@@ -6,22 +6,22 @@ import {
 import {
   badRequest,
   internalServerError,
-  mapMe,
   ok,
   parseRequestBody,
-  unauthorized,
 } from "@/shared";
-import { getSupabaseAuthSession } from "@/shared/api/auth";
-import { getProfileStatus } from "@/shared/api/supabase-profiles";
+import { requireActiveApiSession } from "@/shared/api/auth";
 import { isVerificationCodeMatched } from "@/shared/lib/sms";
 import { createSupabaseServiceClient } from "@/shared/lib/supabase";
 
 /**----------------------------- verification code check ------------------------ */
 export async function POST(request: Request) {
-  const session = await getSupabaseAuthSession(request);
-  if (!session) {
-    return unauthorized();
+  const activeSession = await requireActiveApiSession(request);
+  if (activeSession instanceof Response) {
+    return activeSession;
   }
+
+  const session = activeSession.authSession;
+
   let payload: IVerificationCodeCheckBody;
   try {
     payload = await parseRequestBody(request, verifyCodeSchema);
@@ -74,17 +74,6 @@ export async function POST(request: Request) {
     return badRequest("인증코드가 일치하는지 확인하세요");
   }
 
-  let profileStatus = null;
-  try {
-    profileStatus = await getProfileStatus(session.user.id);
-  } catch {
-    return unauthorized();
-  }
-
-  if (profileStatus?.deletedAt) {
-    return unauthorized("탈퇴 처리된 계정입니다.");
-  }
-
   const { data: verifiedData, error: verifiedError } = await supabase
     .from("sms_verifications")
     .update({ is_verified: true, verified_at: new Date().toISOString() })
@@ -97,15 +86,12 @@ export async function POST(request: Request) {
     return internalServerError(verifiedError.message);
   }
 
-  return ok(
-    mapMe(
-      session,
-      profileStatus?.role || "member",
-      profileStatus?.bikeBrand || null,
-      profileStatus?.bikeModel || null,
-      data?.phone_number || "",
-      verifiedData?.is_verified || false,
-      profileStatus?.proficiency || null
-    )
-  );
+  return ok({
+    authenticated: true,
+    session: {
+      ...activeSession.appSession,
+      phone: data?.phone_number || "",
+      isVerified: verifiedData?.is_verified || false,
+    },
+  });
 }

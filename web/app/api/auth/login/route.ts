@@ -9,10 +9,10 @@ import {
 import { badRequest, forbidden, ok, parseRequestBody } from "@shared/api";
 import {
   clearRefreshTokenCookie,
+  resolveActiveAppSession,
   setRefreshTokenCookie,
 } from "@shared/api/auth";
 import { isMobileClientRequest } from "@shared/api/auth.server";
-import { getProfileStatus } from "@shared/api/supabase-profiles";
 import {
   createSupabaseAuthClient,
   mapSupabaseSession,
@@ -45,14 +45,8 @@ export async function POST(request: Request) {
     return badRequest("로그인 세션을 확인할 수 없습니다.");
   }
 
-  let profileStatus = null;
-  try {
-    profileStatus = await getProfileStatus(session.user.id);
-  } catch {
-    profileStatus = null;
-  }
-
-  if (profileStatus?.deletedAt) {
+  const activeSession = await resolveActiveAppSession(session);
+  if (activeSession.status === "deleted") {
     const response = forbidden(
       "탈퇴 처리된 계정입니다. 복구가 필요하면 관리자에게 문의해 주세요."
     ) as NextResponse;
@@ -60,23 +54,21 @@ export async function POST(request: Request) {
     return response;
   }
 
-  const mappedSession = mapSupabaseSession(
-    session,
-    profileStatus?.role,
-    profileStatus?.bikeBrand ?? null,
-    profileStatus?.bikeModel ?? null,
-    profileStatus?.phone ?? "",
-    profileStatus?.isVerified || false,
-    profileStatus?.proficiency ?? null
-  );
+  if (activeSession.status === "unauthenticated") {
+    return badRequest("로그인 사용자 정보를 확인할 수 없습니다.");
+  }
+
+  const mappedSession =
+    activeSession.status === "ok"
+      ? activeSession.appSession
+      : mapSupabaseSession(session, "member", null, null, "", false, null);
+
   if (!mappedSession) {
     return badRequest("로그인 사용자 정보를 확인할 수 없습니다.");
   }
+
   const response = ok<AuthResponseData>({
-    session: {
-      ...mappedSession,
-      role: profileStatus?.role || "member",
-    },
+    session: mappedSession,
     accessToken: session.access_token,
     refreshToken: isMobileClient ? session.refresh_token : null,
   }) as NextResponse;
