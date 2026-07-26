@@ -4,8 +4,8 @@ import Credentials from "next-auth/providers/credentials";
 import { AppSession, loginSchema } from "@package-shared/index";
 
 import {
-  getProfileStatus,
-  type ProfileStatus,
+  getAppSessionProfileData,
+  getSessionProfileData,
 } from "@shared/api/supabase-profiles";
 import { createSupabaseAuthClient } from "@shared/lib/supabase";
 
@@ -19,6 +19,13 @@ type SupabaseBridgeUser = {
   refreshToken: string;
   expiresAt: number;
 };
+
+type SessionProfileData = NonNullable<
+  Awaited<ReturnType<typeof getSessionProfileData>>
+>;
+type AppSessionProfileData = NonNullable<
+  Awaited<ReturnType<typeof getAppSessionProfileData>>
+>;
 
 const ACCESS_TOKEN_REFRESH_BUFFER_SECONDS = 60;
 const isProduction = process.env.NODE_ENV === "production";
@@ -65,7 +72,9 @@ export const {
           return null;
         }
 
-        const profileStatusResult = await resolveProfileStatus(session.user.id);
+        const profileStatusResult = await resolveSessionProfileData(
+          session.user.id
+        );
         const profileStatus = profileStatusResult.ok
           ? profileStatusResult.profileStatus
           : null;
@@ -85,7 +94,7 @@ export const {
         return {
           id: session.user.id,
           email: session.user.email ?? "",
-          name: profileStatus?.name || metadataName,
+          name: metadataName,
           image: avatarUrl,
           role: profileStatus?.role || "member",
           accessToken: session.access_token,
@@ -173,6 +182,8 @@ export const {
         typeof token.supabaseAccessToken === "string"
           ? token.supabaseAccessToken
           : null;
+      let sessionSupabaseError =
+        typeof token.supabaseError === "string" ? token.supabaseError : null;
 
       session.user = {
         ...session.user,
@@ -182,14 +193,23 @@ export const {
         image: typeof token.picture === "string" ? token.picture : null,
       };
       let profileStatus = null;
+      let appSessionProfileData = null;
 
       if (userId) {
-        const profileStatusResult = await resolveProfileStatus(userId);
+        const profileStatusResult = await resolveSessionProfileData(userId);
 
         if (profileStatusResult.ok) {
           profileStatus = profileStatusResult.profileStatus;
         } else {
-          session.supabaseError = "profile_status_fetch_failed";
+          sessionSupabaseError = "profile_status_fetch_failed";
+        }
+
+        const appSessionProfileDataResult =
+          await resolveAppSessionProfileData(userId);
+        if (appSessionProfileDataResult.ok) {
+          appSessionProfileData = appSessionProfileDataResult.profileData;
+        } else {
+          sessionSupabaseError ??= "app_session_profile_fetch_failed";
         }
       }
       session.appSession = userId
@@ -199,16 +219,15 @@ export const {
             email: session.user.email ?? "",
             avatarUrl: session.user.image ?? null,
             role,
-            bikeBrand: profileStatus?.bikeBrand ?? null,
-            bikeModel: profileStatus?.bikeModel ?? null,
-            phone: profileStatus?.phone ?? "",
+            bikeBrand: appSessionProfileData?.bikeBrand ?? null,
+            bikeModel: appSessionProfileData?.bikeModel ?? null,
+            phone: appSessionProfileData?.phone ?? "",
             isVerified: profileStatus?.isVerified || false,
-            proficiency: profileStatus?.proficiency || null,
+            proficiency: appSessionProfileData?.proficiency || null,
           }
         : null;
       session.accessToken = accessToken;
-      session.supabaseError =
-        typeof token.supabaseError === "string" ? token.supabaseError : null;
+      session.supabaseError = sessionSupabaseError;
 
       return session;
     },
@@ -244,7 +263,9 @@ async function refreshSupabaseToken(token: Record<string, unknown>) {
     };
   }
 
-  const profileStatusResult = await resolveProfileStatus(data.session.user.id);
+  const profileStatusResult = await resolveSessionProfileData(
+    data.session.user.id
+  );
   if (!profileStatusResult.ok) {
     return {
       ...token,
@@ -278,10 +299,9 @@ async function refreshSupabaseToken(token: Record<string, unknown>) {
     userId: data.session.user.id,
     role: profileStatus?.role || "member",
     name:
-      profileStatus?.name ||
-      (typeof data.session.user.user_metadata?.display_name === "string"
+      typeof data.session.user.user_metadata?.display_name === "string"
         ? data.session.user.user_metadata.display_name
-        : ""),
+        : "",
     email: data.session.user.email ?? "",
     picture:
       typeof data.session.user.user_metadata?.avatar_url === "string"
@@ -294,10 +314,10 @@ async function refreshSupabaseToken(token: Record<string, unknown>) {
   };
 }
 
-async function resolveProfileStatus(userId: string): Promise<
+async function resolveSessionProfileData(userId: string): Promise<
   | {
       ok: true;
-      profileStatus: ProfileStatus | null;
+      profileStatus: SessionProfileData | null;
     }
   | {
       ok: false;
@@ -306,7 +326,28 @@ async function resolveProfileStatus(userId: string): Promise<
   try {
     return {
       ok: true,
-      profileStatus: await getProfileStatus(userId),
+      profileStatus: await getSessionProfileData(userId),
+    };
+  } catch {
+    return {
+      ok: false,
+    };
+  }
+}
+
+async function resolveAppSessionProfileData(userId: string): Promise<
+  | {
+      ok: true;
+      profileData: AppSessionProfileData | null;
+    }
+  | {
+      ok: false;
+    }
+> {
+  try {
+    return {
+      ok: true,
+      profileData: await getAppSessionProfileData(userId),
     };
   } catch {
     return {

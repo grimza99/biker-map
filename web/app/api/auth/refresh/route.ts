@@ -1,19 +1,17 @@
 import {
   badRequest,
-  forbidden,
-  internalServerError,
   mapRefreshData,
   ok,
 } from "@shared/api";
 import {
   clearRefreshTokenCookie,
+  requireActiveSupabaseSession,
   setRefreshTokenCookie,
 } from "@shared/api/auth";
 import {
   getRefreshTokenFromRequest,
   isMobileClientRequest,
 } from "@shared/api/auth.server";
-import { getProfileStatus } from "@shared/api/supabase-profiles";
 
 import { createSupabaseAuthClient } from "@shared/lib/supabase";
 import { NextResponse } from "next/server";
@@ -30,26 +28,18 @@ export async function POST(request: Request) {
     refresh_token: refreshToken,
   });
 
-  if (data.session?.user?.id) {
-    let profileStatus = null;
-    try {
-      profileStatus = await getProfileStatus(data.session.user.id);
-    } catch (profileError) {
-      const errorResponse = internalServerError(
-        profileError instanceof Error
-          ? profileError.message
-          : "프로필 상태를 확인하지 못했습니다."
-      ) as NextResponse;
-      clearRefreshTokenCookie(errorResponse);
-      return errorResponse;
-    }
-
-    if (profileStatus?.deletedAt) {
-      const deletedResponse = forbidden(
-        "탈퇴 처리된 계정입니다. 더 이상 세션을 갱신할 수 없습니다."
-      ) as NextResponse;
-      clearRefreshTokenCookie(deletedResponse);
-      return deletedResponse;
+  if (data.session) {
+    const activeSession = await requireActiveSupabaseSession(data.session, {
+      deletedMessage:
+        "탈퇴 처리된 계정입니다. 더 이상 세션을 갱신할 수 없습니다.",
+      deletedResponse: "forbidden",
+      errorResponse: "internalServerError",
+      errorMessage: "프로필 상태를 확인하지 못했습니다.",
+      clearRefreshTokenOnDeleted: true,
+      clearRefreshTokenOnError: true,
+    });
+    if (activeSession instanceof Response) {
+      return activeSession;
     }
   }
 

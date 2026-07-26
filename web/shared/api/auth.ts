@@ -7,8 +7,45 @@ import {
   createSupabaseAuthClient,
   mapSupabaseSession,
 } from "@shared/lib/supabase";
-import { forbidden, unauthorized } from "./response";
-import { getProfileStatus } from "./supabase-profiles";
+import { forbidden, internalServerError, unauthorized } from "./response";
+import {
+  getAppSessionProfileData,
+  getSessionProfileData,
+} from "./supabase-profiles";
+
+export type ActiveAppSessionResolution =
+  | {
+      status: "ok";
+      authSession: Session;
+      appSession: AppSession;
+    }
+  | {
+      status: "unauthenticated";
+    }
+  | {
+      status: "deleted";
+      authSession: Session;
+    }
+  | {
+      status: "error";
+      authSession: Session;
+      error: unknown;
+    };
+
+type ActiveSessionBundle = {
+  authSession: Session;
+  appSession: AppSession;
+};
+
+type RequireActiveSessionOptions = {
+  unauthenticatedMessage?: string;
+  deletedMessage?: string;
+  deletedResponse?: "unauthorized" | "forbidden";
+  errorMessage?: string;
+  errorResponse?: "unauthorized" | "internalServerError";
+  clearRefreshTokenOnDeleted?: boolean;
+  clearRefreshTokenOnError?: boolean;
+};
 
 /**
  *
@@ -53,40 +90,159 @@ export async function getSupabaseAuthSession(
 
 /**
  *
- * @param request - HTTP 요청 객체에서 Authorization 헤더를 파싱하여 Bearer 토큰을 추출한 후, 해당 토큰으로 Supabase 인증 세션을 조회하고, 이를 애플리케이션의 AppSession 형태로 매핑하여 반환합니다.
- * @returns
+ * @param session - Supabase Auth에서 확인된 세션을 받아 profile 보조 정보를 조회한 뒤,
+ * 탈퇴 여부를 판정하고 최종 AppSession을 반환
  */
-async function getApiSession(request: Request): Promise<AppSession | null> {
-  const session = await getSupabaseAuthSession(request);
-
-  if (!session?.access_token) {
-    return null;
+export async function resolveActiveAppSession(
+  session: Session | null
+): Promise<ActiveAppSessionResolution> {
+  if (!session?.user) {
+    return {
+      status: "unauthenticated",
+    };
   }
 
   let profileStatus;
   try {
-    profileStatus = await getProfileStatus(session.user.id);
-    if (profileStatus?.deletedAt) {
-      return null;
+    profileStatus = await getSessionProfileData(session.user.id);
+  } catch (error) {
+    return {
+      status: "error",
+      authSession: session,
+      error,
+    };
+  }
+
+  if (profileStatus?.deletedAt) {
+    return {
+      status: "deleted",
+      authSession: session,
+    };
+  }
+
+  let appSessionProfileData = null;
+  try {
+    appSessionProfileData = await getAppSessionProfileData(session.user.id);
+  } catch (error) {
+    return {
+      status: "error",
+      authSession: session,
+      error,
+    };
+  }
+
+  const appSession = mapSupabaseSession(
+    session,
+    profileStatus?.role,
+    appSessionProfileData?.bikeBrand ?? null,
+    appSessionProfileData?.bikeModel ?? null,
+    appSessionProfileData?.phone ?? "",
+    profileStatus?.isVerified ?? false,
+    appSessionProfileData?.proficiency ?? null
+  );
+
+  if (!appSession) {
+    return {
+      status: "unauthenticated",
+    };
+  }
+
+  return {
+    status: "ok",
+    authSession: session,
+    appSession,
+  };
+}
+
+export async function resolveActiveApiSession(
+  request: Request
+): Promise<ActiveAppSessionResolution> {
+  const session = await getSupabaseAuthSession(request);
+  return resolveActiveAppSession(session);
+}
+
+/**
+ *
+ * @param resolution - resolveActiveAppSession 또는 resolveActiveApiSession 결과
+ * @param options - 실패 상태를 어떤 HTTP 응답으로 바꿀지 지정합니다.
+ * @returns 활성 세션이면 auth/app 세션 묶음을, 아니면 공통 실패 Response를 반환합니다.
+ */
+export function requireResolvedActiveSession(
+  resolution: ActiveAppSessionResolution,
+  options: RequireActiveSessionOptions = {}
+): ActiveSessionBundle | Response {
+  if (resolution.status === "ok") {
+    return {
+      authSession: resolution.authSession,
+      appSession: resolution.appSession,
+    };
+  }
+
+  if (resolution.status === "deleted") {
+    const responseFactory =
+      options.deletedResponse === "forbidden" ? forbidden : unauthorized;
+    const response = responseFactory(
+      options.deletedMessage ?? "탈퇴 처리된 계정입니다."
+    );
+
+    if (options.clearRefreshTokenOnDeleted) {
+      clearRefreshTokenCookie(response);
     }
-  } catch {
+
+    return response;
+  }
+
+  if (resolution.status === "error") {
+    const response =
+      options.errorResponse === "internalServerError"
+        ? internalServerError(
+            options.errorMessage ??
+              (resolution.error instanceof Error
+                ? resolution.error.message
+                : "세션 상태를 확인하지 못했습니다.")
+          )
+        : unauthorized(
+            options.errorMessage ?? "세션 상태를 확인하지 못했습니다."
+          );
+
+    if (options.clearRefreshTokenOnError) {
+      clearRefreshTokenCookie(response);
+    }
+
+    return response;
+  }
+
+  return unauthorized(options.unauthenticatedMessage);
+}
+
+export async function requireActiveSupabaseSession(
+  session: Session | null,
+  options: RequireActiveSessionOptions = {}
+): Promise<ActiveSessionBundle | Response> {
+  const resolution = await resolveActiveAppSession(session);
+  return requireResolvedActiveSession(resolution, options);
+}
+
+export async function requireActiveApiSession(
+  request: Request,
+  options: RequireActiveSessionOptions = {}
+): Promise<ActiveSessionBundle | Response> {
+  const resolution = await resolveActiveApiSession(request);
+  return requireResolvedActiveSession(resolution, options);
+}
+
+/**
+ *
+ * @param request - HTTP 요청 객체에서 Authorization 헤더를 파싱하여 Bearer 토큰을 추출한 후, 해당 토큰으로 Supabase 인증 세션을 조회하고, 이를 애플리케이션의 AppSession 형태로 매핑하여 반환합니다.
+ * @returns
+ */
+async function getApiSession(request: Request): Promise<AppSession | null> {
+  const session = await requireActiveApiSession(request);
+  if (session instanceof Response) {
     return null;
   }
 
-  const mappedSession = mapSupabaseSession(
-    session,
-    profileStatus?.role,
-    profileStatus?.bikeBrand || null,
-    profileStatus?.bikeModel || null,
-    profileStatus?.phone ?? "",
-    profileStatus?.isVerified ?? false,
-    profileStatus?.proficiency ?? null
-  );
-
-  if (!mappedSession || !session?.access_token) {
-    return mappedSession;
-  }
-  return mappedSession;
+  return session.appSession;
 }
 
 /**
@@ -110,7 +266,9 @@ export async function requireVerifiedApiSession(request: Request) {
   }
 
   if (!session.isVerified) {
-    return forbidden("본인인증이 완료된 계정만 라이브 바이커를 사용할 수 있습니다.");
+    return forbidden(
+      "본인인증이 완료된 계정만 라이브 바이커를 사용할 수 있습니다."
+    );
   }
 
   return session;
