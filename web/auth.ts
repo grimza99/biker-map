@@ -182,6 +182,8 @@ export const {
         typeof token.supabaseAccessToken === "string"
           ? token.supabaseAccessToken
           : null;
+      let sessionSupabaseError =
+        typeof token.supabaseError === "string" ? token.supabaseError : null;
 
       session.user = {
         ...session.user,
@@ -199,7 +201,7 @@ export const {
         if (profileStatusResult.ok) {
           profileStatus = profileStatusResult.profileStatus;
         } else {
-          session.supabaseError = "profile_status_fetch_failed";
+          sessionSupabaseError = "profile_status_fetch_failed";
         }
 
         const appSessionProfileDataResult =
@@ -207,7 +209,7 @@ export const {
         if (appSessionProfileDataResult.ok) {
           appSessionProfileData = appSessionProfileDataResult.profileData;
         } else {
-          session.supabaseError ??= "app_session_profile_fetch_failed";
+          sessionSupabaseError ??= "app_session_profile_fetch_failed";
         }
       }
       session.appSession = userId
@@ -225,8 +227,7 @@ export const {
           }
         : null;
       session.accessToken = accessToken;
-      session.supabaseError =
-        typeof token.supabaseError === "string" ? token.supabaseError : null;
+      session.supabaseError = sessionSupabaseError;
 
       return session;
     },

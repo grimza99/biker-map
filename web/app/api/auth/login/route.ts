@@ -6,7 +6,13 @@ import {
   loginSchema,
 } from "@package-shared/index";
 
-import { badRequest, forbidden, ok, parseRequestBody } from "@shared/api";
+import {
+  badRequest,
+  internalServerError,
+  forbidden,
+  ok,
+  parseRequestBody,
+} from "@shared/api";
 import {
   clearRefreshTokenCookie,
   resolveActiveAppSession,
@@ -15,7 +21,6 @@ import {
 import { isMobileClientRequest } from "@shared/api/auth.server";
 import {
   createSupabaseAuthClient,
-  mapSupabaseSession,
 } from "@shared/lib/supabase";
 
 /**--------------------------login------------------------------- */
@@ -58,10 +63,18 @@ export async function POST(request: Request) {
     return badRequest("로그인 사용자 정보를 확인할 수 없습니다.");
   }
 
+  if (activeSession.status === "error") {
+    const response = internalServerError(
+      activeSession.error instanceof Error
+        ? activeSession.error.message
+        : "프로필 상태를 확인하지 못했습니다."
+    ) as NextResponse;
+    clearRefreshTokenCookie(response);
+    return response;
+  }
+
   const mappedSession =
-    activeSession.status === "ok"
-      ? activeSession.appSession
-      : mapSupabaseSession(session, "member", null, null, "", false, null);
+    activeSession.status === "ok" ? activeSession.appSession : null;
 
   if (!mappedSession) {
     return badRequest("로그인 사용자 정보를 확인할 수 없습니다.");
