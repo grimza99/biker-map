@@ -8,7 +8,10 @@ import {
   mapSupabaseSession,
 } from "@shared/lib/supabase";
 import { forbidden, internalServerError, unauthorized } from "./response";
-import { getProfileStatus } from "./supabase-profiles";
+import {
+  getAppSessionProfileData,
+  getSessionProfileData,
+} from "./supabase-profiles";
 
 export type ActiveAppSessionResolution =
   | {
@@ -101,7 +104,7 @@ export async function resolveActiveAppSession(
 
   let profileStatus;
   try {
-    profileStatus = await getProfileStatus(session.user.id);
+    profileStatus = await getSessionProfileData(session.user.id);
   } catch (error) {
     return {
       status: "error",
@@ -117,14 +120,25 @@ export async function resolveActiveAppSession(
     };
   }
 
+  let appSessionProfileData = null;
+  try {
+    appSessionProfileData = await getAppSessionProfileData(session.user.id);
+  } catch (error) {
+    return {
+      status: "error",
+      authSession: session,
+      error,
+    };
+  }
+
   const appSession = mapSupabaseSession(
     session,
     profileStatus?.role,
-    profileStatus?.bikeBrand ?? null,
-    profileStatus?.bikeModel ?? null,
-    profileStatus?.phone ?? "",
+    appSessionProfileData?.bikeBrand ?? null,
+    appSessionProfileData?.bikeModel ?? null,
+    appSessionProfileData?.phone ?? "",
     profileStatus?.isVerified ?? false,
-    profileStatus?.proficiency ?? null
+    appSessionProfileData?.proficiency ?? null
   );
 
   if (!appSession) {

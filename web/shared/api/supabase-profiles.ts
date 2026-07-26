@@ -3,15 +3,17 @@ import type { SupabaseClient } from "@supabase/supabase-js";
 import { Tproficiency } from "@package-shared/types";
 import { createSupabaseServiceClient } from "@shared/lib/supabase";
 
-export type ProfileStatus = {
+type SessionProfileData = {
   id: string;
-  name: string;
   role: string;
   deletedAt: string | null;
+  isVerified: boolean;
+};
+
+type AppSessionProfileData = {
   bikeBrand: string | null;
   bikeModel: string | null;
   phone: string;
-  isVerified: boolean;
   proficiency: Tproficiency;
 };
 
@@ -44,13 +46,34 @@ export async function loadProfileMap(
   );
 }
 
-export async function getProfileStatus(
+async function getLatestVerifiedPhoneData(
+  client: SupabaseClient,
   userId: string
-): Promise<ProfileStatus | null> {
+) {
+  const { data, error } = await client
+    .from("sms_verifications")
+    .select("phone_number,is_verified,created_at")
+    .eq("user_id", userId)
+    .eq("is_verified", true)
+    .order("created_at", { ascending: false })
+    .order("id", { ascending: false })
+    .limit(1)
+    .maybeSingle();
+
+  if (error) {
+    throw new Error(error.message);
+  }
+
+  return data;
+}
+
+export async function getSessionProfileData(
+  userId: string
+): Promise<SessionProfileData | null> {
   const client = createSupabaseServiceClient();
   const { data, error } = await client
     .from("profiles")
-    .select("id, name, role, deleted_at, bike_brand,bike_model,proficiency")
+    .select("id, role, deleted_at")
     .eq("id", userId)
     .maybeSingle();
 
@@ -61,29 +84,40 @@ export async function getProfileStatus(
   if (!data) {
     return null;
   }
-  const { data: verifyData, error: selectVerifyDataError } = await client
-    .from("sms_verifications")
-    .select("phone_number,expires_at,is_verified,created_at")
-    .eq("user_id", userId)
-    .eq("is_verified", true)
-    .order("created_at", { ascending: false })
-    .order("id", { ascending: false })
-    .limit(1)
-    .maybeSingle();
-
-  if (selectVerifyDataError) {
-    throw new Error(selectVerifyDataError.message);
-  }
+  const verifyData = await getLatestVerifiedPhoneData(client, userId);
 
   return {
     id: String(data.id),
-    name: String(data.name ?? ""),
     role: String(data.role ?? ""),
     deletedAt: data.deleted_at ? String(data.deleted_at) : null,
+    isVerified: verifyData?.is_verified ?? false,
+  };
+}
+
+export async function getAppSessionProfileData(
+  userId: string
+): Promise<AppSessionProfileData | null> {
+  const client = createSupabaseServiceClient();
+  const { data, error } = await client
+    .from("profiles")
+    .select("bike_brand,bike_model,proficiency")
+    .eq("id", userId)
+    .maybeSingle();
+
+  if (error) {
+    throw new Error(error.message);
+  }
+
+  if (!data) {
+    return null;
+  }
+
+  const verifyData = await getLatestVerifiedPhoneData(client, userId);
+
+  return {
     bikeBrand: data.bike_brand,
     bikeModel: data.bike_model,
     phone: verifyData?.phone_number ?? "",
-    isVerified: verifyData?.is_verified ?? false,
     proficiency: data?.proficiency ?? null,
   };
 }
